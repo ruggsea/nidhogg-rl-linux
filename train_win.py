@@ -422,6 +422,11 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # of six rarely completed). Pressing Enter here, while we still know a round boundary
     # just happened, starts the next match in well under a second.
     try:
+        # Settle first: right at the end of an episode the round-over screen may still be
+        # showing both fighters, so an immediate check sees "players present" and skips the
+        # restart - and by the time the next individual asks, they are gone and it pays the
+        # full menu re-entry. Wait for the state to settle, then act.
+        time.sleep(2.0)
         if not mgr.has_players(mgr.read_state()[0]):
             mgr._accept_restart()
     except Exception:

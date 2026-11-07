@@ -2288,3 +2288,24 @@ instead of ~90 s, so a generation of six can actually finish.
 Also worth recording: with no keys being pressed the CPU needed 97 s to score, versus the ~9 s
 rounds seen while the policy was acting. The 9 s figure was about our policy losing, not
 about the game.
+
+## Session 133 — the restart is fixed; play() now aborts within 3 s and that is the open question
+
+Verified working (unchanged from the measurement): entry reaches a gate-confirmed match
+(`A_px=10`, `live AND drivable`), and the post-round Enter restart restores a drivable match
+in 7.61 s now that the window is 12 s.
+
+Open, unexplained, and the current blocker: three seconds after an episode's start gate the
+log shows a FRESH `using cached entry`, i.e. `run_entry()` being called again. No
+`match over, ending window` line and no `fit=` line ever appear for that episode, so `play()`
+is not running its loop to completion - it is being abandoned almost immediately
+(`real_samples < 20`), and `ensure_match()` does not consider the match live enough to keep.
+
+That pattern fits a round that ends within seconds: the gate holds D for 1.5 s, the policy
+runs forward, and if the CPU kills us the round is over before the episode loop takes 20
+samples. What is NOT yet established is whether those are genuinely instant losses or a state
+file that goes stale while fighters are still alive - the two look identical from here, and I
+am not going to guess which one it is.
+
+Next: log `real_samples` and the reason for every early exit inside `play()`, so the abort is
+attributable instead of inferred.
