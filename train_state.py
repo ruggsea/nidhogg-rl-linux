@@ -563,6 +563,41 @@ class InstanceManager:
         time.sleep(ENTRY_BOOT)
         return True
 
+    def _frame_now(self):
+        """Latest game frame counter from the hook log ([win] <pid> f=<n>)."""
+        try:
+            with open(INJECT_LOG.format(self.iid), "rb") as f:
+                f.seek(0, 2)
+                f.seek(max(0, f.tell() - 4000))
+                tail = f.read().decode("utf-8", "ignore")
+            for line in reversed(tail.splitlines()):
+                if " f=" in line:
+                    return int(line.rsplit("f=", 1)[1])
+        except (OSError, ValueError):
+            pass
+        return None
+
+    def _wait_frames(self, frames=18, timeout=6.0):
+        """Wait for N GAME frames, not N seconds.
+
+        Entry used time.sleep(2.5) per key - 9 keys, so ~22 s per attempt, and an entry
+        search of four variants cost minutes. The same key sequence at a fixed FRAME
+        distance is what the game actually consumes, and this hook already publishes the
+        frame counter. 18 frames is roughly what 400 ms bought at the calibrated rate.
+        Falls back to a short sleep if the counter is unavailable.
+        """
+        f0 = self._frame_now()
+        if f0 is None:
+            time.sleep(0.4)
+            return
+        t0 = time.time()
+        while time.time() - t0 < timeout:
+            f1 = self._frame_now()
+            if f1 is not None and f1 - f0 >= frames:
+                return
+            time.sleep(0.02)
+        time.sleep(0.1)
+
     def _menu_home(self, presses=3, wait=0.9):
         """Return to the main menu before trying to enter.
 
@@ -594,7 +629,9 @@ class InstanceManager:
         seq += [(13, 2.5), (13, 2.5), (13, 2.5)]
         for code, wait in seq:
             self.press(code)
-            time.sleep(wait)
+            # frame-based, not wall-clock: see _wait_frames. The `wait` value is kept only
+            # as a fallback when the frame counter cannot be read.
+            self._wait_frames(18, timeout=max(1.0, wait))
         for extra in range(2):
             st, _ = self.read_state()
             if st is not None:

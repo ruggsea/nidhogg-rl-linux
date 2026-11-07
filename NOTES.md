@@ -2430,3 +2430,32 @@ of 2.5 s so a flicker can never be mistaken for a round boundary.
 
 This is the third distinct bug in the same family - a short-lived 0 read being treated as a
 state transition - and each one silently ate whole episodes.
+
+## Session 137 — first complete, gate-confirmed generation
+
+```
+g0i0 fit=10.6  samples=3884  gate A_px=31.0  exit=window-complete
+g0i1 fit= 7.1  samples=3644  gate A_px=52.1  exit=window-complete
+g0i2 fit= 8.8  samples=3157  gate A_px=13.5  exit=window-complete
+g0i3 fit=-1.6  samples=3063  gate A_px=19.1  exit=window-complete
+g0i4 fit= 2.9
+g0i5 fit= 0.7
+== gen 0 best 10.63 mean 4.75 roundsW 0 roundsL 0 matchW 0
+```
+
+Six of six episodes ran their full 100 s window (3000-3900 samples at ~39 Hz), every one on a
+gate-confirmed drivable match, and the fitness values differ per individual. Entry is now
+frame-based instead of `sleep(2.5)` per key, which is what made a full generation fit in the
+time budget.
+
+**The open question this raises, stated as a question:** `roundsW 0 roundsL 0` over 100 s means
+NEITHER side scored - not that we lost. Two explanations fit and I have not separated them:
+
+  a) the round genuinely takes longer than 100 s (measured once: ~97 s while idle), so a
+     100 s window straddles boundaries without capturing an outcome, or
+  b) round-end detection is not firing at all (the kill/death detector has a history of
+     missing real events: the flicker bug that reported "345 kills, 0 deaths").
+
+Telling these apart needs one positive control: watch a round end with the round detector
+running, and see whether it reports it. Until then `rounds 0-0` is not evidence about the
+policy.
