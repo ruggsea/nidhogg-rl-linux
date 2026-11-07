@@ -2405,3 +2405,28 @@ selecting on the shaping terms alone and could never rewarded for actually winni
 Window raised to 100 s so an episode is likely to contain a round outcome. If rounds_won
 stays 0 at 100 s, that is a statement about the policy rather than about the window, and the
 log will show it.
+
+## Session 136 (cont.) — the flag flicker was aborting episodes after 1 s
+
+Raw trace at the start of an episode:
+
+```
+g0i0 t=0.00 raw=(262.0, 560.0, 266.5, 560.0, 1.0, 1.0)   them_x, them_y, me_x, me_y, h154, h242
+g0i0 t=0.25 raw=(262.0, 560.0, 274.5, 560.0, 0.0, 1.0)   <- CPU flag drops to 0
+```
+
+The opponent's existence flag flickers to 0 while its position plainly reads (262, 560). This
+is the same reader artefact that once produced "345 kills, 0 deaths". Two consequences, both
+fixed:
+
+1. `read_state()` returned **None** whenever either flag was 0, so a flicker discarded the
+   whole sample and the episode loop saw "no state".
+2. the loop treated that as the round ending, pressed Enter/Space into a screen that was not
+   showing, and gave up - `exit=accept-failed-alternate samples=43`.
+
+Now: the flags travel with the sample and the caller decides; "gone" requires OUR fighter to
+be absent (a CPU flicker is not an absence), and the sustained-absence window is 4 s instead
+of 2.5 s so a flicker can never be mistaken for a round boundary.
+
+This is the third distinct bug in the same family - a short-lived 0 read being treated as a
+state transition - and each one silently ate whole episodes.

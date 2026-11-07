@@ -78,8 +78,12 @@ def read_state(iid):
         if len(v) < 6:
             return None
         o154x, o154y, y242x, y242y, h1, h2 = (float(x) for x in v[:6])
-        if not (h1 and h2):
-            return None
+        # DO NOT discard the sample when a flag reads 0. MEASURED (raw trace, t=0.25 s):
+        # the CPU's existence flag flickers to 0 for a frame or two while the fighter is
+        # plainly alive at (262, 560) - a reader flicker, the same artefact that once
+        # produced "345 kills, 0 deaths". Returning None here turned every flicker into
+        # "the match ended", which aborted episodes one second in. The flags travel with
+        # the sample now and the CALLER decides what a 0 means, with a sustained timer.
         # GATE: a (0,0) pair is a not-yet-initialised / frozen instance, not a
         # fighter standing at the goal. Without this the goal-crossing detector
         # counted every blank sample as a round loss (157/episode once).
@@ -226,6 +230,12 @@ def play(mgr, w, seconds, seed, tag, log=print):
         # returns None when a flag is 0, so this check MUST run before that gate -
         # otherwise the death is never observed (measured: 0 deaths in 10 episodes).
         raw = read_raw(mgr.iid)
+        # TRACE THE FIRST SECONDS. Episodes are dying ~1 s after a passing gate with
+        # "accept-failed", and a round cannot end in one second - so the loop is almost
+        # certainly misreading a brief gap in the state file as a round boundary. Print the
+        # raw flags for the early part of each episode so the next run shows which it is.
+        if real_samples < 25 and (time.time() - t0) < 6.0:
+            print(f"    {tag} t={time.time()-t0:5.2f} raw={raw}", flush=True)
         if raw is not None and prev_flags is not None:
             if prev_flags[0] > 0.5 and raw[4] < 0.5:
                 them_deaths += 1
@@ -234,7 +244,11 @@ def play(mgr, w, seconds, seed, tag, log=print):
         if raw is not None:
             prev_flags = (raw[4], raw[5])
         st = read_state(mgr.iid)
-        if st is None:
+        # "gone" now means OUR fighter is absent AND the state is unreadable. A flicker in
+        # the OPPONENT's flag is not an absence: measured at t=0.25 s the CPU flag dropped
+        # while its position read (262, 560). Treating that as gone aborted the episode.
+        gone = st is None or not st.get("have242")
+        if gone:
             # once we have seen a live fighter, a sustained absence means the match
             # ended: stop the window and let the manager start a fresh process.
             if saw_player:
@@ -242,7 +256,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 # 8 s, not 2.5: a ROUND transition also hides both fighters for a
                 # moment, and 2.5 s cut every episode off after a single round, so
                 # a best-of-5 match only ever yielded one round of signal.
-                if time.time() - gone_since > 2.5:
+                if time.time() - gone_since > 4.0:
                     # A round just ended. Press accept to start the NEXT round instead
                     # of closing the episode: with one round per episode every episode
                     # was exactly "rounds 0-1", which gives the GA almost no signal.
@@ -254,13 +268,15 @@ def play(mgr, w, seconds, seed, tag, log=print):
                         # gone", so every round looked like the end of the match.
                         print(f"  {tag}: round over, accepting next "
                               f"(try {accept_tries[0]})", flush=True)
-                        mgr.press(13)
-                        t_acc = time.time()
-                        while time.time() - t_acc < 12.0:
-                            s_acc = read_state(mgr.iid)
-                            if s_acc is not None:
-                                break
-                            time.sleep(0.3)
+                        # Enter alone was not enough: with the policy pressing keys, the
+                        # post-round screen sometimes ignored it and the episode ended at
+                        # samples=51. Fall back to the alternating Enter/Space path and
+                        # record which one worked, so the next run can stop guessing.
+                        got = mgr._accept_restart(tries=3, wait=8.0)
+                        print(f"  {tag}: accept via alternate keys -> {got}", flush=True)
+                        if not got:
+                            exit_reason = "accept-failed-alternate"
+                            break
                         gone_since = None
                         continue
                     exit_reason = "accept-failed-after-2-tries"
