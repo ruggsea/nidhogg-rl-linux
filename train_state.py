@@ -583,6 +583,37 @@ class InstanceManager:
         return False
 
 
+    def _drivable_now(self, tries=3):
+        """Entry is not finished until the gate says input reaches the simulation.
+
+        "Live fight confirmed" has been wrong before, and this session measured why: the
+        READY screen has both fighters, answers `has_players` and every other presence
+        check, and ignores input (gate A_px=3.0 while a live round gave 47-56). Entering
+        into READY therefore looked like success and produced generations with no
+        control at all.
+
+        So: prime the controls, run the ACTIVE gate, and if it fails try the cheap Enter
+        accept-restart (a round boundary is one press away) before giving up.
+        """
+        for _ in range(tries):
+            st, _ = self.read_state()
+            if not self.has_players(st):
+                if not self._accept_restart():
+                    return False
+                continue
+            self.prime_controls(1.0)
+            if self.prove_control(1.2):
+                return True
+            if not self._accept_restart():
+                return False
+        return False
+
+    def _enter_confirmed(self, s_count, n_lead):
+        """One bounded entry attempt, accepted only if the result is drivable."""
+        if not self._try_entry(s_count, n_lead):
+            return False
+        return self._drivable_now()
+
     def run_entry(self):
         """Enter a TRAINING match (real CPU) by searching the menu once, then caching.
 
@@ -595,14 +626,16 @@ class InstanceManager:
         if cached is not None:
             n_lead, s_count = cached
             log(f"instance {self.iid}: using cached entry n_lead={n_lead} S={s_count}")
-            if self._try_entry(s_count, n_lead):
+            if self._enter_confirmed(s_count, n_lead):
                 self._raise_speed()
-                log(f"instance {self.iid}: live fight confirmed")
+                log(f"instance {self.iid}: live AND drivable (gate confirmed)")
                 return True
             log(f"instance {self.iid}: cached entry failed, re-searching")
         for n_lead, s_count in ((1, 2), (2, 2), (1, 1), (2, 1)):
             log(f"instance {self.iid}: trying entry n_lead={n_lead} S={s_count}")
-            if self._try_entry(s_count, n_lead) or self._try_entry(s_count, n_lead):
+            # (the duplicate `or self._try_entry(...)` here ran entry TWICE on the first
+            # variant, doubling entry cost for nothing)
+            if self._enter_confirmed(s_count, n_lead):
                 InstanceManager.ENTRY = (n_lead, s_count)
                 self._raise_speed()
                 log(f"instance {self.iid}: TRAINING reached n_lead={n_lead} S={s_count}; cached")

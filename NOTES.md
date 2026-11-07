@@ -2191,3 +2191,30 @@ generation rarely gets six clean episodes.
 Fixed this tick and verified:
   * episodes are serial per instance (process count 4 -> exactly 1),
   * cheap Enter accept-restart is tried before the expensive recover/relaunch path.
+
+## Session 129 — entry now has to pass the gate, and the cost per episode is the next wall
+
+Change: `run_entry()` no longer treats "live fight confirmed" as success. `_drivable_now()`
+primes the controls, runs the ACTIVE gate, and if it fails tries the cheap Enter
+accept-restart before giving up; `_enter_confirmed()` is the only path that can return True.
+Also removed a duplicate `self._try_entry(...) or self._try_entry(...)` that ran the first
+entry variant twice, doubling entry cost.
+
+Verified working, from the run log:
+
+```
+[21:11:38] control gate A_px=17.0 (PASS)
+[21:11:38] live AND drivable (gate confirmed)
+[21:11:46] control gate A_px=40.0 (PASS)     <- episode-start gate
+```
+
+So the thing that used to be a lie is now a measurement: we only continue when input
+demonstrably reaches the game.
+
+Still not scoring a generation, and the reason is now about COST, not truth:
+`[21:11:49] using cached entry` follows 3 s after a good gate, i.e. the round ended and
+`ensure_match()` had to re-enter - a 2-3 minute cycle per individual. One orphan process also
+survived a relaunch (2 running instead of 1).
+
+Next fix, precisely: end-of-episode restart. Press Enter proactively when an episode's round
+finishes, instead of discovering the dead match at the START of the next individual.
