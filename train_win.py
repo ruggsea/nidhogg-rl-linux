@@ -490,21 +490,34 @@ def main():
             print(f"== sweep: {len(pids)} game processes, resetting", flush=True)
             os.system('pkill -f "MacOS/Nidhogg"')
             time.sleep(3)
-        results = []
-        threads = []
-        for i, w in enumerate(pop.W):
-            mgr = mgrs[i % len(mgrs)]
-            tag = f"g{gen}i{i}"
-            time.sleep(0.15)
-            th = threading.Thread(target=lambda m=mgr, ww=w, t=tag:
-                                  results.append(play(m, ww, args.window, gen*997+i, t)))
-            th.start(); threads.append(th)
+        results = [None] * len(pop.W)
+        # ONE EPISODE AT A TIME PER INSTANCE. This used to spawn a thread per individual
+        # with `mgrs[i % len(mgrs)]`, so with --instances 1 six threads drove the SAME
+        # game concurrently: six interleaved key streams, six concurrent ensure_match /
+        # restart calls (which is where four `launched pid` lines inside one second came
+        # from), and episodes whose state was mangled by the others. It also made every
+        # individual's fitness depend on the neighbours rather than on its own weights.
+        # Now individuals are grouped by instance: parallel ACROSS instances, serial
+        # WITHIN one.
+        buckets = [[] for _ in mgrs]
+        for i in range(len(pop.W)):
+            buckets[i % len(mgrs)].append(i)
+
+        def run_bucket(slot):
+            for i in buckets[slot]:
+                results[i] = play(mgrs[slot], pop.W[i], args.window, gen * 997 + i,
+                                  f"g{gen}i{i}")
+
+        threads = [threading.Thread(target=run_bucket, args=(slot,))
+                   for slot in range(len(mgrs)) if buckets[slot]]
+        for th in threads:
+            th.start()
         for th in threads:
             th.join()
-        good = [r for r in results if not r.get("no_match")]
+        good = [r for r in results if r and not r.get("no_match")]
         if len(good) < len(results):
             # one global reset, then re-run only the individuals that had no match
-            missing = [i for i, r in enumerate(results) if r.get("no_match")]
+            missing = [i for i, r in enumerate(results) if r and r.get("no_match")]
             print(f"== gen {gen}: {len(missing)} individuals had no match, resetting",
                   flush=True)
             reset_all(mgrs)
@@ -513,7 +526,7 @@ def main():
                 tag = f"g{gen}i{i}"
                 results[i] = play(mgrs[i % len(mgrs)], w, args.window,
                                   gen * 997 + i, tag)
-            good = [r for r in results if not r.get("no_match")]
+            good = [r for r in results if r and not r.get("no_match")]
         if not good:
             print(f"== gen {gen}: all failed", flush=True)
             continue

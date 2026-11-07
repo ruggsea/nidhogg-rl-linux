@@ -2149,3 +2149,19 @@ orphans, then verify exactly one live pid before entry).
 
 No win-rate claim: rounds won remain 0, and nothing in this run has yet produced a scored
 generation under the new reward.
+
+## Session 128 — the reason nothing ever scored: six episodes at once on one game
+
+`main()` spawned a THREAD PER INDIVIDUAL and picked the instance with `mgrs[i % len(mgrs)]`.
+With `--instances 1` all six threads therefore drove the SAME game concurrently:
+
+  * six interleaved key streams into one keyboard,
+  * six concurrent `ensure_match()` calls, each able to restart the process - which is
+    exactly where four `launched pid` lines inside one second came from,
+  * and each individual's fitness partly determined by its neighbours' actions.
+
+That is why every individual could score an identical number, why the process count
+ballooned, and why generations ended "no match" even with the gate passing.
+
+Fixed: individuals are grouped by instance and run SERIALLY within an instance, in parallel
+only ACROSS instances. The invariant is now "one episode at a time per game".
