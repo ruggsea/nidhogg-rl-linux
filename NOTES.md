@@ -2112,3 +2112,25 @@ at the start of every episode, so the sweep/sampling is not done against a froze
 
 Also made the Phase-2 struct dump opt-in (`/tmp/nid_dumpswitch_<id>.txt`) - it wrote 160
 floats per probe iteration (~6k lines/s) which was paying I/O for nothing during training.
+
+## Session 127 — entry gate now passes, and the reward was paying every policy the same
+
+Entry-time control proof (Pau's gate shape) now PASSES on a real match:
+`control gate A_px=28.0/25.0/20.0/15.0/12.0 (PASS)` — input demonstrably reaches the game.
+
+But every individual in gen 0 then scored an IDENTICAL 10.9:
+
+```
+g0i0..g0i5: fit=10.9 rounds 0-0      (six of six, identical)
+```
+
+Identical scores across different weights is the signature of a fitness term that cannot
+depend on the policy. Found it: `proximity = 4.0 * (best_me / GOAL_X)` — a flat reward for
+standing somewhere on the field, the same bug measured in the mac tree. Removed (0.0).
+Win terms raised to dominate (rounds 60/30, matches 150/80) and `pushed` 6 -> 12, so the
+search can only score by moving the opponent, not by existing.
+
+The per-tick motion gate was also wrong and is replaced: a policy that legitimately chooses
+"nothing" stands still, so a continuous liveness test blocked the episodes we wanted to
+score (observed as a "live fight confirmed" loop with nothing ever scoring). Control is now
+proven ONCE at entry, which is Pau's design.

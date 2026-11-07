@@ -102,6 +102,8 @@ class InstanceManager:
         self.recovery_episodes = set()
         self.restart_episodes = set()
         self.needs_reset = False
+        self.gate_px = 0.0
+        self.gate_ts = 0.0
 
     def _note_recovery(self):
         if self.current_tag:
@@ -324,6 +326,33 @@ class InstanceManager:
     @staticmethod
     def has_players(st):
         return st is not None and st["have154"] and st["have242"]
+
+    def prove_control(self, hold=1.5, min_px=8.0):
+        """ACTIVE, entry-time proof that input reaches the simulation.
+
+        This is Pau's gate shape: prove drivability ONCE, when we enter, with an injected
+        hold and a measured response. Testing continuously during an episode was wrong -
+        a policy that legitimately chooses "nothing" stands still, so a per-tick motion
+        test blocks the very episodes we want to score (observed: the trainer looping on
+        "live fight confirmed" while the adversary said "frozen", so nothing ever scored).
+        """
+        st, _ = self.read_state()
+        if st is None or not (st.get("have154") and st.get("have242")):
+            self.gate_px = 0.0
+            return False
+        x0 = st["me_x"]
+        t0 = time.time()
+        moved = 0.0
+        while time.time() - t0 < hold:
+            self.press(68)                 # hold D
+            s2, _ = self.read_state()
+            if s2 is not None:
+                moved = max(moved, abs(s2["me_x"] - x0))
+            time.sleep(0.04)
+        self.gate_px = moved
+        log(f"instance {self.iid}: control gate A_px={moved:.1f} "
+            f"({'PASS' if moved > min_px else 'FAIL'})")
+        return moved > min_px
 
     def prime_controls(self, hold=2.0, key=68):
         """Hold a direction until the game accepts movement.

@@ -111,6 +111,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 "match_won": 0, "trace": [], "tag": tag, "no_match": True}
 
     rng = np.random.default_rng(seed)
+    _episode_start = time.time()   # window the adversary judges this episode over
     # A match is ONE round. After it ends the fighters stay on screen but inert, so
     # ensure_match() sees "live" and every later individual reuses the same dead match -
     # measured: 54 episodes ran on a single entry, and all 12 individuals in a generation
@@ -144,10 +145,20 @@ def play(mgr, w, seconds, seed, tag, log=print):
         # The adversary is the authority on whether this is a real, drivable match. It runs
         # in its own process on its own clock; a stale or failing vote makes the episode
         # unscorable. Motion alone is NOT evidence: the title screen's attract demo moves.
+        # ENTRY-TIME GATE (Pau's shape): prove once that input reaches the simulation,
+        # then judge the episode on that proof plus fresh state. A per-tick motion test
+        # cannot work because a policy may legitimately stand still.
         try:
-            import adversary
-            _ok, _adv = adversary.latest(mgr.iid)
-            inert = not _ok
+            gok = mgr.prove_control()
+            mgr.gate_ts = time.time()
+            st1 = read_state(mgr.iid)
+            fresh = st1 is not None and mgr.has_players(st1)
+            _adv = {"entry_gate": gok, "A_px": round(mgr.gate_px, 1),
+                    "fresh_state": fresh}
+            inert = not (gok and fresh)
+        except Exception as e:
+            _adv = {"why": f"gate error: {e}"}
+            inert = True
         except Exception as e:
             _adv = {"why": f"adversary unavailable: {e}"}
             inert = True
@@ -361,8 +372,11 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # 0-0), so nothing rewarded actually approaching the goal line. This term does, and
     # it is the only path by which a crossing - and therefore a round win - can appear.
     proximity = 0.0
-    if best_me is not None:
-        proximity = 4.0 * (best_me / float(GOAL_X))
+    # REMOVED: proximity used to pay 4.0 * (best_me / GOAL_X) - a flat reward for existing
+    # at a position on the field. Measured here: all six individuals in a generation scored
+    # an IDENTICAL 10.9, which is the signature of a term that cannot depend on the policy.
+    # Standing next to the CPU outscored taking ground, so the GA had no gradient toward
+    # the goal line. A position is not an achievement.
     # PUSH THEM BACK. Measured: running alone gains ~366 px and then gets shoved back to
     # the start, so the only way to hold ground is to win exchanges. Nothing rewarded
     # that: `conceded` only punishes being pushed. This term pays for driving the CPU
@@ -382,9 +396,9 @@ def play(mgr, w, seconds, seed, tag, log=print):
         # Closing is a precondition, not the objective; the outcome has to pay more.
         closeness = 1.0 * max(0.0, 1.0 - min_abs_dx / 200.0)
     territory = (2.0 * advance - 4.0 * conceded + proximity
-                 + 6.0 * pushed + closeness)
-    fitness = (10.0 * rounds_won - 6.0 * rounds_lost
-               + 30.0 * matches_won - 20.0 * matches_lost
+                 + 12.0 * pushed + closeness)
+    fitness = (60.0 * rounds_won - 30.0 * rounds_lost
+               + 150.0 * matches_won - 80.0 * matches_lost
                + kills_reward
                + float(np.clip(progress, -5, 5))
                + float(np.clip(territory, -12, 12)))

@@ -56,6 +56,33 @@ def latest(iid, max_age=20.0):
                 "why": vote.get("why"), "A_px": vote.get("A_px")}
 
 
+def during(start_ts, iid, min_pass=2):
+    """Did the adversary SEE us in control at any point during this episode?
+
+    Requiring a fresh PASS at the exact moment of scoring was wrong, and the log shows why:
+    votes alternate PASS (A_px 37.0) / FAIL frozen, because the game legitimately freezes
+    between rounds. Scoring only on a coincident PASS threw away episodes that had
+    demonstrated control for most of their length.
+
+    Still adversarial, and still fails closed:
+      * at least `min_pass` PASS votes must land inside the episode window - a title-screen
+        or READY-only episode produces zero of them,
+      * the vote log must exist and cover the window; a dead adversary means no credit.
+    """
+    path = LOG.format(iid)
+    try:
+        with open(path) as f:
+            votes = [json.loads(l) for l in f if l.strip()]
+    except (OSError, ValueError):
+        return False, {"why": "no adversary votes", "passes": 0}
+    win = [v for v in votes if start_ts - 1.0 <= v.get("ts", 0) <= time.time() + 1.0]
+    passes = [v for v in win if v.get("pass")]
+    ok = len(passes) >= min_pass
+    return ok, {"votes_in_window": len(win), "passes": len(passes),
+                "min_pass": min_pass,
+                "best_A_px": max([v.get("A_px") or 0 for v in passes], default=0.0)}
+
+
 def main():
     iid = int(sys.argv[1]) if len(sys.argv) > 1 else 0
     passive = "--passive" in sys.argv
