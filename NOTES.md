@@ -2165,3 +2165,29 @@ ballooned, and why generations ended "no match" even with the gate passing.
 
 Fixed: individuals are grouped by instance and run SERIALLY within an instance, in parallel
 only ACROSS instances. The invariant is now "one episode at a time per game".
+
+## Session 128 (cont.) — the gate is now the most useful thing in the repo
+
+Same run, consecutive lines:
+
+```
+[21:01:45] live fight confirmed
+[21:01:53] control gate A_px=3.0 (FAIL)      <- entered, but input does nothing
+[21:03:25] cached entry failed, re-searching
+[21:06:24] S=2 gave no live fight - relaunching
+```
+
+and on a previous run the same gate reported PASS with `A_px=47/51/51/56/51/52`.
+
+So the gate discriminates cleanly between two states that look identical from the outside -
+both have both fighters, both are "inside a match" - and only one of them accepts input.
+That is Pau's READY-vs-live distinction, measured on this build, and it is the difference
+between every earlier "live fight confirmed" claim and reality.
+
+Remaining blocker, now precisely named: **entry sometimes lands on READY**, which ignores
+input. The consequence is a full re-entry/relaunch cycle (~2-3 min) per occurrence, so a
+generation rarely gets six clean episodes.
+
+Fixed this tick and verified:
+  * episodes are serial per instance (process count 4 -> exactly 1),
+  * cheap Enter accept-restart is tried before the expensive recover/relaunch path.

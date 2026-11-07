@@ -354,6 +354,18 @@ class InstanceManager:
             f"({'PASS' if moved > min_px else 'FAIL'})")
         return moved > min_px
 
+    def _accept_restart(self, tries=2, wait=4.0):
+        """Press Enter to start the next match; poll for fighters to reappear."""
+        for _ in range(tries):
+            self.press(13)
+            t0 = time.time()
+            while time.time() - t0 < wait:
+                st, stale = self.read_state()
+                if self.has_players(st) and not stale:
+                    return True
+                time.sleep(0.25)
+        return False
+
     def prime_controls(self, hold=2.0, key=68):
         """Hold a direction until the game accepts movement.
 
@@ -657,6 +669,13 @@ class InstanceManager:
             if uptime < BOOT_WAIT:
                 time.sleep(BOOT_WAIT - uptime)
             if self.ever_have_players:
+                # CHEAP RESTART FIRST. After a round ends the fighters leave the state
+                # file, and one Enter press starts the next match in ~0.4 s, versus a
+                # menu re-entry (~10-20 s) or a relaunch (~22 s boot). Measured on this
+                # build. Trying it first is why the remaining individuals no longer abort
+                # instantly as "no match".
+                if self._accept_restart():
+                    return True
                 if self.recover_match():
                     return True
             else:
