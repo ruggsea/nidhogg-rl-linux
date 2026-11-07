@@ -2070,3 +2070,27 @@ First sweep result (live match, `have154=have242=1`): x at `+0xEC`/`+0xFC` moves
 D with correct opposite signs; y at `+0xF0`/`+0x100` moves under G (up) and SPACE (down).
 W, S and SHIFT move NOTHING in 0x80..0x2FF - on this build jump is G, so W/S are not
 reachable actions. Full table and provenance in `docs/INTERFACE.md`.
+
+## Session 125 — Pau's Phase 2 output used to fix the action space, and the adversary is live
+
+Phase 2 (Session 124) proved W and S change nothing in the instance window and that jump is
+G. So `neuro.ACTIONS = [A, D, W, S, F, G, nothing]` was carrying **two dead keys** - a third
+of the action space, plus the selection pressure spent discovering they do nothing.
+
+Now `ACTIONS = [A, D, F, G, nothing]` (5 actions, `LAYERS = [8,32,16,5]`, 901 weights).
+
+The scripted seeds were hardcoded to the old layout (W3 slice 816:928, B3 928:935) and
+crashed on an empty slice the moment the output width changed. They now derive every offset
+from `LAYERS`, so the next width change cannot rot them.
+
+Also fixed: `train_win.py` ran `pkill -f train_win.py` in `main()`, and that pattern matches
+the very process running it - every training start killed itself seconds later.
+
+Adversary in place (`adversary.py` + `nidgate.py`):
+  * runs as a SEPARATE process on its own clock (3 s),
+  * PASSIVE mode - it does not inject keys, so it cannot corrupt the action stream; it
+    requires named fighters, a FRESH state file, and our x actually moving,
+  * fails closed: no fresh PASS within 20 s means the episode is not scored.
+
+Evidence it distinguishes the two cases, from one run: `FAIL no named fighters
+(menu/attract)` on the title screen, `PASS live and moving A_px=5.0` in the match.

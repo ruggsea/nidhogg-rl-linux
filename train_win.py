@@ -412,7 +412,8 @@ def main():
 
     os.environ["NID_ORDERS"] = "1"
     os.system('pkill -f "MacOS/Nidhogg" 2>/dev/null')
-    os.system('pkill -f train_win.py 2>/dev/null')
+    # (removed) this used to run `pkill -f train_win.py`, whose pattern matches the very
+    # process running it - starting a training run killed itself a moment later.
     time.sleep(2)
     # the prefs file is chmod 444 while a run is active (so injected menu keys cannot
     # rewrite the user's settings); unlock before writing, launch() re-locks it.

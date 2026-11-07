@@ -29,7 +29,7 @@ import nidgate
 LOG = "/tmp/nid_gate_{}.jsonl"
 
 
-def latest(iid, max_age=25.0):
+def latest(iid, max_age=20.0):
     """The newest vote for this instance, and whether it is fresh and passing.
 
     Returns (ok, info). ok is True ONLY for a fresh PASS. Everything else - missing file,
@@ -58,6 +58,7 @@ def latest(iid, max_age=25.0):
 
 def main():
     iid = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+    passive = "--passive" in sys.argv
     if "--read" in sys.argv:
         ok, info = latest(iid)
         print(json.dumps({"trust_match": ok, **info}, indent=1))
@@ -68,7 +69,7 @@ def main():
     path = LOG.format(iid)
     while True:
         try:
-            vote = nidgate.gate(iid)
+            vote = nidgate.gate(iid, passive=passive)
         except Exception as e:
             vote = {"ts": time.time(), "pass": False, "why": f"gate crashed: {e}"}
         with open(path, "a") as f:

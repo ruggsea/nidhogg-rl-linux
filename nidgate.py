@@ -75,12 +75,44 @@ def check_identity(mgr, hold_ms=500):
     }
 
 
-def gate(iid=0, mgr=None):
+def check_passive(mgr, span=1.0):
+    """Non-intrusive gate for use WHILE the trainer is driving the game.
+
+    check_identity() injects its own keys to prove drivability. That is right when we are
+    the only actor, but during an episode the trainer is already sending keys, and a second
+    writer would corrupt the action stream - so the verifier must be able to confirm a real
+    match without touching the input.
+
+    Fails closed on any doubt:
+      * both fighters must be present BY NAME (attract creates none),
+      * the state file must be FRESH (a stale file was a real bug: a credits screen
+        reported fighters from a previous match),
+      * our fighter's x must MOVE over the window (frozen state = not a live simulation).
+    """
+    st0, stale0 = mgr.read_state()
+    if not _named(st0):
+        return {"pass": False, "why": "no named fighters (menu/attract)"}
+    if stale0:
+        return {"pass": False, "why": "stale state file"}
+    x0 = st0["me_x"]
+    moved = 0.0
+    t0 = time.time()
+    while time.time() - t0 < span:
+        s2, st2 = mgr.read_state()
+        if s2 is not None and not st2:
+            moved = max(moved, abs(s2["me_x"] - x0))
+        time.sleep(0.06)
+    ok = moved > 4.0
+    return {"pass": bool(ok), "A_px": round(moved, 2),
+            "why": "live and moving" if ok else "frozen / input not reaching game"}
+
+
+def gate(iid=0, mgr=None, passive=False):
     own = mgr is None
     if own:
         mgr = TS.InstanceManager(iid=iid)
     try:
-        res = check_identity(mgr)
+        res = check_passive(mgr) if passive else check_identity(mgr)
     except Exception as e:                       # a gate that crashes must fail closed
         res = {"pass": False, "why": f"exception: {e}"}
     finally:

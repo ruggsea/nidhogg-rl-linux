@@ -4,15 +4,21 @@ State (all read from memory by the injected harness):
     [dx, me_x, them_x, me_y, them_y, |dx|, alive_me, alive_them]
   normalised; dx = them_x - me_x in screen/room pixels.
 
-Policy: 8 -> tanh(32) -> tanh(16) -> 7 actions (left, right, up, down, attack,
+Policy: 8 -> tanh(32) -> tanh(16) -> 5 actions (left, right, attack,
 jump, idle). Weights evolve by tournament selection + crossover + gaussian
 mutation, same loop shape as the parametric version.
 """
 import numpy as np
 
-ACTIONS = [65, 68, 87, 83, 70, 71, 0]  # A,D,W,S,F,G,nothing
+# Action space cut to what Phase 2 PROVED reachable on this build
+# (docs/INTERFACE.md, results/keysweep_0.json): A and D move x with correct opposite
+# signs, G moves y (jump), F produces motion. W (87) and S (83) changed NOTHING in the
+# instance window 0x80..0x2FF under a 0.55 s hold, and the in-game tutorial says
+# "PRESS G TO JUMP" - so W/S were dead keys and one third of the action space (plus the
+# selection pressure spent discovering they do nothing) was wasted.
+ACTIONS = [65, 68, 70, 71, 0]          # A, D, F(attack), G(jump), nothing
 
-LAYERS = [8, 32, 16, 7]
+LAYERS = [8, 32, 16, 5]
 SIZES = [LAYERS[i] * LAYERS[i + 1] for i in range(len(LAYERS) - 1)]
 N_WEIGHTS = sum(SIZES) + sum(LAYERS[1:])
 
@@ -115,18 +121,25 @@ def scripted_seeds():
     routes the "in reach" observation through one hidden unit, so it walks right and
     strikes exactly when the opponent is within sword range.
     """
-    W1 = slice(0, 8 * 32)
-    B1 = slice(256, 288)
-    W2 = slice(288, 800)
-    B2 = slice(800, 816)
-    W3 = slice(816, 928)
-    B3 = slice(928, 935)
+    # Offsets derived from LAYERS. They used to be hardcoded for a 7-action output
+    # (W1 0:256, B1 256:288, W2 288:800, B2 800:816, W3 816:928, B3 928:935) and silently
+    # broke the moment the action space changed - the seeds crashed on an empty slice.
+    off = 0
+    _slices = []
+    for i in range(len(LAYERS) - 1):
+        r, c = LAYERS[i], LAYERS[i + 1]
+        _slices.append((slice(off, off + r * c), slice(off + r * c, off + r * c + c)))
+        off += r * c + c
+    W1, B1 = _slices[0]
+    W2, B2 = _slices[1]
+    W3, B3 = _slices[2]
+    OUT = LAYERS[-1]
     seeds = []
 
     def base():
         return np.zeros(N_WEIGHTS)
 
-    for idx in (1, 0, 4, 5):          # always right / left / attack / jump
+    for idx in (1, 0, 2, 3):          # always right / left / attack / jump
         w = base(); w[B3][idx] = 3.0; seeds.append(w.copy())
 
     # walk right, attack when in reach (obs[6] is the 1.0/0.0 reach flag)
@@ -134,14 +147,14 @@ def scripted_seeds():
     w[6 * 32 + 0] = 10.0              # input 'reach' -> hidden L1 unit 0
     w[288 + 0 * 16 + 0] = 10.0        # L1 unit 0 -> L2 unit 0 (pass-through; without
                                       # this the all-zero middle layer zeroes it out)
-    w[W3][0 * 7 + 4] = 5.0            # unit 0 -> attack
+    w[W3][0 * OUT + 2] = 5.0          # unit 0 -> attack (ACTIONS[2])
     w[B3][1] = 1.5                    # otherwise: move right
     seeds.append(w)
 
     # same but strafe left when in reach (feint), attack otherwise
     w = base()
     w[6 * 32 + 0] = 10.0
-    w[W3][0 * 7 + 0] = 5.0
+    w[W3][0 * OUT + 0] = 5.0          # unit 0 -> left
     w[B3][1] = 1.5
     seeds.append(w)
     return seeds
@@ -151,7 +164,7 @@ def rand_policy(rng):
     return rng.normal(0.0, 0.7, size=N_WEIGHTS)
 
 
-IDLE_INDEX = 6          # ACTIONS[6] is "nothing"
+IDLE_INDEX = 4          # ACTIONS[4] is "nothing"
 
 
 def decide(w, st, rng):
