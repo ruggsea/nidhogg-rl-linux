@@ -128,6 +128,11 @@ def play(mgr, w, seconds, seed, tag, log=print):
     st0 = read_state(mgr.iid)
     inert = st0 is None
     _adv = {"trust_match": False, "why": "not checked"}
+    if not inert and hasattr(mgr, "prime_controls"):
+        # The READY state has both fighters on screen and ignores discrete presses. The
+        # adversary reports it as "frozen / input not reaching game". Hold a direction
+        # first - measured to unlock movement (113.5 -> 428 px under a 2.5 s hold).
+        mgr.prime_controls(1.6)
     if not inert:
         xs = []
         tt = time.time()

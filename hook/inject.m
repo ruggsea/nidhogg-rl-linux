@@ -1044,7 +1044,13 @@ static void read_fighters(const char *tag) {
         }
     }
     // struct dump for the key sweep: /tmp/nid_dump_<id>.txt = 0x80..0x2FF as floats
-    if (g_p242_inst) {
+    static int dump_enabled = -1;
+    if (dump_enabled < 0) {
+        char spath[64];
+        snprintf(spath, sizeof spath, "/tmp/nid_dumpswitch_%s.txt", g_id);
+        dump_enabled = (access(spath, F_OK) == 0);
+    }
+    if (g_p242_inst && dump_enabled) {
         char dpath[64];
         snprintf(dpath, sizeof dpath, "/tmp/nid_dump_%s.txt", g_id);
         FILE *df = fopen(dpath, "w");

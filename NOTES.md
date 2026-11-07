@@ -2094,3 +2094,21 @@ Adversary in place (`adversary.py` + `nidgate.py`):
 
 Evidence it distinguishes the two cases, from one run: `FAIL no named fighters
 (menu/attract)` on the title screen, `PASS live and moving A_px=5.0` in the match.
+
+## Session 126 — the gate caught the READY problem that has blocked every run
+
+Adversary output on a fresh attempt, with both fighters on screen:
+
+```
+state: 198.0 560.0 113.5 560.0 1 1        (have154=1 have242=1)
+votes: FAIL frozen / input not reaching game   A_px=0.0
+       PASS live and moving                    A_px=4.5   (rare)
+```
+
+That is Pau's territory exactly - fighters present, input ignored. My earlier notes measured
+the cause: this build shows "HOLD A OR D TO RUN" and ignores discrete presses; holding D for
+2.5 s moved the fighter 113.5 -> 428 px. Ported his-fork-side `prime_controls()` and call it
+at the start of every episode, so the sweep/sampling is not done against a frozen READY.
+
+Also made the Phase-2 struct dump opt-in (`/tmp/nid_dumpswitch_<id>.txt`) - it wrote 160
+floats per probe iteration (~6k lines/s) which was paying I/O for nothing during training.

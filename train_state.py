@@ -325,6 +325,21 @@ class InstanceManager:
     def has_players(st):
         return st is not None and st["have154"] and st["have242"]
 
+    def prime_controls(self, hold=2.0, key=68):
+        """Hold a direction until the game accepts movement.
+
+        Measured (macOS notes, Session 89): this build shows "HOLD A OR D TO RUN" and
+        ignores discrete presses; holding D for 2.5 s moved the fighter 113.5 -> 428
+        (314 px). The adversary gate reports exactly this state as "frozen / input not
+        reaching game": both fighters present, x not moving. A press/release sequence
+        cannot satisfy it, a hold can.
+        """
+        t0 = time.time()
+        while time.time() - t0 < hold:
+            self.press(key)
+            time.sleep(0.04)
+        return True
+
     def press(self, code):
         if isinstance(code, tuple):
             for part in code:
