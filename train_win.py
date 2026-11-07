@@ -247,7 +247,9 @@ def play(mgr, w, seconds, seed, tag, log=print):
         # "gone" now means OUR fighter is absent AND the state is unreadable. A flicker in
         # the OPPONENT's flag is not an absence: measured at t=0.25 s the CPU flag dropped
         # while its position read (262, 560). Treating that as gone aborted the episode.
-        gone = st is None or not st.get("have242")
+        # OUR fighter absent, judged by POSITION: the have242 flag read 0 for a sustained
+        # 76 s during live play (independent observer), so it cannot be the liveness test.
+        gone = st is None or not (0.5 < abs(st.get("me_x") or 0.0) < 3000.0)
         if gone:
             # once we have seen a live fighter, a sustained absence means the match
             # ended: stop the window and let the manager start a fresh process.

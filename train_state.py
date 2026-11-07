@@ -324,11 +324,29 @@ class InstanceManager:
             return None, True
 
     @staticmethod
+    @staticmethod
+    def _pos_valid(x):
+        return x is not None and 0.5 < abs(x) < 3000.0
+
+    @staticmethod
     def has_players(st):
-        # .get, not []: two different state readers exist in this codebase and one of them
-        # used to omit these keys. A KeyError here is indistinguishable from "no match"
-        # once it has been swallowed, so this must never raise.
-        return bool(st) and bool(st.get("have154")) and bool(st.get("have242"))
+        """Are both fighters present? Judged by POSITION, not by the existence flags.
+
+        MEASURED with an independent observer (observe_rounds.py) reading the same state
+        file during a live generation:
+
+            raw=(559, 96, 256, 229, 1, 0)     <- have242 = 0 while OUR fighter sits at 256
+
+        Our own flag read 0 for a sustained 76 s while the fighter was plainly on the field,
+        and the opponent's flag flickers similarly. So the flags are not a liveness signal at
+        all. Positions are: a fighter that exists has an x in range; one that does not reads
+        0. Using the flag here (as this code did) makes every live match look empty half the
+        time, and makes "gone" fire during perfectly good play.
+        """
+        if not st:
+            return False
+        return InstanceManager._pos_valid(st.get("me_x")) and \
+            InstanceManager._pos_valid(st.get("them_x"))
 
     def prove_control(self, hold=1.5, min_px=8.0):
         """ACTIVE, entry-time proof that input reaches the simulation.

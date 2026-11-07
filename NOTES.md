@@ -2459,3 +2459,29 @@ NEITHER side scored - not that we lost. Two explanations fit and I have not sepa
 Telling these apart needs one positive control: watch a round end with the round detector
 running, and see whether it reports it. Until then `rounds 0-0` is not evidence about the
 policy.
+
+## Session 138 — the flags are not liveness; positions are
+
+Independent observer (`observe_rounds.py`, read-only, watching the same state file during a
+live generation) recorded a real 210 s stretch:
+
+```
+ 20.02s raw=(559, 96, 256, 229, 1, 0)     <- have242=0 while OUR fighter is at x=256
+ 42.80s them_flag 1->0
+ 96.75s them_flag 0->1 / me_flag 0->1     <- round reset, both repositioned
+171.63s me_flag 1->0
+186.50s me_flag 0->1
+```
+
+Two conclusions, both measured:
+
+1. **Rounds DO end, and the flags do transition at boundaries** - so the zero win counts are
+   not obviously a detector failure. A wait of ~97-170 s per round is consistent with the
+   100 s window straddling boundaries.
+2. **The existence flags are not a liveness signal.** `have242` was 0 for a sustained 76 s
+   while our fighter had a perfectly good position. The opponent's flag flickers too. My
+   previous fix ("gone requires our fighter present" via `have242`) therefore declared us gone
+   for over a minute at a time - the opposite failure of the one it replaced.
+
+`has_players()` and the episode's "gone" test now judge presence by POSITION (x in range),
+not by the flags. A fighter that exists has an x; one that does not reads 0.
