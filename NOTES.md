@@ -2507,3 +2507,38 @@ round boundaries were 97-170 s apart, so a fixed 120 s window still straddles th
 Lesson recorded: in this codebase there are FIVE places that asked "is a fighter there?" and
 each answered it differently. Three used the flickering flags. Every one of them produced a
 false negative that looked like a game problem rather than a code problem.
+
+## Session 140 — a possible structural reason rounds can never be won
+
+Reading the round detector against the coordinates actually observed today:
+
+```
+GOAL_X        = 1650.0     # our goal line, on the right
+me_armed      requires me_x > GOAL_X - 700 = 950
+observed      me_x never above ~445 (samples: 88, 110, 170, 210, 226, 256, 274, 312, 428)
+```
+
+If the arena in this build really spans ~0..700 rather than ~0..1900, then `me_armed` can
+never become true, `genuine_cross` can never fire, and **`rounds_won` is structurally
+impossible** - no policy could ever score it. That would explain 0 wins across every run
+without any policy being at fault.
+
+I am NOT changing the constants on that reasoning alone: the thresholds were presumably
+calibrated on a real crossing in some other arena, and guessing new ones would be exactly the
+kind of unmeasured edit this project keeps getting burned by. Instead each episode now logs
+the coordinate range it actually saw:
+
+```
+exit=<reason> samples=<n> inert=<b> adv={...} me=[<min>..<max>] them=[<min>..<max>]
+```
+
+Once a few episodes report those ranges, the goal lines can be set from data.
+
+Attempts to measure the range from outside failed honestly: a 150 s read-only sample caught a
+menu (frozen me_x=210, no opponent), which is not a match and would have produced a wrong
+calibration.
+
+Also noted: entry still churns ("S=1 gave no live fight - relaunching"). `_match_is_live`
+now uses position-based presence, but it ALSO requires cpu_motion > 15 to separate TRAINING
+from ARCADE, and during entry we are not pressing keys - so a quiet CPU reads as "no fight".
+That is the next suspect, and it is measurable.

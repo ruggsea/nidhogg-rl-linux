@@ -446,8 +446,19 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # unscorable if we never reached a live, drivable match, or could not see enough of it
     no_match = (real_samples < 20) or bool(inert)
     # attribute every abandonment instead of inferring it later
+    # COORDINATE CALIBRATION. The round win/loss detector compares against GOAL_X=1650 and
+    # GOAL_X_OPP=250, and `me_armed` needs me_x > GOAL_X-700 = 950. Every position observed
+    # today was well below that, which would make a round win structurally impossible. The
+    # exact arena range in THIS build is unknown, so record it per episode instead of
+    # assuming it.
+    _me_rng = ""
+    if start_me is not None and best_me is not None:
+        _me_rng = f" me=[{start_me:.0f}..{best_me:.0f}]"
+    _th_rng = ""
+    if start_them is not None and worst_them is not None:
+        _th_rng = f" them=[{worst_them:.0f}..{best_them:.0f}]"
     log(f"  {tag}: exit={exit_reason} samples={real_samples} inert={bool(inert)} "
-        f"adv={_adv}")
+        f"adv={_adv}{_me_rng}{_th_rng}")
     rec = {"no_match": bool(no_match), "adversary": _adv,
            "real_samples": real_samples,
            "advance": round(advance, 2), "conceded": round(conceded, 2),
