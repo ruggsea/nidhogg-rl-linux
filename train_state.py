@@ -358,7 +358,8 @@ class InstanceManager:
         "live fight confirmed" while the adversary said "frozen", so nothing ever scored).
         """
         st, _ = self.read_state()
-        if st is None or not (st.get("have154") and st.get("have242")):
+        # position-based presence (flags are unreliable - see has_players)
+        if not self.has_players(st):
             self.gate_px = 0.0
             return False
         x0 = st["me_x"]
@@ -506,7 +507,11 @@ class InstanceManager:
         t0 = time.time()
         while time.time() - t0 < settle:
             st, _ = self.read_state()
-            if st and st.get("have154") == 1 and st.get("have242") == 1:
+            # POSITION, not flags. MEASURED with an independent observer: have242 read 0
+            # for a sustained 76 s while our fighter sat at a valid x. Gating entry on
+            # `have242 == 1` therefore rejected real matches, logged "S=<n> gave no live
+            # fight", and relaunched - which is exactly the entry churn seen all session.
+            if self.has_players(st):
                 xs.append((st["me_x"], st["them_x"]))
             time.sleep(0.2)
         # A real fight: fighters stand on the GROUND (y ~192), not on the READY

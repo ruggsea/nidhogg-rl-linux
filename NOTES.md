@@ -2485,3 +2485,25 @@ Two conclusions, both measured:
 
 `has_players()` and the episode's "gone" test now judge presence by POSITION (x in range),
 not by the flags. A fighter that exists has an x; one that does not reads 0.
+
+## Session 139 — the flag gate was also rejecting entry
+
+`_match_is_live()` - the function that decides whether entry worked - tested
+`have154 == 1 and have242 == 1`. Given Session 138's measurement (our own flag read 0 for a
+sustained 76 s while the fighter sat at a valid x), that test rejected real matches. That is
+why the log kept saying "S=<n> gave no live fight - relaunching" and why entry searched
+variants, relaunched, and burned minutes. `prove_control()` had the same gate.
+
+Both now use position-based presence. First generation after the change:
+
+```
+g0i0 fit= 10.3  samples=4692  gate A_px=44.0  exit=window-complete
+g0i1 fit=-16.9  samples=4392  gate A_px=18.0  exit=window-complete
+```
+
+Full 120 s windows, gate-confirmed, fitness differentiating. `rounds 0-0` still: the observed
+round boundaries were 97-170 s apart, so a fixed 120 s window still straddles them.
+
+Lesson recorded: in this codebase there are FIVE places that asked "is a fighter there?" and
+each answered it differently. Three used the flickering flags. Every one of them produced a
+false negative that looked like a game problem rather than a code problem.
