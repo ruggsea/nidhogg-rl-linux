@@ -87,7 +87,14 @@ def read_state(iid):
             return None
         if not (0.0 <= y242x <= 3000.0 and 0.0 <= o154x <= 3000.0):
             return None
-        return {"them_x": o154x, "them_y": o154y, "me_x": y242x, "me_y": y242y}
+        # The flags MUST be included. This function and InstanceManager.read_state()
+        # returned different shapes: this one omitted have154/have242, so any caller that
+        # then asked has_players() raised KeyError: 'have154'. Measured cost: an episode
+        # that had run its whole window (samples=1200) was marked inert by the exception
+        # and discarded - the gate error was the only trace, and it hid behind
+        # "no match" reporting for hours.
+        return {"them_x": o154x, "them_y": o154y, "me_x": y242x, "me_y": y242y,
+                "have154": int(h1), "have242": int(h2)}
     except (OSError, ValueError):
         return None
 
@@ -544,8 +551,20 @@ def main():
 
         def run_bucket(slot):
             for i in buckets[slot]:
-                results[i] = play(mgrs[slot], pop.W[i], args.window, gen * 997 + i,
-                                  f"g{gen}i{i}")
+                # An exception inside play() used to kill this thread silently: results[i]
+                # stayed None, the "missing" filter skipped None rows, and the episode
+                # vanished with no log line at all. That is why runs showed entry working
+                # and then no episodes, with nothing to read.
+                try:
+                    results[i] = play(mgrs[slot], pop.W[i], args.window, gen * 997 + i,
+                                      f"g{gen}i{i}")
+                except Exception:
+                    import traceback
+                    print(f"  g{gen}i{i}: play() RAISED:", flush=True)
+                    traceback.print_exc()
+                    results[i] = {"fitness": -100.0, "rounds_won": 0, "rounds_lost": 0,
+                                  "no_match": True, "tag": f"g{gen}i{i}",
+                                  "trace": [], "error": "see traceback"}
 
         threads = [threading.Thread(target=run_bucket, args=(slot,))
                    for slot in range(len(mgrs)) if buckets[slot]]

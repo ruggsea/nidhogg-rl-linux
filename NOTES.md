@@ -2334,3 +2334,36 @@ accept between attempts), the same path entry uses.
 State at the end of this tick: entry is repeatedly confirmed (`A_px=5 FAIL` then `29 PASS`,
 i.e. the retry works), but no `exit=` line has appeared yet in this run, so the abort is still
 unattributed. That is the next thing to read, not something to guess at.
+
+## Session 135 — FOUND IT: two incompatible `read_state()` shapes, one raising into a swallow
+
+The attribution work paid off immediately:
+
+```
+g0i0: round over, accepting next (try 1)
+g0i0: round over, accepting next (try 2)
+g0i0: exit=window-complete samples=1200 inert=True adv={'why': "gate error: 'have154'"}
+g0i0 (inst 0): fit=9.5 rounds 0-0 matches 0-0
+```
+
+The episode RAN - 1200 samples, the whole 45 s window, both round boundaries accepted. Then the
+gate raised `KeyError: 'have154'` and the episode was marked **inert** and thrown away.
+
+Why: there are two state readers in this codebase.
+
+  * `InstanceManager.read_state()` returns `have154`/`have242`.
+  * the module-level `read_state(iid)` in train_win.py returned only the four coordinates.
+
+`InstanceManager.has_players(st)` indexed `st["have154"]`, so any caller that passed a state
+from the module-level reader crashed - and because the exception happened inside the gate, it
+set `inert=True`, and the episode was reported as "no match". That single mismatch is why runs
+looked like "entry works, episodes vanish" with nothing to read in the log.
+
+Fixes:
+  * module-level reader now returns `have154`/`have242` too, so both shapes agree;
+  * `has_players()` uses `.get()` and can no longer raise - a KeyError there is
+    indistinguishable from "no match" once it is swallowed;
+  * `play()` is wrapped so an exception prints a traceback instead of killing the thread
+    thread silently (that is how the previous silence happened).
+
+Verification target for the next run: `inert=False` with `samples≈1200`.

@@ -325,7 +325,10 @@ class InstanceManager:
 
     @staticmethod
     def has_players(st):
-        return st is not None and st["have154"] and st["have242"]
+        # .get, not []: two different state readers exist in this codebase and one of them
+        # used to omit these keys. A KeyError here is indistinguishable from "no match"
+        # once it has been swallowed, so this must never raise.
+        return bool(st) and bool(st.get("have154")) and bool(st.get("have242"))
 
     def prove_control(self, hold=1.5, min_px=8.0):
         """ACTIVE, entry-time proof that input reaches the simulation.
@@ -720,6 +723,12 @@ class InstanceManager:
         """Called before each individual. Never leaves a dead game running."""
         for attempt in range(2):
             st, stale = self.read_state()
+            # ATTRIBUTION: every branch decision is logged, because "the match vanished"
+            # has been the least checkable claim in this project. One line per call is
+            # cheap next to a 6-minute entry search.
+            log(f"instance {self.iid}: ensure_match alive={self.alive()} stale={stale} "
+                f"players={self.has_players(st)} ever={self.ever_have_players} "
+                f"attempt={attempt} state={st}")
             if self.alive() and not stale and self.has_players(st):
                 self.ever_have_players = True
                 return True
