@@ -149,7 +149,12 @@ def play(mgr, w, seconds, seed, tag, log=print):
         # then judge the episode on that proof plus fresh state. A per-tick motion test
         # cannot work because a policy may legitimately stand still.
         try:
-            gok = mgr.prove_control()
+            # Use the RETRYING path, not a single shot. Measured: a one-shot gate at
+            # episode start returned A_px=7.0 against the 8 px threshold and the episode
+            # was thrown away, even though entry seconds earlier had passed with 15.0.
+            # _drivable_now() primes, re-gates, and uses the cheap Enter accept between
+            # attempts, which is exactly what this situation needs.
+            gok = mgr._drivable_now()
             mgr.gate_ts = time.time()
             st1 = read_state(mgr.iid)
             fresh = st1 is not None and mgr.has_players(st1)
@@ -206,6 +211,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
     gone_since = None
     accept_tries = [0]
     real_samples = 0
+    exit_reason = "window-complete"
     sum_me = 0.0
     min_abs_dx = None
     while time.time() - t0 < seconds:
@@ -235,13 +241,23 @@ def play(mgr, w, seconds, seed, tag, log=print):
                     # was exactly "rounds 0-1", which gives the GA almost no signal.
                     accept_tries[0] += 1
                     if accept_tries[0] <= 2:
+                        # 1.2 s was far too short. MEASURED (results/restart_0.json):
+                        # after a round ends, Enter brings the fighters back in 7.61 s.
+                        # Pressing and then looking again 1.2 s later always saw "still
+                        # gone", so every round looked like the end of the match.
                         print(f"  {tag}: round over, accepting next "
                               f"(try {accept_tries[0]})", flush=True)
                         mgr.press(13)
+                        t_acc = time.time()
+                        while time.time() - t_acc < 12.0:
+                            s_acc = read_state(mgr.iid)
+                            if s_acc is not None:
+                                break
+                            time.sleep(0.3)
                         gone_since = None
-                        time.sleep(1.2)
                         continue
-                    print(f"  {tag}: match over, ending window", flush=True)
+                    exit_reason = "accept-failed-after-2-tries"
+                    print(f"  {tag}: match over, ending window (accept failed)", flush=True)
                     break
             time.sleep(0.05)
             continue
@@ -404,6 +420,9 @@ def play(mgr, w, seconds, seed, tag, log=print):
                + float(np.clip(territory, -12, 12)))
     # unscorable if we never reached a live, drivable match, or could not see enough of it
     no_match = (real_samples < 20) or bool(inert)
+    # attribute every abandonment instead of inferring it later
+    log(f"  {tag}: exit={exit_reason} samples={real_samples} inert={bool(inert)} "
+        f"adv={_adv}")
     rec = {"no_match": bool(no_match), "adversary": _adv,
            "real_samples": real_samples,
            "advance": round(advance, 2), "conceded": round(conceded, 2),

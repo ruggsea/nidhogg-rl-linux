@@ -2309,3 +2309,28 @@ am not going to guess which one it is.
 
 Next: log `real_samples` and the reason for every early exit inside `play()`, so the abort is
 attributable instead of inferred.
+
+## Session 134 — the same 1.2 s mistake, found a second time, plus exit attribution
+
+The episode loop had its own version of the bug fixed in Session 132: on a round boundary it
+pressed Enter and then looked again after **1.2 s** (measured requirement: 7.61 s). So every
+round transition looked like the end of the match and the window was cut short. Now it polls
+for up to 12 s for the fighters to return.
+
+Every exit from `play()` is now attributed in the log:
+
+```
+{tag}: exit=<reason> samples=<n> inert=<bool> adv={...}
+```
+
+so "the episode vanished" stops being an inference. Reasons currently possible:
+`window-complete`, `accept-failed-after-2-tries`.
+
+Also: the episode-start gate used a ONE-SHOT `prove_control()`, and a run measured
+`A_px=7.0` against the 8 px threshold 8 s after entry had passed with 15.0 - a borderline
+sample thrown away. It now uses the retrying `_drivable_now()` (prime, re-gate, cheap Enter
+accept between attempts), the same path entry uses.
+
+State at the end of this tick: entry is repeatedly confirmed (`A_px=5 FAIL` then `29 PASS`,
+i.e. the retry works), but no `exit=` line has appeared yet in this run, so the abort is still
+unattributed. That is the next thing to read, not something to guess at.
