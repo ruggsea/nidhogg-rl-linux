@@ -2391,3 +2391,17 @@ Three things are true here that never were before:
 
 Still `rounds 0-0` everywhere. No generation summary yet in this run, so no best/mean claim.
 The pipeline is finally measuring what it claims to measure.
+
+## Session 136 — window 45 s -> 100 s: the GA had no win signal to select on
+
+Generation 0 finished with real variation (fit 6.2 / 11.6 / -6.6 / 9.9 and one correctly
+rejected on the gate), but every single episode reported `rounds 0-0 matches 0-0`.
+
+That is a measurement problem, not a policy problem: `rounds_won`/`rounds_lost` are the terms
+weighted 60/30 and 150/80, and they were **always zero**, because a 45 s window rarely contains
+a whole round. Measured earlier with no input at all, a round takes ~97 s. So the search was
+selecting on the shaping terms alone and could never rewarded for actually winning.
+
+Window raised to 100 s so an episode is likely to contain a round outcome. If rounds_won
+stays 0 at 100 s, that is a statement about the policy rather than about the window, and the
+log will show it.
