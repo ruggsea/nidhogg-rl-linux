@@ -416,6 +416,16 @@ def play(mgr, w, seconds, seed, tag, log=print):
            "trace": trace, "tag": tag, "weights": w.tolist()}
     log(f"  {tag} (inst {mgr.iid}): fit={fitness:.1f} rounds {rounds_won}-{rounds_lost} "
         f"matches {matches_won}-{matches_lost}")
+    # END-OF-EPISODE RESTART. A round ends when the episode ends, and the state file then
+    # drops to "no fighters". Discovering that at the START of the next individual forced a
+    # full menu re-entry (measured this session: 2-3 minutes per individual, so a generation
+    # of six rarely completed). Pressing Enter here, while we still know a round boundary
+    # just happened, starts the next match in well under a second.
+    try:
+        if not mgr.has_players(mgr.read_state()[0]):
+            mgr._accept_restart()
+    except Exception:
+        pass
     return rec
 
 
@@ -486,6 +496,11 @@ def main():
             for m in mgrs:
                 m.needs_reset = False
         pids = TS.InstanceManager._nidhogg_pids()
+        # Careful: the runner re-execs itself via SteamAPI_RestartAppIfNecessary, so 2
+        # processes are normal for a moment during a launch. Tightening this to `> len(mgrs)`
+        # made the sweep kill a healthy instance 8 s after a passing gate - measured, with
+        # the log showing "control gate A_px=15.0 (PASS) / live AND drivable" then instantly
+        # "== sweep: 2 game processes, resetting". Only sweep on real accumulation.
         if len(pids) > 2 * len(mgrs) + 2:
             print(f"== sweep: {len(pids)} game processes, resetting", flush=True)
             os.system('pkill -f "MacOS/Nidhogg"')

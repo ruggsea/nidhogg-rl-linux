@@ -2218,3 +2218,29 @@ survived a relaunch (2 running instead of 1).
 
 Next fix, precisely: end-of-episode restart. Press Enter proactively when an episode's round
 finishes, instead of discovering the dead match at the START of the next individual.
+
+## Session 130 — end-of-episode restart, and what the log actually shows
+
+Added: press Enter at the end of an episode when the state file has lost the fighters, so the
+next individual does not have to discover a dead match and pay a menu re-entry.
+
+Also reverted my own over-tightening. I had changed the orphan sweep to `pids > len(mgrs)`,
+which looked safer and was not: the Steam runner re-execs itself via
+`SteamAPI_RestartAppIfNecessary`, so 2 processes are normal for a moment during a launch. The
+log caught it exactly - `control gate A_px=15.0 (PASS) / live AND drivable` immediately
+followed by `== sweep: 2 game processes, resetting`, i.e. the guard killed a healthy instance
+seconds after it had proven control. Back to sweeping only on real accumulation.
+
+Measured episode shape in this run:
+
+```
+[21:29:19] live AND drivable (gate confirmed)
+[21:29:28] using cached entry n_lead=1 S=2      <- round already over, 9 s later
+[21:30:56] cached entry failed, re-searching
+```
+
+So a round currently lasts ~9 s (the policy does nothing useful and loses) and the re-entry
+that follows costs 2-3 minutes. Throughput, not truth, is the binding constraint now.
+
+Operational note for anyone reading the logs later: `... | tee file` lags because tee
+block-buffers to a file; the live stream is the process stdout, not the tee'd file.
