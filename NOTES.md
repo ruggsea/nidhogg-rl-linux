@@ -2575,3 +2575,33 @@ Entry also got simpler this tick: `_try_entry` decides PRESENCE only, and the ac
 (`_drivable_now`) decides controllability. It used to require `cpu_motion > 15` while we were
 pressing no keys - a quiet CPU therefore read as "no live fight" and entry relaunched
 endlessly. First run after the change entered immediately (gate A_px=47).
+
+## Session 142 — measured arena extent, and a constant observation input
+
+300 s trajectory, 6224 samples, read-only:
+
+```
+me_x   range  -32 .. 410
+them_x range    0 .. 462
+them jumps: t=12.52   2 -> 462        (full-arena teleport)
+me   jumps: t=24.27 351 -> 96 | t=47.03 256 -> 6 | t=68.05 246 -> -32 | t=173.33 346 -> 0
+```
+
+Two conclusions:
+
+1. **The arena spans about 0..462 in x**, not 0..1900. Both fighters teleport between the two
+   ends on kills/respawns, so a "crossing" and a "respawn at the far end" look identical in
+   position alone. Goal-crossing geometry therefore cannot reliably identify a round end -
+   that needs the game's own round/score state (Pau's Phase 4, contract rows 10/11), which is
+   still `unknown`.
+2. **An observation input was constant.** `obs[2]` ("how far we still are from our goal") was
+   `(1650 - me_x)/1500`, which is ~0.9 for every position in a 0..462 arena - a feature that
+   could never carry information. Rescaled to the measured extent:
+
+```
+me_x=100 -> obs[2]=0.79
+me_x=450 -> obs[2]=0.04
+```
+
+That is the second observation slot found to be dead weight (an earlier one was a hardcoded
+1.0), so the effective input width has been smaller than the declared 8 for a while.

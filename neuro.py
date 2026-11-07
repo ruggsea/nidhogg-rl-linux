@@ -16,6 +16,9 @@ import numpy as np
 # instance window 0x80..0x2FF under a 0.55 s hold, and the in-game tutorial says
 # "PRESS G TO JUMP" - so W/S were dead keys and one third of the action space (plus the
 # selection pressure spent discovering they do nothing) was wasted.
+# MEASURED arena extent in x (see obs_vector). Used to normalise the goal-distance input.
+ARENA_X = 470.0
+
 ACTIONS = [65, 68, 70, 71, 0]          # A, D, F(attack), G(jump), nothing
 
 LAYERS = [8, 32, 16, 5]
@@ -58,7 +61,11 @@ def obs_vector(st):
         st["me_x"] / 2000.0,
         # (was them_x/2000 - redundant, since them_x == me_x + dx). This slot now
         # carries the actual objective: how far we still are from OUR goal line.
-        np.clip((1650.0 - st["me_x"]) / 1500.0, -1.0, 1.0),
+        # MEASURED (300 s trajectory, 6224 samples): the arena in this build spans about
+        # 0..462 in x, and both fighters teleport between the two ends on kills/respawns.
+        # The old scale (1650 - me_x)/1500 was therefore ~0.9 for every possible position -
+        # a constant input the policy could not learn anything from.
+        np.clip((ARENA_X - st["me_x"]) / ARENA_X, -1.0, 1.0),
         st["me_y"] / 250.0,
         st["them_y"] / 250.0,
         # WAS abs(dx)/400 - redundant with inputs 0 and 6 (dx already encodes the gap
