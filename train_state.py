@@ -354,10 +354,16 @@ class InstanceManager:
             f"({'PASS' if moved > min_px else 'FAIL'})")
         return moved > min_px
 
-    def _accept_restart(self, tries=2, wait=4.0):
-        """Press Enter to start the next match; poll for fighters to reappear."""
-        for _ in range(tries):
-            self.press(13)
+    def _accept_restart(self, tries=4, wait=6.0):
+        """Dismiss the post-round screen and start the next match.
+
+        Enter is the obvious key, but it is not the only one this screen might want, and
+        guessing wrong costs a full menu re-entry (~90 s measured). So try Enter, then
+        Space, then Enter again, checking for fighters after each - the whole sequence is
+        bounded well below the cost of the menu search it replaces.
+        """
+        for i, _ in enumerate(range(tries)):
+            self.press(13 if i % 2 == 0 else 32)
             t0 = time.time()
             while time.time() - t0 < wait:
                 st, stale = self.read_state()
@@ -553,9 +559,31 @@ class InstanceManager:
         time.sleep(ENTRY_BOOT)
         return True
 
+    def _menu_home(self, presses=3, wait=0.9):
+        """Return to the main menu before trying to enter.
+
+        Entry variants assume they start from the main menu, but a FAILED variant leaves the
+        game somewhere else - a submenu, a READY screen, or the options list - and the next
+        variant then navigates from the wrong place. That is why entry cost 2-3 minutes and
+        sometimes never succeeded: measured, right after a failed attempt the state file was
+        present but all zeros (hook alive, no fighters), i.e. we were parked in a menu.
+
+        Escape is the menu's back key; pressing it a bounded number of times from any menu
+        depth lands on the main menu.
+        """
+        # ESC IS NOT SAFE HERE. Pressing Escape from the main menu opens the quit dialog and
+        # a following Enter confirms it, so an "entry reset" built on Esc actually kills the
+        # game - which matches what the log showed immediately after I added it (relaunch
+        # after relaunch, entry never completing). Up/W is navigation only: menus wrap, so a
+        # few presses land the selection at the top of the list regardless of where it was.
+        for _ in range(presses):
+            self.press(87)          # W = up
+            time.sleep(wait)
+
     def _try_entry(self, s_count=1, n_lead=1):
         """Menu entry: n_lead Enters (title/popup), W, Enter, S x1, then 3 confirms."""
         self._wait_ready()
+        self._menu_home()
         seq = [(13, 2.5)] * max(1, n_lead)
         seq += [(87, 2.5), (13, 2.5)]
         seq += [(83, 2.5)] * max(1, s_count)

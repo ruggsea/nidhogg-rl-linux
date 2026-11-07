@@ -2244,3 +2244,24 @@ that follows costs 2-3 minutes. Throughput, not truth, is the binding constraint
 
 Operational note for anyone reading the logs later: `... | tee file` lags because tee
 block-buffers to a file; the live stream is the process stdout, not the tee'd file.
+
+## Session 131 — entry reset: Esc was killing the game, W works
+
+I added `_menu_home()` to reset to the main menu between entry variants, using Escape - and
+the log immediately filled with relaunch cycles and entries that never completed. Escape from
+the main menu opens the QUIT dialog, and the Enter we send next confirms it. The "reset" was
+terminating the game.
+
+Replaced with navigation only: W (up) x3 after the deliberate `presses` argument - menus wrap,
+so the selection lands at the top regardless of where it was, and nothing is invoked. With
+that, entry works again:
+
+```
+[21:49:37] control gate A_px=27.0 (PASS)
+[21:49:37] live AND drivable (gate confirmed)
+[21:49:45] control gate A_px=13.0 (PASS)
+```
+
+Also widened `_accept_restart` (the post-round screen) to try Enter / Space / Enter with 6 s
+windows before falling back to the ~90 s menu search, since guessing the dismissal key wrong
+is what made re-entry expensive.
