@@ -2367,3 +2367,27 @@ Fixes:
     thread silently (that is how the previous silence happened).
 
 Verification target for the next run: `inert=False` with `samples≈1200`.
+
+## Session 135 (cont.) — first genuinely scored generation
+
+After the state-shape fix, one generation produced:
+
+```
+g0i0: exit=accept-failed-after-2-tries samples=1003 inert=False gate A_px=21.0  fit=-13.9
+g0i1: exit=window-complete              samples=1846 inert=False gate A_px=45.5  fit=-11.5
+g0i2: exit=window-complete              samples=1849 inert=False gate A_px=36.0  fit= 6.2
+g0i3: exit=window-complete              samples=1635 inert=True  gate A_px=0.0   (rejected)
+g0i4: exit=window-complete              samples=1191 inert=False gate A_px=10.0  fit= -6.6
+```
+
+Three things are true here that never were before:
+
+1. **Episodes run their whole window** (1000-1850 samples at the ~40 Hz publish rate), instead
+   of vanishing after 3 s.
+2. **Every scored episode has a gate-confirmed drivable match** (`entry_gate True`,
+   `A_px` 10-45), and the one that failed the gate (`A_px=0.0`) was correctly rejected.
+3. **Fitness differs between individuals** (-13.9, -11.5, 6.2, -6.6). Identical numbers were
+   the signature of the reward not depending on the policy; that is gone.
+
+Still `rounds 0-0` everywhere. No generation summary yet in this run, so no best/mean claim.
+The pipeline is finally measuring what it claims to measure.
