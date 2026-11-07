@@ -127,6 +127,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
         pass
     st0 = read_state(mgr.iid)
     inert = st0 is None
+    _adv = {"trust_match": False, "why": "not checked"}
     if not inert:
         xs = []
         tt = time.time()
@@ -135,7 +136,16 @@ def play(mgr, w, seconds, seed, tag, log=print):
             if s2:
                 xs.append(s2["them_x"])
             time.sleep(0.1)
-        inert = len(xs) < 4 or (max(xs) - min(xs)) < 2.0
+        # The adversary is the authority on whether this is a real, drivable match. It runs
+        # in its own process on its own clock; a stale or failing vote makes the episode
+        # unscorable. Motion alone is NOT evidence: the title screen's attract demo moves.
+        try:
+            import adversary
+            _ok, _adv = adversary.latest(mgr.iid)
+            inert = not _ok
+        except Exception as e:
+            _adv = {"why": f"adversary unavailable: {e}"}
+            inert = True
     if inert:
         mgr.press(27); time.sleep(1.5)
         mgr.press(27); time.sleep(1.5)
@@ -373,8 +383,10 @@ def play(mgr, w, seconds, seed, tag, log=print):
                + kills_reward
                + float(np.clip(progress, -5, 5))
                + float(np.clip(territory, -12, 12)))
-    no_match = real_samples < 20
-    rec = {"no_match": no_match, "real_samples": real_samples,
+    # unscorable if we never reached a live, drivable match, or could not see enough of it
+    no_match = (real_samples < 20) or bool(inert)
+    rec = {"no_match": bool(no_match), "adversary": _adv,
+           "real_samples": real_samples,
            "advance": round(advance, 2), "conceded": round(conceded, 2),
            "territory": round(territory, 2), "fitness": round(fitness, 2),
            "pushed": round(pushed, 2), "closeness": round(closeness, 2),

@@ -762,6 +762,10 @@ static void my_flushBuffer(id self, SEL _cmd) {
 
 static void *g_match_inst = NULL;
 static float g_p154x, g_p154y, g_p242x, g_p242y;
+// Pau's Phase 2 (docs/NEXT_STEPS.md): "player state machine - full key sweep against the
+// animation field". That needs the struct itself, not two coordinates, so keep the P1
+// pointer and dump a window of it on demand.
+static const char *g_p242_inst = NULL;
 static int g_have154, g_have242;
 
 static void publish_screen(const char *names[], int n) {
@@ -995,7 +999,8 @@ static void read_fighters(const char *tag) {
                 int is_yellow = strcmp(nbuf, "YellowPlayer") == 0;
                 int is_orange = strcmp(nbuf, "OrangePlayer") == 0;
                 if (strcmp(nbuf, "Match") == 0) g_match_inst = (void *)inst;
-                if (is_yellow)  { g_p242x = fx; g_p242y = fy; g_have242 = 1; }
+                if (is_yellow)  { g_p242x = fx; g_p242y = fy; g_have242 = 1;
+                                  g_p242_inst = (const char *)inst; }
                 if (is_yellow && getenv("NID_VARGATE")) {
                     static int byname_done = 0;
                     if (!byname_done && pFindOrAlloc) {
@@ -1036,6 +1041,21 @@ static void read_fighters(const char *tag) {
                 seen++;
             }
             node = *(const char *const *)(node + 0x08);
+        }
+    }
+    // struct dump for the key sweep: /tmp/nid_dump_<id>.txt = 0x80..0x2FF as floats
+    if (g_p242_inst) {
+        char dpath[64];
+        snprintf(dpath, sizeof dpath, "/tmp/nid_dump_%s.txt", g_id);
+        FILE *df = fopen(dpath, "w");
+        if (df) {
+            for (unsigned off = 0x80; off < 0x300; off += 4) {
+                float v = *(const float *)(g_p242_inst + off);
+                if (v != v) v = 0.0f;               // NaN -> 0 so parsers stay happy
+                if (v > 1e9f || v < -1e9f) v = 0.0f;
+                fprintf(df, "%x %.3f\n", off, v);
+            }
+            fclose(df);
         }
     }
     publish_state();

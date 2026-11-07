@@ -2052,3 +2052,21 @@ Locking prefs read-only made `train_win.py` crash instantly:
 `PermissionError: prefs.ini` at startup (it writes the muted prefs before launching).
 Now it chmod 644s first and `launch()` re-locks. Lesson: a hardening change has to be checked
 against every writer of that file, not just the one being defended against.
+
+## Session 124 — switched base to Pau's repo, ran his Phase 2
+
+Working tree is now `~/Projects/nidhogg-pau` (clone of PauSolerValades/nidhogg-rl-linux,
+HEAD d9ca364). His docs, his plan, his provenance rule.
+
+Added to his tree:
+  * `hook/inject.m`: struct dump of P1 (`/tmp/nid_dump_<id>.txt`, offsets 0x80..0x2FF as
+    floats) - Phase 2 needs the struct, not two coordinates.
+  * `keysweep.py`: the Phase 2 key sweep, with a no-key CONTROL hold first and attribution
+    of only offsets the control does not explain.
+  * `nidgate.py` + `adversary.py`: the gate as a falsifiable test and an independent
+    verifier process whose fresh PASS the trainer must have before it may score an episode.
+
+First sweep result (live match, `have154=have242=1`): x at `+0xEC`/`+0xFC` moves under A and
+D with correct opposite signs; y at `+0xF0`/`+0x100` moves under G (up) and SPACE (down).
+W, S and SHIFT move NOTHING in 0x80..0x2FF - on this build jump is G, so W/S are not
+reachable actions. Full table and provenance in `docs/INTERFACE.md`.
