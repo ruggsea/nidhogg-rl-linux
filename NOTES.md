@@ -2134,3 +2134,18 @@ The per-tick motion gate was also wrong and is replaced: a policy that legitimat
 "nothing" stands still, so a continuous liveness test blocked the episodes we wanted to
 score (observed as a "live fight confirmed" loop with nothing ever scoring). Control is now
 proven ONCE at entry, which is Pau's design.
+
+## Session 127 (cont.) — state at the end of the tick
+
+Entry gate is solid: six consecutive `control gate A_px=47/51/51/56/51/52 (PASS)` on a real
+match, i.e. input demonstrably reaching the simulation. The reward now discriminates between
+policies (proximity gone).
+
+Still flaky, and this is the honest blocker: the restart path spawns several game processes
+at once (four `launched pid` lines within one second at 20:47:47) and then no state file is
+produced, so the generation never scores. One process per instance is the invariant this
+harness has repeatedly violated - it needs the same hard guard the mac tree has (kill
+orphans, then verify exactly one live pid before entry).
+
+No win-rate claim: rounds won remain 0, and nothing in this run has yet produced a scored
+generation under the new reward.
