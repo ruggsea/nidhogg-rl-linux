@@ -2265,3 +2265,26 @@ that, entry works again:
 Also widened `_accept_restart` (the post-round screen) to try Enter / Space / Enter with 6 s
 windows before falling back to the ~90 s menu search, since guessing the dismissal key wrong
 is what made re-entry expensive.
+
+## Session 132 — measured: the post-round screen wants Enter and takes 7.6 s
+
+`probe_restart.py`, self-contained (it enters a match itself, then waits for the round to
+end), produced a decisive answer:
+
+```
+round over: True (after 97.3s)
+{"key": "Enter", "code": 13, "players_back": true, "seconds": 7.61,
+ "drivable": true, "gate_px": 22.7}
+```
+
+So Enter DOES start the next match, and the match it starts is drivable. The bug was the
+window: `_accept_restart` waited 4 s, then 6 s, so it gave up just before players appeared
+and the trainer fell through to the full ~90 s menu re-entry. Every "restart doesn't work"
+conclusion this session was really "restart needs more than 6 s".
+
+Changed to 12 s (measured 7.61 s + margin). Expected effect: a round boundary costs ~8 s
+instead of ~90 s, so a generation of six can actually finish.
+
+Also worth recording: with no keys being pressed the CPU needed 97 s to score, versus the ~9 s
+rounds seen while the policy was acting. The 9 s figure was about our policy losing, not
+about the game.

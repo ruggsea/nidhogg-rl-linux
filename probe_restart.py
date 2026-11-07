@@ -33,8 +33,16 @@ def main():
     out = {"iid": iid, "results": []}
 
     if not players(mgr):
-        print("no live match to start from - run an episode first", flush=True)
-        return
+        # self-contained: this probe needs a live match, and depending on one already
+        # existing meant it never ran (every attempt found the game parked in a menu).
+        print("no live match - entering one first", flush=True)
+        if not mgr.alive():
+            mgr.launch()
+            time.sleep(TS.BOOT_WAIT)
+        if not mgr.run_entry():
+            print("could not enter a drivable match - aborting probe", flush=True)
+            return
+        print(f"entered; gate_px={mgr.gate_px:.1f}", flush=True)
 
     # wait for the round to end, so we are looking at a real round-over screen
     print("waiting for the round to end...", flush=True)

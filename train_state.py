@@ -354,13 +354,14 @@ class InstanceManager:
             f"({'PASS' if moved > min_px else 'FAIL'})")
         return moved > min_px
 
-    def _accept_restart(self, tries=4, wait=6.0):
+    def _accept_restart(self, tries=3, wait=12.0):
         """Dismiss the post-round screen and start the next match.
 
-        Enter is the obvious key, but it is not the only one this screen might want, and
-        guessing wrong costs a full menu re-entry (~90 s measured). So try Enter, then
-        Space, then Enter again, checking for fighters after each - the whole sequence is
-        bounded well below the cost of the menu search it replaces.
+        MEASURED (probe_restart.py, results/restart_0.json): after a round ends, Enter does
+        start the next match - players reappear in 7.61 s and the new match passes the
+        control gate (A_px=22.7). The earlier 4-6 s windows were simply too short, so every
+        restart "failed" and the trainer paid the full ~90 s menu re-entry instead. 12 s
+        covers the measured 7.61 s with margin.
         """
         for i, _ in enumerate(range(tries)):
             self.press(13 if i % 2 == 0 else 32)
