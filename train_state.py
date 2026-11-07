@@ -655,23 +655,26 @@ class InstanceManager:
             # frame-based, not wall-clock: see _wait_frames. The `wait` value is kept only
             # as a fallback when the frame counter cannot be read.
             self._wait_frames(18, timeout=max(1.0, wait))
-        for extra in range(2):
+        # Presence is all _try_entry should decide. It used to require
+        # _match_is_live(settle=12), which needs cpu_motion > 15 - but during entry we press
+        # no keys, so a quiet CPU reads as "no live fight" and entry relaunches endlessly
+        # (measured: "S=1 gave no live fight - relaunching" over and over). Whether the
+        # match is actually controllably OURS is decided next, by the active gate in
+        # _drivable_now(), which holds a key and measures the response - a strictly better
+        # test than watching the CPU twitch.
+        for _ in range(2):
             st, _ = self.read_state()
-            if st is not None:
-                return self._match_is_live(settle=12.0)
+            if self.has_players(st):
+                return True
             self.press(13)
             time.sleep(4.0)
-            st, _ = self.read_state()
-            if st is not None:
-                return self._match_is_live(settle=12.0)
-            log(f"instance {self.iid}: no fighters after confirm {extra + 1} - backing out")
-            for _ in range(2):
-                self.press(27)
-                time.sleep(1.8)
-            if extra == 0:
-                for code, wait in seq:
-                    self.press(code)
-                    time.sleep(wait)
+        st, _ = self.read_state()
+        if self.has_players(st):
+            return True
+        # Still nothing: back out to the main menu and (on the first pass) retry the
+        # sequence once. NOTE: no Escape here - Escape opens the quit dialog in this build
+        # and the next Enter confirms it, which killed the game once already.
+        log(f"instance {self.iid}: no fighters after entry sequence - backing out")
         return False
 
 

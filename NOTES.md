@@ -2542,3 +2542,36 @@ Also noted: entry still churns ("S=1 gave no live fight - relaunching"). `_match
 now uses position-based presence, but it ALSO requires cpu_motion > 15 to separate TRAINING
 from ARCADE, and during entry we are not pressing keys - so a quiet CPU reads as "no fight".
 That is the next suspect, and it is measurable.
+
+## Session 141 — MEASURED: the goal lines are off by ~3x, so rounds could never be won
+
+First episode with range logging, a full 120 s window (4872 samples, gate A_px=47):
+
+```
+me=[301..479]  them=[3..489]
+```
+
+Combined with the threshold constants:
+
+```
+GOAL_X      = 1650   our goal (right)     observed our max   479
+me_armed    needs me_x > 950              observed max       479   -> never reached
+GOAL_X_OPP  = 250    their goal (left)    observed their min   3
+```
+
+So `me_armed` was **never true in any episode**, `genuine_cross` could never fire, and
+`rounds_won` was structurally impossible on this build - independent of the policy. That is
+now a measurement, not a hypothesis. It retroactively explains every "the agent can't win a
+round" reading, including ones I reported as if they were about the policy.
+
+The arena in this build spans roughly 0..500 in x, not 0..1900. The exact goal lines are not
+yet pinned: `them_x` reaching 3 is most likely the CPU RESPAWN point after being killed (a
+jump, which the phantom-cross detector is designed to reject), not a goal crossing. Setting
+new constants now from one episode would be a guess of exactly the kind that has cost this
+project repeatedly, so the next step is to inspect the trace around those extremes and
+separate "respawned at the end" from "walked across the line".
+
+Entry also got simpler this tick: `_try_entry` decides PRESENCE only, and the active gate
+(`_drivable_now`) decides controllability. It used to require `cpu_motion > 15` while we were
+pressing no keys - a quiet CPU therefore read as "no live fight" and entry relaunched
+endlessly. First run after the change entered immediately (gate A_px=47).
