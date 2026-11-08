@@ -211,6 +211,9 @@ class InstanceManager:
                 SteamGameId="94400",
                 SteamClientLaunch="1",
                 NID_QUIET="1",
+                # NID_VISIBLE=1 keeps the window on screen for the whole run. Measured: on screen
+                # the game runs 48 fps, parked it runs 24 fps.
+                **({"NID_SHOW": "1"} if os.environ.get("NID_VISIBLE") else {}),
                 NID_FOCUS="1",
                 NID_MAN="1",
                 NID_THREAD="1",
@@ -354,7 +357,7 @@ class InstanceManager:
         return InstanceManager._pos_valid(st.get("me_x")) and \
             InstanceManager._pos_valid(st.get("them_x"))
 
-    def prove_control(self, hold=1.5, min_px=8.0):
+    def prove_control(self, hold=1.8, min_px=6.0):
         """ACTIVE, entry-time proof that input reaches the simulation.
 
         This is Pau's gate shape: prove drivability ONCE, when we enter, with an injected
@@ -707,6 +710,7 @@ class InstanceManager:
             (83, 2.0),            # DIFFICULTY -> START
             (13, 2.5),            # START
             (13, 2.0),            # skip the level-intro card
+            (13, 1.5),            # and again: some intros (round start) need a second press
         ]
         for code, wait in seq:
             self.press(code)
@@ -772,7 +776,7 @@ class InstanceManager:
                 time.sleep(0.15)
         return False
 
-    def bind_by_response(self, hold=0.9, min_px=8.0):
+    def bind_by_response(self, hold=1.5, min_px=6.0, attempts=2):
         """Find the instance WE control by stimulus and response, not by name.
 
         Three cheaper identifications are all wrong on this build (measured):
@@ -801,21 +805,24 @@ class InstanceManager:
                 time.sleep(0.05)
             time.sleep(0.2)
 
-        before = snapshot()
-        if not before:
-            log(f"instance {self.iid}: bind - no instance dump")
-            return None
-        hold_key(68)                      # D -> expect +dx
-        mid = snapshot() or {}
-        hold_key(65)                      # A -> expect -dx
-        after = snapshot() or {}
-
         best, winners = None, []
-        for inst in set(before) & set(before) & set(mid) & set(after):
-            dx_d = mid[inst][1] - before[inst][1]
-            dx_a = after[inst][1] - mid[inst][1]
-            if dx_d >= min_px and dx_a <= -min_px:
-                winners.append((inst, dx_d, dx_a))
+        for _ in range(attempts):
+            before = snapshot()
+            if not before:
+                log(f"instance {self.iid}: bind - no instance dump")
+                return None
+            hold_key(68)                      # D -> expect +dx
+            mid = snapshot() or {}
+            hold_key(65)                      # A -> expect -dx
+            after = snapshot() or {}
+            winners = []
+            for inst in set(before) & set(mid) & set(after):
+                dx_d = mid[inst][1] - before[inst][1]
+                dx_a = after[inst][1] - mid[inst][1]
+                if dx_d >= min_px and dx_a <= -min_px:
+                    winners.append((inst, dx_d, dx_a))
+            if winners:
+                break
         if winners:
             winners.sort(key=lambda w: -(w[1] - w[2]))
             best = winners[0]

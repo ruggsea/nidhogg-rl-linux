@@ -677,7 +677,11 @@ static void relocate_once(void) {
     // guaranteed, and nothing recognizable is ever on screen.
     // SHOW MODE (debugging): /tmp/nid_show_<id>.txt places the window on screen instead of
     // parking it as a hairline, so a human can watch what the trainer is doing.
-    int show = (access(ctl_path("nid_show"), F_OK) == 0);
+    // MEASURED: the game runs at 24 fps when parked as a 2-px hairline and 48 fps when actually
+    // on screen - macOS stops rendering an essentially-offscreen window. So "hidden" costs HALF
+    // the frame rate, and much of what looked like the game freezing was starvation. NID_SHOW in
+    // the environment makes this survive launches (the control file is wiped by clean_files).
+    int show = (access(ctl_path("nid_show"), F_OK) == 0) || getenv("NID_SHOW");
     int moved = 0;
     for (NSWindow *w in [NSApp windows]) {
         if (![NSStringFromClass([w class]) containsString:@"GMWindow"]) continue;
@@ -1075,10 +1079,14 @@ static void publish_instances(void) {
     snprintf(path, sizeof path, "/tmp/nid_insts_%s.txt", g_id);
     FILE *f = fopen(path, "w");
     if (!f) return;
+    // Cap raised from 120 to 600: with 120 the walk truncated arbitrarily, so consecutive
+    // snapshots contained DIFFERENT subsets and the identity-intersection in bind_by_response
+    // dropped the fighter (measured: instance 102914 was present at x=223 but never survived two
+    // snapshots). Stable membership matters more than a small file.
     int n = 0, seen = 0;
-    for (uint32_t b = 0; b <= mask && n < 120 && seen < 1200; b++) {
+    for (uint32_t b = 0; b <= mask && n < 600 && seen < 6000; b++) {
         const char *node = *(const char *const *)(table + (size_t)b * 16);
-        while (node && n < 120 && seen < 1200) {
+        while (node && n < 600 && seen < 6000) {
             const char *inst = *(const char *const *)(node + 0x18);
             if (inst) {
                 seen++;

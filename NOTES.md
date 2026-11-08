@@ -4541,3 +4541,31 @@ Two findings that matter as much as the path:
 
 Sequence installed in `_try_entry`. `rounds won` still 0; nothing about the agent has improved yet,
 but the thing we were training against has finally been identified.
+
+## Session 208 — the game has been running at HALF speed all day (measured)
+
+Asked why the game looks slow, I measured instead of guessing:
+
+```
+window VISIBLE (on screen) : 48 fps
+window PARKED (2px hairline): 24 fps
+```
+
+**Hiding the window halves the frame rate.** macOS stops rendering an essentially-offscreen window,
+so the 2-pixel hairline this project uses for stealth throttles the game. Consequences that were
+previously misdiagnosed:
+
+  * every "the game froze", "stuck state", "input did nothing" and "A_px = 0" episode happened on a
+    starved engine, not a broken one;
+  * the ~50 fps I have been quoting all day was measured in the visible case only; the training runs
+    were mostly at ~24 fps;
+  * frame-count assumptions calibrated at 50 fps (entry key spacing, hold frames) are wrong by 2x
+    when parked.
+
+Second, independent cause: **memory pressure.** At measurement time the machine had ~32 MB free,
+2.2 M pages in the compressor (~8.6 GB), with Firefox plugin-containers holding ~3 GB. Everything,
+the game included, runs slower under that.
+
+`NID_SHOW` in the environment now selects visible mode and survives `clean_files()` (the control
+file does not), and `NID_VISIBLE=1` makes the trainer set it. Trade-off is explicit: visible is 2x
+faster but the game is on screen.
