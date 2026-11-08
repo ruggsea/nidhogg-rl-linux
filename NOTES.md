@@ -3602,3 +3602,35 @@ Two other things the audit caught that I had not:
   * `inert=` is the entry-time gate, not during-episode motion: g0i0r2 was `inert=True` with
     `opp_span=462`, and g0i0r4 was `inert=False` with `opp_span=0`. The two flags disagree, so
     "opponent actually played" needs one definition, not two.
+
+## Session 176 — durable run records + a realness auditor (and it reproduces the goldfish result)
+
+Every run now writes `results/runs/<timestamp>-p<pid>/episodes.jsonl`, one JSON object per
+episode carrying the fields needed to judge whether it was REAL: entry gate px, opponent span,
+samples, kills/deaths, round claims *and* whether each claim verified, and the actions held at
+each death. `meta.json` records argv and start time. Nothing depends on `/tmp` surviving.
+
+`check_runs.py` audits a run and reports per-episode verdicts, never an aggregate "best":
+
+```
+=== results/runs/archive-2026-11-08-night   (78 episodes)
+   verdicts: {'NOT REAL': 54, 'REAL': 24}
+   REAL episodes: 24   kills 36  deaths 58
+   episodes with kills >= deaths: 12 of 24
+```
+
+The 54 "not real" are almost all episodes recorded before `opp_span` existed - i.e. exactly the
+statue period - so they can never be used as evidence for anything.
+
+**The auditor independently reproduces the goldfish's falsification**: 36 kills against 58 deaths
+in aggregate, but kills >= deaths in **12 of 24** individual episodes. So "the agent dies more
+than it kills" is true only as a mean, and saying it per-episode was wrong there and wrong here.
+
+Also fixed in the auditor itself, because it made the same error it was written to catch: it first
+disqualified episodes on the ENTRY gate. A goldfish audit showed entry-gate and during-episode
+evidence disagree in both directions (inert_entry=True with 462 px of opponent movement;
+inert_entry=False with 0 px). Realness is now decided by the during-episode span alone, and an
+entry-gate failure is reported as a warning.
+
+Tonight's archived evidence is now re-checkable by anyone with:
+    python3 check_runs.py results/runs/archive-2026-11-08-night

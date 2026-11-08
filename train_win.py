@@ -10,6 +10,7 @@ Fitness = 10*rounds_won - 6*rounds_lost + 30*match_won + small shaping so early
 random policies still get a gradient (advance toward the enemy goal).
 """
 import argparse
+import sys
 import json
 import os
 import threading
@@ -21,6 +22,13 @@ import neuro
 import train_state as TS
 
 LOG = "/tmp/nid_win_train.jsonl"
+# DURABLE RUN RECORD. Everything until now lived in /tmp, so every restart destroyed the
+# evidence for the previous run - including tonight's falsified claims, which had to be
+# reconstructed from logs that were still in memory. Each run now writes its own directory
+# under results/runs/ with a per-episode JSONL that carries every field needed to judge whether
+# the episode was REAL: the entry gate, the opponent's span, kills/deaths, and what the round
+# detector claimed plus whether it verified.
+RUN_DIR = None
 RESET_LOCK = threading.Lock()
 
 
@@ -599,6 +607,24 @@ def play(mgr, w, seconds, seed, tag, log=print):
     _th_rng = ""
     if start_them is not None and worst_them is not None:
         _th_rng = f" them=[{worst_them:.0f}..{best_them:.0f}]"
+    if RUN_DIR:
+        try:
+            import os as _os, json as _json
+            _os.makedirs(RUN_DIR, exist_ok=True)
+            with open(_os.path.join(RUN_DIR, "episodes.jsonl"), "a") as _f:
+                _f.write(_json.dumps({
+                    "tag": tag, "no_match": bool(no_match), "exit": exit_reason,
+                    "samples": real_samples, "inert_entry": bool(inert),
+                    "inert_opponent": bool(inert_opponent),
+                    "opp_span": _th_span, "me_span_range": [start_me, best_me],
+                    "kills": them_deaths, "deaths": me_deaths,
+                    "rounds_won": rounds_won, "rounds_lost": rounds_lost,
+                    "cross_verified": cross_verdicts, "loss_verified": loss_verified,
+                    "death_acts": death_actions, "gate_px": mgr.gate_px,
+                    "fitness": round(fitness, 3), "ts": time.time(),
+                }) + "\n")
+        except Exception:
+            pass
     log(f"  {tag}: exit={exit_reason} samples={real_samples} inert={bool(inert)} "
         f"adv={_adv}{_me_rng}{_th_rng} kills={them_deaths} deaths={me_deaths} "
         f"opp_span={(_th_span if _th_span is not None else -1):.0f} "
@@ -644,6 +670,15 @@ def main():
     ap.add_argument("--init", action="store_true")
     ap.add_argument("--reps", type=int, default=2)
     args = ap.parse_args()
+    global RUN_DIR
+    RUN_DIR = os.path.join("results", "runs",
+                           time.strftime("%Y%m%d-%H%M%S") + f"-p{os.getpid()}")
+    os.makedirs(RUN_DIR, exist_ok=True)
+    with open(os.path.join(RUN_DIR, "meta.json"), "w") as _m:
+        import json as _json
+        _json.dump({"argv": sys.argv, "started": time.time(),
+                    "cwd": os.getcwd()}, _m, indent=1)
+    print(f"run records -> {RUN_DIR}", flush=True)
 
     os.environ["NID_ORDERS"] = "1"
     os.system('pkill -f "MacOS/Nidhogg" 2>/dev/null')
