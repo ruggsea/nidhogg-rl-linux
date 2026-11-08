@@ -678,6 +678,46 @@ class InstanceManager:
         return False
 
 
+    def start_from_round_boundary(self, wait=3.0):
+        """Force a fresh round so every episode begins from a comparable state.
+
+        MEASURED this session (repeated measures): one policy produced fits of -0.24, 7.49 and
+        -16.88 in three consecutive episodes - sd 12.5 on a scale whose useful range is about
+        -30..30. The GA cannot resolve differences that small. The dominant source is that each
+        episode starts wherever the previous one ended: different spawn positions, sometimes a
+        fresh round, sometimes the middle of one.
+
+        This presses Enter and waits briefly for a ROUND BOUNDARY - both fighters teleport across
+        the arena, the signature measured in Session 142.
+
+        MEASURED: Enter does NOT end or start a round from mid-round. Three consecutive attempts
+        sat 14 s without a boundary ("no round boundary within 14s - starting anyway"), while
+        Enter DOES work on a round-over screen (7.61 s, results/restart_0.json). So this is
+        opportunistic: it catches the case where the previous episode ended on a round-over
+        screen, and otherwise costs only a few seconds. It is not a true reset, and Phase 6 is
+        therefore still open - this build does not let us force a round start. It is
+        Pau's Phase 6 ("reset without the menu") reduced to what this build allows, since
+        writing x directly does not survive (writes revert; see Session 121).
+        """
+        st0, _ = self.read_state()
+        if not self.has_players(st0):
+            return False
+        x0, t0 = (st0["me_x"], st0["them_x"]), st0["them_x"]
+        self.press(13)
+        deadline = time.time() + wait
+        while time.time() < deadline:
+            st, _ = self.read_state()
+            if self.has_players(st):
+                me_jump = abs(st["me_x"] - x0[0]) > 300
+                th_jump = abs(st["them_x"] - x0[1]) > 300
+                if me_jump and th_jump:
+                    log(f"instance {self.iid}: round boundary (reset) "
+                        f"-> me={st['me_x']:.0f} them={st['them_x']:.0f}")
+                    return True
+            time.sleep(0.15)
+        log(f"instance {self.iid}: no round boundary within {wait:.0f}s - starting anyway")
+        return False
+
     def _drivable_now(self, tries=3):
         """Entry is not finished until the gate says input reaches the simulation.
 

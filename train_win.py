@@ -157,6 +157,13 @@ def play(mgr, w, seconds, seed, tag, log=print):
         mgr._raise_speed()
     except Exception:
         pass
+    # PHASE 6 (Pau's plan): start every episode from a round boundary, so two policies are
+    # compared on the same initial conditions. Without this, one policy produced fits of
+    # -0.24 / 7.49 / -16.88 in three consecutive episodes (sd 12.5) and selection was noise.
+    try:
+        _reset_ok = mgr.start_from_round_boundary()
+    except Exception:
+        _reset_ok = False
     st0 = read_state(mgr.iid)
     inert = st0 is None
     _adv = {"trust_match": False, "why": "not checked"}
@@ -490,7 +497,8 @@ def play(mgr, w, seconds, seed, tag, log=print):
     if start_them is not None and worst_them is not None:
         _th_rng = f" them=[{worst_them:.0f}..{best_them:.0f}]"
     log(f"  {tag}: exit={exit_reason} samples={real_samples} inert={bool(inert)} "
-        f"adv={_adv}{_me_rng}{_th_rng} kills={them_deaths} deaths={me_deaths}")
+        f"adv={_adv}{_me_rng}{_th_rng} kills={them_deaths} deaths={me_deaths} "
+        f"reset={_reset_ok}")
     rec = {"no_match": bool(no_match), "adversary": _adv,
            "real_samples": real_samples,
            "advance": round(advance, 2), "conceded": round(conceded, 2),

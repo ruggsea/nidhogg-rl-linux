@@ -2790,3 +2790,27 @@ That is exactly Pau's Phase 6 in `docs/NEXT_STEPS.md` - "resets and determinism:
 be reset without the menu, and two identical runs from one reset are compared" - which is the
 right next step and is currently skipped. Deterministic episode starts come before any more GA
 generations; otherwise every number produced is a draw from a distribution nobody controls.
+
+## Session 149 — Enter cannot force a round from mid-round (Phase 6 still open)
+
+Tested the obvious reset: press Enter at episode start and wait for a round boundary.
+
+```
+[02:41:35] no round boundary within 14s - starting anyway
+[02:42:42] no round boundary within 14s - starting anyway
+[02:43:51] no round boundary within 14s - starting anyway
+```
+
+Three for three. Enter starts the next match from a ROUND-OVER screen (measured: 7.61 s in
+results/restart_0.json) but does nothing at all mid-round. So there is no cheap way to force a
+comparable starting state on this build: writing x does not survive (Session 121), and Enter
+only works at a boundary we do not control.
+
+Consequences recorded rather than papered over:
+
+  * the function is now opportunistic with a 3 s wait (was 14 s, which cost a third of a 45 s
+    episode for nothing);
+  * **Phase 6 remains open** - deterministic episode starts are not available, so per-episode
+    variance (measured sd 12.5) cannot be reduced that way;
+  * the alternative is more independent draws per unit time, i.e. shorter windows with more
+    reps, trading per-episode richness for statistical power.
