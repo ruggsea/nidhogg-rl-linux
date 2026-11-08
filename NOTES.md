@@ -2766,3 +2766,27 @@ draws per policy.
 
 Longer windows were worth it while rounds_won could fire; with the round counter still unfound
 and kills/territory scaling with time, a shorter window buys statistics instead of noise.
+
+## Session 148 — the fitness is too noisy for the GA to see anything
+
+Two repeated-measure blocks, same policy inside each block:
+
+```
+g0i0: fits=[-0.24, 7.49, -16.88]   mean -3.21  sd 12.45  se  7.19
+g0i1: fits=[-15.11, 14.89]         mean -0.11  sd 21.21  se 15.00
+```
+
+Standard deviation of 12-21 points on a fitness whose useful range is roughly -30..+30. With 3-4
+reps the standard error is 7-15, so the GA is selecting on differences it cannot resolve. Adding
+reps is not the answer at this cost (each draw is ~75 s including entry); the variance itself has
+to come down.
+
+The variance has an obvious source: **every episode starts wherever the last one left off.**
+Different spawn positions, different round phases, sometimes a fresh round and sometimes the
+middle of one. Two policies are then being compared on different initial conditions, so the
+comparison is meaningless regardless of how many reps are averaged.
+
+That is exactly Pau's Phase 6 in `docs/NEXT_STEPS.md` - "resets and determinism: an episode can
+be reset without the menu, and two identical runs from one reset are compared" - which is the
+right next step and is currently skipped. Deterministic episode starts come before any more GA
+generations; otherwise every number produced is a draw from a distribution nobody controls.
