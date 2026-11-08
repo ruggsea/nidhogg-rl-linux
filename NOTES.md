@@ -3717,3 +3717,39 @@ which is why the earlier confident numbers were so unreliable.
 The current run's first verified episodes read `kills=3 deaths=2`, `kills=4 deaths=2`,
 `kills=1 deaths=2`, `kills=1 deaths=1` - the first stretch where kills have not been clearly
 behind. n is far too small to call an improvement, and I am not calling it one.
+
+## Session 179 — episodes with a live opponent but a FROZEN agent were being counted
+
+The "always left" seed produced this, straight from the durable records:
+
+```
+g0i1r0  fit= -7.71  kills=0 deaths=0  opp_span=125   me=[114.0..114.0]
+g0i1r1  fit=-10.34  kills=0 deaths=0  opp_span=185   me=[234.5..235.5]
+g0i1r2  fit= -0.91  kills=0 deaths=0  opp_span=112   me=[16.0..16.0]
+g0i1r3  fit=-11.36  kills=0 deaths=0  opp_span=207   me=[95.0..95.0]
+g0i1r4  fit= -6.83  kills=0 deaths=0  opp_span=150   me=[241.5..246.5]
+```
+
+The opponent played (112-207 px) so every one of these passed the realness test - while OUR
+fighter moved 0-5 px. The policy had pinned itself against the left wall pressing "left" forever.
+kills=0, deaths=0, and the fitness described the CPU's behaviour rather than ours.
+
+This is the mirror image of the statue bug: then the opponent was frozen and we were measured;
+now we were frozen and the opponent was measured. Both produce reproducible, meaningless numbers,
+and both passed the check written for the other case.
+
+Fixed in `check_runs.py` and `report.py`: an episode counts only if BOTH fighters moved at least
+15 px. The scoreboard, recomputed:
+
+```
+episodes recorded: 92   USABLE: 29   (statue, frozen agent, or discarded: 63)
+kills 50   deaths 72   (aggregate net -22)
+per episode: kills>deaths in 7/29, equal in 8/29
+```
+
+**63 of 92 recorded episodes - 68% - cannot support any conclusion.** That is the single most
+useful number produced today: it bounds how much of this project's history was ever evidence.
+
+Also worth saying plainly: a policy that walks into a wall and stops is a real failure mode the
+search will keep producing, and the fix belongs in the reward (no movement should earn nothing)
+as well as in the audit.

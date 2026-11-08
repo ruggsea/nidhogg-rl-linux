@@ -62,6 +62,14 @@ def classify(ep):
         reasons.append(f"opponent span {span:.0f} px - statue")
     if (ep.get("samples") or 0) < MIN_SAMPLES:
         reasons.append(f"only {ep.get('samples')} samples")
+    # OUR FIGHTER MUST MOVE TOO. Measured: the "always left" seed pinned itself against the
+    # left wall and every episode read me=[114..114], [16..16], [95..95] - zero movement, zero
+    # kills, zero deaths. The opponent played (opp_span 112-207), so the episode passed the
+    # realness test while containing NO policy signal at all: the fitness described the CPU's
+    # behaviour, not ours. A fighter that never moves cannot demonstrate anything.
+    _mr = ep.get("me_span_range") or [None, None]
+    if _mr[0] is not None and _mr[1] is not None and abs(_mr[1] - _mr[0]) < 15.0:
+        reasons.append(f"our fighter moved {(abs(_mr[1] - _mr[0])):.0f} px - no policy signal")
     if reasons:
         return "NOT REAL", reasons
     if ep.get("inert_entry"):

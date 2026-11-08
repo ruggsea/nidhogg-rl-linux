@@ -38,12 +38,23 @@ def load_all():
 
 
 def is_real(e):
+    """A usable episode needs BOTH fighters to have done something.
+
+    The opponent check (`opp_span`) catches a statue CPU. The agent check catches the mirror
+    image, measured when the "always left" seed pinned itself to the left wall and never moved:
+    such an episode has a live opponent but no policy signal, so its fitness describes the CPU.
+    """
     if e.get("no_match"):
         return False
     span = e.get("opp_span")
     if span is None or span < 15.0:
         return False
-    return (e.get("samples") or 0) >= 20
+    if (e.get("samples") or 0) < 20:
+        return False
+    me = e.get("me_span_range") or [None, None]
+    if me[0] is not None and me[1] is not None and abs(me[1] - me[0]) < 15.0:
+        return False
+    return True
 
 
 def main():
@@ -52,8 +63,8 @@ def main():
         print("no recorded episodes under results/runs/")
         return
     real = [e for e in eps if is_real(e)]
-    print(f"episodes recorded: {len(eps)}   REAL: {len(real)}   "
-          f"(not real or discarded: {len(eps) - len(real)})")
+    print(f"episodes recorded: {len(eps)}   USABLE: {len(real)}   "
+          f"(statue, frozen agent, or discarded: {len(eps) - len(real)})")
     if not real:
         print("\nNo REAL episodes recorded yet - nothing below can be claimed.")
         return
