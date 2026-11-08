@@ -42,7 +42,12 @@ def count_attested():
             except ValueError:
                 continue
             total += 1
-            if str(d.get("verdict", "")).startswith("ATTESTED"):
+            # ONLY runs that include the dose-response check count as evidence. Measured problem:
+            # the log contains ATTESTED runs from before that check existed (ok.dose_response is
+            # None), and counting them made the streak look like 3 when it was 1 - exactly the kind of
+            # over-count this project keeps having to retract.
+            counted = bool((d.get("ok") or {}).get("dose_response"))
+            if str(d.get("verdict", "")).startswith("ATTESTED") and counted:
                 ok += 1
                 consecutive += 1
                 best_consecutive = max(best_consecutive, consecutive)
@@ -137,8 +142,9 @@ def main():
         print(json.dumps({"now": now, "delta": delta, "is_new": bool(delta)}, indent=1))
     else:
         print(f"evidence snapshot  ({time.strftime('%H:%M:%S')})")
-        print(f"  attestation : {now['attest_passing']}/{now['attest_total']} runs passed, "
-              f"best streak {now['attest_best_streak']} (step 01 needs 3 consecutive)")
+        print(f"  attestation : {now['attest_passing']} runs passed WITH dose-response, "
+              f"best streak {now['attest_best_streak']} (step 01 needs 3 consecutive); "
+              f"{now['attest_total']} runs recorded in all")
         print(f"  plan        : {now['plan_done']}/{now['plan_total']} steps closed with evidence")
         for row in now["plan_done_rows"]:
             print(f"                - {row}")

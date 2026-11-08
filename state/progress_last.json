@@ -1,8 +1,8 @@
 {
- "ts": 1794179252.068918,
- "attest_passing": 2,
- "attest_total": 2,
- "attest_best_streak": 2,
+ "ts": 1794179864.108951,
+ "attest_passing": 1,
+ "attest_total": 5,
+ "attest_best_streak": 1,
  "plan_done": 0,
  "plan_total": 10,
  "plan_done_rows": [],
