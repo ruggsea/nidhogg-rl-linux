@@ -4026,3 +4026,29 @@ moved). An entry-gate failure is recorded as `entry_gate_warning` and no longer 
 
 If this is right, the number of usable episodes per generation should rise sharply in the next
 hour. That is a falsifiable expectation, and the scoreboard will show whether it happens.
+
+## Session 189 — the expectation held: 0 of 5 episodes discarded (was ~50%)
+
+Last tick I removed the entry-gate disqualification and stated a falsifiable expectation: usable
+episodes per generation should rise sharply. It did.
+
+```
+current run: 5 episodes, 0 discarded
+fits: 5.4, -17.8, -11.4, 3.8, -2.2
+```
+
+Against the previous behaviour, where roughly half of every run was thrown away over a 10 s probe.
+The scoreboard's usable share is moving for the first time in hours:
+
+```
+episodes recorded: 144   USABLE: 53
+kills 80   deaths 133   (aggregate net -53)
+per episode: kills>deaths in 9/53, equal in 15/53
+```
+
+Note the substance has not improved - the agent still loses exchanges roughly 3:2, and `rounds 0-0`
+everywhere. More usable data is not a better policy; it is finally enough data to see that the
+policy is bad, rather than wondering whether the data was real.
+
+One thing to watch: the fitness spread in this run (5.4, -17.8, -11.4, 3.8, -2.2) is wide, which is
+the opposite of the artificially quiet blocks that pleased me earlier. Wide here is honest.
