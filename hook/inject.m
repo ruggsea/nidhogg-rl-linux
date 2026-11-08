@@ -675,12 +675,16 @@ static void relocate_once(void) {
     // its match lifecycle when the window is fully invisible (orderOut) — so the
     // window is parked with a 2-px hairline at the screen edge: rendering is
     // guaranteed, and nothing recognizable is ever on screen.
+    // SHOW MODE (debugging): /tmp/nid_show_<id>.txt places the window on screen instead of
+    // parking it as a hairline, so a human can watch what the trainer is doing.
+    int show = (access(ctl_path("nid_show"), F_OK) == 0);
     int moved = 0;
     for (NSWindow *w in [NSApp windows]) {
         if (![NSStringFromClass([w class]) containsString:@"GMWindow"]) continue;
         NSSize sz = [w frame].size;
         if (sz.width < 100) continue;              // skip tiny helpers
         [w setAlphaValue:1.0];
+        if (show) { [w setFrameOrigin:NSMakePoint(80, 120)]; [w orderFrontRegardless]; moved++; continue; }
         [w setFrameOrigin:NSMakePoint(-(sz.width - 2), 0)];
         [w orderFrontRegardless];
         moved++;

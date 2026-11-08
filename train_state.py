@@ -105,6 +105,7 @@ class InstanceManager:
         self.restart_episodes = set()
         self.needs_reset = False
         self.gate_px = 0.0
+        self.gate_dir = {}
         self.gate_ts = 0.0
         self._last_them_x = 0.0
 
@@ -369,22 +370,35 @@ class InstanceManager:
         # wall cannot move right and the gate fails no matter how responsive the game is.
         # Measured: "control gate A_px=8.0 (FAIL)" - exactly on the >8.0 threshold - and
         # earlier "A_px=3.0 (FAIL)" / "A_px=0.0 (FAIL)", each triggering a full re-entry.
-        x0 = st["me_x"]
-        moved = 0.0
-        for key in (68, 65):               # D, then A if D produced nothing
+        # DIRECTIONALITY, not motion. The title screen runs a LIVE ATTRACT MATCH: yellow vs orange
+        # fighting behind the logo (confirmed by screenshot). Those are real YellowPlayer /
+        # OrangePlayer instances and they move, so every motion-based gate passes on the title
+        # screen - which is what this project has been training against. An attract demo cannot
+        # satisfy a directional test: holding D must move us RIGHT and holding A must move us
+        # LEFT, in that order, each with the expected sign.
+        results = {}
+        for name, key, sign in (("D", 68, +1), ("A", 65, -1)):
+            st0, _ = self.read_state()
+            if not self.has_players(st0):
+                self.gate_px = 0.0
+                return False
+            x0 = st0["me_x"]
+            best = 0.0
             t0 = time.time()
             while time.time() - t0 < hold:
                 self.press(key)
                 s2, _ = self.read_state()
                 if s2 is not None:
-                    moved = max(moved, abs(s2["me_x"] - x0))
+                    delta = (s2["me_x"] - x0) * sign
+                    best = max(best, delta)
                 time.sleep(0.04)
-            if moved > min_px:
-                break
-        self.gate_px = moved
-        log(f"instance {self.iid}: control gate A_px={moved:.1f} "
-            f"({'PASS' if moved > min_px else 'FAIL'})")
-        return moved > min_px
+            results[name] = best
+        self.gate_px = max(results.values())
+        self.gate_dir = results
+        ok = results.get("D", 0.0) > min_px and results.get("A", 0.0) > min_px
+        log(f"instance {self.iid}: direction gate D=+{results.get('D', 0.0):.1f} "
+            f"A={results.get('A', 0.0):.1f} -> {'PASS' if ok else 'FAIL'}")
+        return ok
 
     def _accept_restart(self, tries=3, wait=12.0):
         """Dismiss the post-round screen and start the next match.

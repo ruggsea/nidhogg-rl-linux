@@ -4391,3 +4391,45 @@ average over a censored set with a variance wide enough to invert it.
 
 Practical consequence: no single generation can rank these policies, and the loop should stop
 treating one generation's `best` line as news.
+
+## Session 203 — THE ROOT CAUSE, seen with my own eyes
+
+I put the game window on screen (show-mode) and captured it. The title screen runs a **LIVE ATTRACT
+MATCH**: behind the Nidhogg logo, a yellow player and an orange CPU fight each other with swords, in
+a real arena, with real swords. Those are genuine `YellowPlayer` / `OrangePlayer` instances, and
+they move.
+
+That is Pau's warning, fulfilled: *"the attract demo passes every motion-based oracle."* Every gate I
+built today - "players present", "input moves our fighter", "opponent moves" - is satisfied by the
+title screen. The training data in this repository is, to an unknown but large extent, measurements
+of the attract demo.
+
+### The fix, and it works
+
+A demo AI moves on its own schedule, so it cannot satisfy a **directional** test: holding D must move
+us RIGHT, holding A must move us LEFT, both with the correct sign. Implemented in `prove_control`.
+Nine consecutive screens, measured:
+
+```
+D=+4.5 A=0.0    FAIL        D=+14.0 A=0.0   FAIL       D=+34.0 A=4.0  FAIL
+D=+0.0 A=0.0    FAIL        D=+16.0 A=15.0  PASS       D=+10.5 A=0.0  FAIL
+D=+14.0 A=2.0   FAIL        D=+11.0 A=0.0   FAIL       D=+5.0  A=0.0  FAIL
+```
+
+Note what the failures look like: **D produces movement, A produces none.** Pushing right works
+because something is pushing us right; pushing left does nothing because we are not the ones
+controlling it.
+
+### Quantifying how wrong the old gate was
+
+```
+OLD gate (any movement > 8 px)      : would PASS 6 of 9 screens  (67%)
+NEW gate (D right AND A left > 8 px): PASS 1 of 9 screens        (11%)
+```
+
+**Five of the six screens the old gate accepted were attract demo or otherwise uncontrollable.**
+That is the size of the error that produced every "the agent is training" claim in this log, and it
+is the single most important number in it.
+
+Consequence: real training appears to be reachable roughly one screen in nine. Everything measured
+before this commit describes the title screen.
