@@ -4897,3 +4897,35 @@ which ROW is selected - and that is the missing signal. The pi agent tasked with
 Next: either (a) get the cursor signal from memory, or (b) calibrate mouse clicks per row (they work
 when they land: y=414 -> OPTIONS means the row pitch is ~28 px and SINGLE PLAYER is near y=386 for a
 960x628 window). (b) is cheaper and needs no decomp.
+
+## Session 219 — honest stop on the menu-navigation loop
+
+Current state at time of writing: the game is **in French again, inside OPTIONS -> COMMANDES**. The
+language flips because every failed navigation attempt ends up pressing Enter inside OPTIONS, and
+Enter on the LANGUAGE row cycles it. I have now reproduced this corruption three times.
+
+What is solid and reusable:
+
+  * room table (82 rooms, decompiled from game.ios) - 2 rMainMenu, 3 rMultiMenu, 17 rLevelSelect,
+    26-77 arenas;
+  * `_Current_Room` is an int32 global and reads correctly;
+  * `S` moves the main-menu cursor DOWN and wraps; `W` does nothing; ArrowUp is BACK;
+  * a fresh launch puts the cursor on MULTIPLAYER and restores English;
+  * from MULTIPLAYER, `S x5` lands on SINGLE PLAYER (verified by screenshot);
+  * the rest of the path (S -> TRAINING -> Enter -> partner -> S -> START -> Enter x2) reaches
+    rooms 17 then 29 with fighters, when started from the right state;
+  * mouse clicks select a row when they land on it (y=414 -> OPTIONS) and dismiss the menu otherwise.
+
+What is NOT solved, and where I am looping: making an automated run begin from a known cursor. The
+menu is open one second after Enter and the cursor is on MULTIPLAYER, but my scripts keep starting
+a fraction of a second late (an extra Enter selects MULTIPLAYER) or pressing into OPTIONS. Each error
+costs a language flip and a relaunch.
+
+The missing signal is the CURSOR ROW. Room index cannot provide it - all main-menu items share room
+2. Two concrete ways out, both unfinished:
+  (a) read the cursor row from memory (the pi agent for this never delivered; needs a redo);
+  (b) finish the click calibration: y=414 selected OPTIONS (row 3) and y=385 was MULTIPLAYER
+      (row 2, no visible change because already selected), so the pitch is ~28 px and SINGLE
+      PLAYER should be y~358 - one clean test away, needing the menu confirmed open first.
+
+No attestation, no training, `rounds won` = 0, no win rate. The loop continues.
