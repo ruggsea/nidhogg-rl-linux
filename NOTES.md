@@ -3572,3 +3572,33 @@ Running tally of what the agent can demonstrate after tonight:
   * a won round: never verified;
   * a lost round: claimed 3 times, not yet verified;
   * an opponent that actually played: yes, now confirmed per episode via `opp_span`.
+
+## Session 175 — GOLDFISH AUDIT: my "deaths exceed kills every episode" claim is FALSIFIED
+
+I ran a fresh-context adversarial auditor (`.pi/agents/goldfish.md` → `~/.pi/agent/agents/`) with
+no memory of how any claim was produced, instructed only to try to falsify three of them. It
+refuted the first one outright:
+
+| episode | inert | opp_span | kills | deaths |
+|---|---|---|---|---|
+| train52 g0i0r1 | False | 435 | **4** | 2 |
+| train53 g0i1r2 | False | 176 | 1 | **0** |
+| train53 g0i2r0 | False | 399 | 2 | 1 |
+| train53 g0i2r5 | False | 365 | 2 | **0** |
+| train53 g0i3r0 | False | 398 | **7** | 5 |
+
+Kills >= deaths in five episodes where the opponent demonstrably played. My claim was true of the
+AGGREGATE (deaths 32 vs kills 19 across inert=False episodes in one run) and false of EVERY
+EPISODE, and I stated the aggregate as though it were the per-episode fact. That is the same
+error, one level up, as everything else tonight.
+
+Two other things the audit caught that I had not:
+
+  * **`rounds_won` is incremented UNCONDITIONALLY** - the crossing verifier only appends to a
+    list; it does not gate the award. So even a crossing that fails verification is still paid 60
+    points. The verifier observes, it does not enforce.
+  * the 6-19 px evidence was measured at `GOAL_X=440`; at `GOAL_X=500` the detector has never
+    fired at all, so "fires past 500" is a code fact, not an observed one.
+  * `inert=` is the entry-time gate, not during-episode motion: g0i0r2 was `inert=True` with
+    `opp_span=462`, and g0i0r4 was `inert=False` with `opp_span=0`. The two flags disagree, so
+    "opponent actually played" needs one definition, not two.
