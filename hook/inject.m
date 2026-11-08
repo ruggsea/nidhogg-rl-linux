@@ -1056,6 +1056,50 @@ static void pump_brain(void) {
     LOG("[brain] brainExistsForPlayerIndex(%d) -> %.0f\n", idx, e);
 }
 
+// PUBLISH EVERY INSTANCE with plausible fighter coordinates.
+//
+// Why: all three name/position-based identifications failed on this build (title-screen attract
+// match, attract-demo input drift, and screens where fighters are visible but no instance matches
+// "YellowPlayer"/"OrangePlayer"). The only method that survived testing is a stimulus-response
+// test: press D and the instance we control must move RIGHT, press A and it must move LEFT.
+// To run that test the caller needs the candidates, so this dumps them.
+// Format: one line per instance: id, object_index, x, y.
+static void publish_instances(void) {
+    if (game_index < 0) return;
+    intptr_t slide = _dyld_get_image_vmaddr_slide((uint32_t)game_index);
+    const char *base = (const char *)(0x1015173f8ULL + (uint64_t)slide);
+    const char *table = *(const char *const *)base;
+    uint32_t mask = *(const uint32_t *)(base + 8);
+    if (!table || mask == 0 || mask > (1u << 20)) return;
+    char path[64];
+    snprintf(path, sizeof path, "/tmp/nid_insts_%s.txt", g_id);
+    FILE *f = fopen(path, "w");
+    if (!f) return;
+    int n = 0, seen = 0;
+    for (uint32_t b = 0; b <= mask && n < 120 && seen < 1200; b++) {
+        const char *node = *(const char *const *)(table + (size_t)b * 16);
+        while (node && n < 120 && seen < 1200) {
+            const char *inst = *(const char *const *)(node + 0x18);
+            if (inst) {
+                seen++;
+                float fx = *(const float *)(inst + 0xec);
+                float fy = *(const float *)(inst + 0xf0);
+                int obj = *(const int *)(inst + 0xb8);
+                uint32_t iid = *(const uint32_t *)(node + 0x10);
+                // keep only coordinates that could be a fighter position on screen
+                if (fx > -50.0f && fx < 1200.0f && fy > -50.0f && fy < 700.0f && (fx != 0.0f || fy != 0.0f)) {
+                    fprintf(f, "%u %d %.2f %.2f\n", iid, obj, fx, fy);
+                    n++;
+                }
+            }
+            node = *(const char *const *)(node + 0x08);
+        }
+    }
+    fclose(f);
+    static int logged = 0;
+    if (!logged) { LOG("[insts] wrote %d instances to %s\n", n, path); logged = 1; }
+}
+
 static void read_fighters(const char *tag) {
     if (game_index < 0) return;
     g_have154 = 0; g_have242 = 0;   /* honest per-scan presence */
@@ -1208,6 +1252,8 @@ static void *thread_probe(void *arg) {
         if (!pInstNumber) continue;
         tick++;
         if (getenv("NID_VARGATE") && tick % 60 == 0) probe_byname();
+        { static int inst_tick = 0;
+          if ((inst_tick++ % 5) == 0) publish_instances(); }
         if (getenv("NID_MAN")) {
             // publish EVERY probe-thread iteration (~40 Hz). The game can run at
             // 300+ fps and the agent's observation rate was the bottleneck, not

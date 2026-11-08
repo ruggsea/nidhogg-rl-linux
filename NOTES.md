@@ -4464,3 +4464,24 @@ correct signs. That is Pau's INTERFACE row 13 ("which instance is us"), which he
 What this means for today's results: the 211 recorded episodes were measured through an
 identification method that does not hold. None of the kill/death or fitness numbers in this log can
 be trusted to describe an agent playing Nidhogg.
+
+## Session 205 — tooling for response-based binding (built, not yet producing output)
+
+Two pieces written:
+
+  * `publish_instances()` in the hook - dumps every instance with plausible fighter coordinates as
+    `id object_index x y` to `/tmp/nid_insts_<id>.txt`, every 5th probe iteration. It exists because
+    the caller needs CANDIDATES to run a stimulus-response test against, and the name-based reader
+    only ever hands back the two it already believes in.
+  * `bind_player.py` - holds D, records dx for every candidate; holds A, records dx; and reports
+    which instance moved RIGHT then LEFT. That is the test a demo AI cannot pass, and it is the
+    first identification method in this project with both a named stimulus and a signed response.
+
+Status: the tooling compiles, but the instance dump is not appearing yet on a live launch - the
+inject log stops updating at the point the new game starts, so the freshly built dylib is either not
+loading or the dump path is not reached. That is plumbing, not a result, and it is recorded as
+unfinished rather than dressed up.
+
+Given how much of today was spent trusting a reader that turned out to bind nothing, the standard
+for the next tick is: no training run restarts until `bind_player.py` prints a BOUND line on a real
+match. Everything downstream depends on that one line being real.
