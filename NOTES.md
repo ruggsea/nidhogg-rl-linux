@@ -3863,3 +3863,30 @@ explains the recurring `A_px=0.0` failures: the game sits in exactly this state.
 
 Recorded as a negative so nobody spends another hour re-testing the tempting shortcut. The menu
 route remains the only one that produces a real fight, at the cost of ~60 s per entry.
+
+## Session 183 — I broke the entry coverage myself, and measured what READY actually does
+
+Two things.
+
+**1. Regression I introduced.** Last tick I cut entry from four variants to two to halve the cost
+of a failure. What I actually shipped was `((1,2),(2,2))` - both with `S=2`, so the `S=1` route
+was never tried again. Reading that back is embarrassing, because the observed symptom was
+exactly what a wrong route looks like: repeated READY dead-ends. Variants are now
+`((1,2),(1,1))` - two attempts, differing in the dimension that matters.
+
+**2. What READY does, measured.** With the pre-check firing on real states:
+
+```
+on READY platforms (y=155/155) - trying to start the round
+on READY platforms (y=129/160) - trying to start the round
+on READY platforms (y=160/160) - trying to start the round
+```
+
+`READY broken` never appeared: pressing Enter from the platforms does not start a round, and
+combined with Session 182 (startMatch(4) cycles among these same screens, D/F ignored) the
+conclusion is that the READY state on this build is a dead end reachable from the wrong menu
+route, not a countdown that can be waited out or advanced.
+
+The cost of the wrong route is ~60-90 s per attempt, which is why episodes were arriving at ~2.7
+minutes each. Whether the S=1 route fixes it is a measurement, not an assumption - the next
+entries will say.

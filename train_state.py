@@ -831,6 +831,17 @@ class InstanceManager:
                 if not self._accept_restart(tries=1, wait=accept_wait):
                     return False
                 continue
+            # FAST READY PRE-CHECK. Measured: live rounds have both fighters at y~560; READY
+            # screens sit at y~128 (and startMatch(4) cycles among them). Discovering that by
+            # running a gate that returns A_px=0.0 costs the same time but teaches nothing, so
+            # try to leave READY first.
+            if st["me_y"] < 300 and st["them_y"] < 300:
+                log(f"instance {self.iid}: on READY platforms (y={st['me_y']:.0f}/"
+                    f"{st['them_y']:.0f}) - trying to start the round")
+                self.break_ready(tries=2)
+                st2, _ = self.read_state()
+                if self.has_players(st2):
+                    st = st2
             self.prime_controls(prime)
             if self.prove_control(gate):
                 # AN INERT OPPONENT IS NOT A TRAINING MATCH. Measured: six consecutive
@@ -890,7 +901,11 @@ class InstanceManager:
         # of one), and no observed recovery ever came from exhausting all four variants, which
         # cost ~4 minutes of cycling before the same relaunch. The two most common variants are
         # enough to identify the route; the other two are a tax on every failure.
-        for n_lead, s_count in ((1, 2), (2, 2)):
+        # ONE OF EACH S-COUNT. Restricting to two variants last hour accidentally kept only
+        # S=2 options, so the S=1 route was never tried again - and the observed READY
+        # dead-ends (y=155/160 static, Enter does not start the round) are exactly what a wrong
+        # route looks like. Two attempts, but they now differ in the dimension that matters.
+        for n_lead, s_count in ((1, 2), (1, 1)):
             log(f"instance {self.iid}: trying entry n_lead={n_lead} S={s_count}")
             # (the duplicate `or self._try_entry(...)` here ran entry TWICE on the first
             # variant, doubling entry cost for nothing)
