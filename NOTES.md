@@ -3207,3 +3207,15 @@ reliable consequence of selection here needs two or three more generations.
 
 Note: the running game still has the 05:49 hook, so the x/y control test for Phase 4 has not
 fired yet - it needs the next relaunch.
+
+## Session 163 (cont.) — run status at 06:20
+
+45 episodes total. Generation 1 is in progress, one policy measured
+(`g1i0: fits=[1.94, 0.51, -14.36, -7.05, 7.88] mean -2.22, sd 8.62`).
+
+The game process has not been relaunched since 05:49, so the fixed hook (built 05:59, with the
+`x`/`y` control variables for the Match-variable query) is still not loaded. Nothing to do about
+that except wait: forcing a relaunch would interrupt a generation mid-flight, which is the one
+thing this run has been protected from for the last two hours.
+
+Deliberately no changes this tick beyond observation. `rounds won` = 0 across all 45 episodes.
