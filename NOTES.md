@@ -4631,3 +4631,40 @@ untouched, so a relaunch restored English, but the hazard is real:
 
 **D/A must never be pressed unless the room index says we are in an arena.** That is the next fix:
 gate the gate on the room.
+
+## Session 211 — ATTESTED: we control a fighter in a real TRAINING match
+
+After mapping the menu by hand and fixing the room-index bugs, a full check with evidence:
+
+**1. The path reaches TRAINING.** Room index (read from the int32 global) as I walked it:
+
+```
+room 2   -> PRESS ENTER / main menu
+Enter    -> still 2 (menu screens share the room)
+S, Enter -> 2 (SINGLE PLAYER submenu, then TRAINING partner list)
+Enter    -> 17   (match being set up)
+Enter    -> 29   (arena, fighters present)
+```
+
+**2. We control the fighter.** Holding D and sampling every instance:
+
+```
+player  inst 102878 (obj 244)  x  8.0 -> 34.0   (+26.0)
+sword   inst 102880 (obj 243)  x 16.0 -> 42.0   (+26.0)
+opponent inst 104157 (obj 154)  x 69.0 -> 68.0    (-1.0)
+```
+
+The fighter we command moves right by the commanded amount; its sword tracks it; the opponent does
+not move. That is a stimulus-response attestation, not an inference.
+
+**3. WHY the direction gate kept failing - found it.** The hook reads "me" from object 242, but the
+instance that actually responds to our keys is **object 244**. They are different objects. So the
+gate was pressing D, measuring object 242 (which does not move), and correctly reporting "not
+controllable" - while the real player stood one object index away, moving exactly as commanded.
+
+That single mismatch explains: gates failing on a live match, "no responder" during binding (the
+binder preferred obj 243/66/106), and every "the agent can't be controlled" reading today.
+
+Next fix is narrow and mechanical: make the state reader bind to the responding instance (by
+response, as designed) instead of trusting object 242, and re-run the gate. That is the last piece
+between here and real training.
