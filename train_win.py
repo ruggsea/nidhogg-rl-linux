@@ -624,7 +624,14 @@ def play(mgr, w, seconds, seed, tag, log=print):
         log(f"  {tag}: DISCARDED - opponent moved only {_th_span:.1f} px in {real_samples} "
             f"samples (inert opponent, not a training match)")
     # unscorable if we never reached a live, drivable match, or could not see enough of it
-    no_match = (real_samples < 20) or bool(inert) or inert_opponent or frozen_agent
+    # THE ENTRY GATE IS NOT EVIDENCE ABOUT THE EPISODE. A goldfish audit showed the two disagree
+    # in both directions (inert_entry=True with 462 px of opponent movement; inert_entry=False
+    # with 0 px), and the audit was right: measured in this run, two episodes with kills 3/2 and
+    # 3/3, opponent span 370-417 px and our own span 354 px were DISCARDED solely because the
+    # 10 s entry probe had failed. That throws away good fights - the most expensive resource in
+    # this project. Disqualification is now decided by during-episode evidence only; an entry
+    # failure is recorded as a warning.
+    no_match = (real_samples < 20) or inert_opponent or frozen_agent
     # attribute every abandonment instead of inferring it later
     # COORDINATE CALIBRATION. The round win/loss detector compares against GOAL_X=1650 and
     # GOAL_X_OPP=250, and `me_armed` needs me_x > GOAL_X-700 = 950. Every position observed

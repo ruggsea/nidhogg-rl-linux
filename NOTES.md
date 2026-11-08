@@ -4002,3 +4002,27 @@ Two lessons, both the same shape as everything else tonight:
 
 The honest summary of entry: success is ~40% and costs ~60-90 s per attempt either way. That is
 the largest single tax on this project's throughput, and no timing guess has fixed it.
+
+## Session 188 — the entry gate was disqualifying real fights
+
+Two consecutive episodes in the current run:
+
+```
+g0i0r0  fit=17.84  kills=3 deaths=2  opp_span=370.5  our span=[123..477]  no_match=True
+g0i0r1  fit= 9.65  kills=3 deaths=3  opp_span=417.0  our span=[81..263]   no_match=True
+```
+
+Both are real fights - both fighters moved hundreds of pixels, kills and deaths on both sides -
+and both were DISCARDED, solely because the 10-second entry probe had failed (`inert=True`).
+
+That is the same mistake the goldfish caught in the audit, still live in the trainer: the entry
+gate measures whether a *10 s probe* could move the fighter, while the episode itself is the
+stronger evidence. Good fights are the most expensive resource in this project (~60-90 s of entry
+each) and I was throwing them away over a probe.
+
+`no_match` is now decided by during-episode evidence only:
+`real_samples < 20` (window truncated), `inert_opponent` (statue), `frozen_agent` (we never
+moved). An entry-gate failure is recorded as `entry_gate_warning` and no longer disqualifies.
+
+If this is right, the number of usable episodes per generation should rise sharply in the next
+hour. That is a falsifiable expectation, and the scoreboard will show whether it happens.
