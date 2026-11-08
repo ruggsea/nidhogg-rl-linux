@@ -2896,3 +2896,29 @@ which is WORSE than the 11.76 measured on the territory-dominated score - but th
 carried the biased +30 for even trades and only 3 valid reps. A new run is measuring it with
 the corrected term. Publishing a variance comparison before that finishes would be exactly the
 mistake this session has been full of.
+
+## Session 153 — hypothesis falsified: an integer kill objective is not less noisy
+
+Prediction from Session 151 was that replacing the continuous territory score with integer kills
+would cut the variance. Measured with the corrected net-kill term:
+
+```
+fitness on territory-dominant score (Session 151):  sd 11.76   (n=4)
+fitness on net-kills score        (this run):       sd 23.32   (n=3, fits 3.01 / -23.76 / -43.46)
+```
+
+WORSE, not better. The variance is not a property of the metric - it is a property of the
+environment. Kill counts genuinely range 0-4 per minute depending on how the CPU behaves, and no
+choice of weighting removes that.
+
+So option 2 from Session 151 is falsified, and saying so is the useful outcome: I had a
+reasonable hypothesis, a cheap test, and the test said no. Options now:
+
+  * accept the noise and buy precision with reps (se = sd/sqrt(n); sd 23 needs n~20 for se 5,
+    i.e. ~25 min per policy);
+  * reduce per-episode variance by shortening the window and taking many more, cheaper draws
+    (untested - sd at a 20 s window is unknown, and is measurable in ~15 min);
+  * find the round counter, whose outcome is near-binary and therefore structurally low-variance.
+
+The third is still the only one that changes the character of the problem rather than paying
+for it, and it is blocked on reading GML variables of the non-player objects.
