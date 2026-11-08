@@ -103,6 +103,18 @@ def read_state(iid):
         return None
 
 
+def _at_edge(x):
+    """True if x sits at an arena end.
+
+    MEASURED (300 s trajectory, 6224 samples): the arena spans x ~0..462 and kill/respawn
+    teleports land at the ends - observed jumps 2->462, 346->0, 246->-32, 256->6. A teleport
+    is therefore only a death if it lands at an edge. Requiring that fixed the previous
+    failure mode, where a bare "jump > SPAWN_JUMP" test counted 485 deaths in one episode and
+    the reward was switched off entirely.
+    """
+    return x is not None and (x < 60.0 or x > 400.0)
+
+
 def read_raw(iid):
     """Raw published state, flags included: (o_x, o_y, y_x, y_y, have_o, have_y)."""
     try:
@@ -308,10 +320,10 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 start_me, best_them = st["me_x"], st["them_x"]
                 start_them = st["them_x"]
                 best_me, worst_them = st["me_x"], st["them_x"]
-            elif me_jump:
-                died_me = True                    # we respawned => we died
+            elif me_jump and _at_edge(st["me_x"]):
+                died_me = True                    # we respawned at an arena end => we died
                 me_deaths += 1
-            elif them_jump:
+            elif them_jump and _at_edge(st["them_x"]):
                 died_them = True
                 them_deaths += 1
 
@@ -393,7 +405,11 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # reappears) - that is the next thing to build.
     # DIAGNOSTIC ONLY - never in fitness. Measured: 485 "kills" in one episode from the
     # teleport detector, which would contribute +249 and swamp every real term.
-    kills_reward = 0.0
+    # Kills and deaths, now measured by the edge-teleport signature rather than a bare
+    # jump threshold (which produced 485 false kills and had to be disabled). Weighted well
+    # below a round win (60) but enough to shape a fight: taking a stock is progress toward
+    # crossing, and dying hands the CPU ground.
+    kills_reward = 6.0 * them_deaths - 4.0 * me_deaths
     # TERRITORY IS THE LEARNING SIGNAL. Measured: every individual scored an identical
     # -8.3 because a Training match is ONE round, so the win/loss term is a single bit
     # and the GA has nothing to differentiate on. These continuous terms give a gradient
@@ -458,7 +474,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
     if start_them is not None and worst_them is not None:
         _th_rng = f" them=[{worst_them:.0f}..{best_them:.0f}]"
     log(f"  {tag}: exit={exit_reason} samples={real_samples} inert={bool(inert)} "
-        f"adv={_adv}{_me_rng}{_th_rng}")
+        f"adv={_adv}{_me_rng}{_th_rng} kills={them_deaths} deaths={me_deaths}")
     rec = {"no_match": bool(no_match), "adversary": _adv,
            "real_samples": real_samples,
            "advance": round(advance, 2), "conceded": round(conceded, 2),

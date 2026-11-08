@@ -2638,3 +2638,27 @@ trigger file and diff the dumps across a round transition (a transition is obser
 full-arena teleport measured in Session 142).
 
 Recording this as a negative with numbers, per Pau's rule that a negative is a deliverable.
+
+## Session 144 — Match(106) ruled out too; kills measured properly instead
+
+`Match` (obj=106), eleven snapshots over 2.5 min: the only varying large field is `+0xd0`
+(978 -> 6869 -> 7713), another monotone TIMER. `+0xec/+0xf0` vary because they are the object's
+own position. Nothing looks like a round count. So both `Match` and `MatchStats` are ruled out
+as round-score carriers, with numbers, and the search continues elsewhere (entry-point objects,
+HUD, or GML globals).
+
+Meanwhile, a real learning signal was sitting unused. The hook-side notes said the teleport
+kill detector had been switched OFF because it reported **485 kills in one episode**. The
+measured signature from Session 142 makes that fixable: kill/respawn teleports land at the
+ARENA ENDS (observed 2->462, 346->0, 246->-32, 256->6). A jump is only a death if it lands at
+an edge (x < 60 or x > 400), which is now required.
+
+Result, first episodes with the corrected detector:
+
+```
+g0i0  kills=6 deaths=9   (120 s, 4449 samples)
+g0i1  kills=1 deaths=3
+```
+
+Sane counts instead of hundreds, and `kills_reward = 6*kills - 4*deaths` is back in fitness.
+The agent dies more than it kills, which is consistent with everything else measured today.
