@@ -1032,41 +1032,53 @@ class InstanceManager:
         return best
 
     def dose_response(self, short=0.45, long=1.35, ratio=1.6, min_px=8.0):
-        """Is the movement CAUSED by our key, or just happening while we hold it?
+        """Is the movement CAUSED by our key, or merely happening while we hold it?
 
-        The direction gate says "D moved us right and A moved us left". A self-driving attract demo can
-        satisfy that by coincidence: it moves on its own, and over a 1.2 s hold it can easily drift right
-        and later left. The discriminator is PROPORTIONALITY: if we are controlling the fighter, holding
-        the key three times longer moves it roughly three times further. A demo AI has no such relation.
+        The direction gate can be satisfied by the title screen's attract demo, which moves on its own.
+        Proportionality cannot be faked: hold the key 3x longer, travel ~3x further.
 
-        Returns (ok, short_px, long_px, ratio_observed).
+        MEASURED PROBLEM with the first version: it only tested the D direction, and when the fighter was
+        already near the right edge during the long hold it hit the wall - the ratio collapsed and a
+        perfectly controllable fighter failed (seen as gate D=+149 A=+30, dose FAIL). So:
+          * re-centre between measurements by pushing back the way it came,
+          * test BOTH directions and accept proportionality in either one.
         """
         if not self.in_arena():
             return False, 0.0, 0.0, 0.0
         if self.bound_inst is None and self.bind_by_response() is None:
             return False, 0.0, 0.0, 0.0
 
-        def measure(seconds):
+        def hold(code, seconds):
+            t0 = time.time()
+            while time.time() - t0 < seconds:
+                self.press(code)
+                time.sleep(0.03)
+            time.sleep(0.12)
+
+        def measure(code, back, seconds):
             b0 = self.read_bound()
             if not b0:
                 return 0.0
-            t0 = time.time()
-            while time.time() - t0 < seconds:
-                self.press(68)                 # D
-                time.sleep(0.03)
-            time.sleep(0.15)
+            hold(code, seconds)
             b1 = self.read_bound()
-            return 0.0 if not b1 else (b1["me_x"] - b0["me_x"])
+            delta = 0.0 if not b1 else abs(b1["me_x"] - b0["me_x"])
+            hold(back, seconds * 0.9)      # re-centre so the next, longer hold has room
+            return delta
 
-        d_short = measure(short)
-        time.sleep(0.3)
-        d_long = measure(long)
-        observed = (d_long / d_short) if d_short > 1.0 else 0.0
-        ok = d_short >= min_px and d_long >= min_px * ratio and observed >= ratio
-        log(f"instance {self.iid}: dose-response {short:.2f}s -> {d_short:+.1f}px, "
-            f"{long:.2f}s -> {d_long:+.1f}px, ratio {observed:.2f} (need >= {ratio}) "
-            f"{'PASS' if ok else 'FAIL'}")
-        return ok, d_short, d_long, observed
+        best = (False, 0.0, 0.0, 0.0)
+        for name, code, back, sign in (("D", 68, 65, +1), ("A", 65, 68, -1)):
+            d_short = measure(code, back, short)
+            d_long = measure(code, back, long)
+            observed = (d_long / d_short) if d_short > 1.0 else 0.0
+            ok = d_short >= min_px and d_long >= min_px * ratio and observed >= ratio
+            log(f"instance {self.iid}: dose-response[{name}] {short:.2f}s -> {d_short:.1f}px, "
+                f"{long:.2f}s -> {d_long:.1f}px, ratio {observed:.2f} "
+                f"{'PASS' if ok else 'no'}")
+            if ok:
+                return True, d_short, d_long, observed
+            if observed > best[3]:
+                best = (False, d_short, d_long, observed)
+        return best
 
     def _opponent_moves(self, seconds=5.0, min_px=15.0):
         """True if the CPU actually plays during this window.
