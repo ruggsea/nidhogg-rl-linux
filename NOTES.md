@@ -4142,3 +4142,36 @@ the mean, because it says the behaviour is unstable rather than simply weak.
 The general shape of the evidence after ~200 recorded episodes today: the agent loses exchanges
 about 3:2, no round transition has ever been observed, and the honest ordering of the six hand-
 written seeds, if any, needs more reps than a 3-hour generation currently provides.
+
+## Session 194 — how the agent dies, across a whole generation
+
+Every death records the action held at the moment of death. Across this run (33 recorded deaths):
+
+```
+D_right  18   (55%)   advancing into the opponent without attacking
+F_attack 10   (30%)   losing the exchange at close range
+A_left    2    (6%)   retreating
+```
+
+Two distinct failure modes, and they are not the same bug:
+
+  * **55% die while walking forward.** The agent closes distance without a plan and is killed on
+    the way in. That is what "always right" does, and it is the seed with a negative mean.
+  * **30% die while attacking.** When it does swing, it loses the exchange - attacked at a moment
+    when the opponent is also swinging, or out of range so the swing whiffs and the reply lands.
+
+The plausible tactic that addresses both is hit-and-run: attack from just outside range, then
+retreat. The closest existing seed is "feint" (g0i4), and its mean is -1.73 - not better than
+always-attack (+2.58) at n=5. So the obvious idea is not obviously right, which is why the
+histogram matters more than the guess: it says where to look, not what to conclude.
+
+Four complete blocks now:
+
+```
+always_attack  +2.58
+always_right   -0.93
+feint          -1.73
+reach22       -12.26
+```
+
+Still nothing at 2 sigma. 33 episodes in this run.
