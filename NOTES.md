@@ -2982,3 +2982,29 @@ grows, so short episodes were the wrong trade (and the 45 s window I switched to
 was on the wrong side of it too). Configuration going forward: window 60, reps 6.
 
 This is the first quantitative basis for choosing the window rather than guessing it.
+
+## Session 156 — reverting the reward to the shape that was actually measured as lower-noise
+
+The kill-dominant reward produced exactly what its falsification predicted:
+
+```
+g0i0 fits: -97.6, 22.7, -41.9, 2.8, ...   (range ~120 points, sd ~50)
+```
+
+A net-stock term of 20 points per kill gives a single episode the power to swing the fitness by
+hundreds, and the environment supplies 0-6 kills per minute. So the reward is now back to the
+configuration with the measured sd of 11.8 - territory dominant, kills as a 6-point nudge:
+
+```
+kills_reward = 6 * (kills - deaths)
+SHAPING      = 1.0
+window 60, reps 6
+```
+
+Both changes this session that made the reward *more* responsive were measured to make it
+*worse* (kill-dominant: sd 23.3 vs 11.8; shaping at 0.25 with kills at 20: sd ~50). The
+lower-variance choice keeps losing to the boring one, which is worth writing down: for this
+environment, a smaller-magnitude, densely-sampled signal beats a sparse, high-magnitude one.
+
+Configuration now fixed on measured grounds: window 60, reps 6, territory-dominant reward,
+~8 min per policy, ~1 h per generation of six.

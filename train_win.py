@@ -437,11 +437,15 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # spread of ~5 for the kill counts themselves). Taking a stock is the mechanical
     # precondition for crossing the goal, so this points at the objective as well as being
     # measurable.
+    # SMALL NET TERM. The kill-dominant version (20 per net stock) was measured as NOISIER
+    # than territory (sd 23.3 vs 11.8) and produced spreads from -97.6 to +22.7 within one
+    # policy. Kept here only as a nudge, because kills are a genuine precondition for
+    # crossing while territory is the measured lower-variance signal.
     # NET stocks, not separate rewards. Measured immediately after the first version:
     # g0i0r2 with kills=3, deaths=3 scored fit=28.9 and g0i0r3 with the same 3/3 scored 32.3 -
     # i.e. an EVEN trade was being paid +30, because 25 per kill against 15 per death is a
     # 5:3 ratio. A one-for-one exchange should be worth nothing. Now it is.
-    kills_reward = 20.0 * (them_deaths - me_deaths)
+    kills_reward = 6.0 * (them_deaths - me_deaths)
     # TERRITORY IS THE LEARNING SIGNAL. Measured: every individual scored an identical
     # -8.3 because a Training match is ONE round, so the win/loss term is a single bit
     # and the GA has nothing to differentiate on. These continuous terms give a gradient
@@ -490,7 +494,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # policy gave sd 11.76 on a score dominated by the territory terms, which is larger than
     # any plausible difference between two policies. Kills (integer) now carry the objective;
     # territory and progress are kept at a quarter weight as directional shaping only.
-    SHAPING = 0.25
+    SHAPING = 1.0
     fitness = (60.0 * rounds_won - 30.0 * rounds_lost
                + 150.0 * matches_won - 80.0 * matches_lost
                + kills_reward
