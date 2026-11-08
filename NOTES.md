@@ -4268,3 +4268,34 @@ platform screen that waits for a second human) while S=1 selects TRAINING. Uncon
 hypothesis with a mechanism, not a result.
 
 Current run: 2 episodes, 1 discarded, entry still frequently landing on non-playing screens.
+
+## Session 199 — CORRECTION: a game relaunch does NOT always recover a stall
+
+Earlier tonight I concluded "every recovery from an A_px=0.0 screen came from a fresh launch".
+That is now falsified by its own log:
+
+```
+[15:00:33] no variant worked on this process - one relaunch
+[15:00:38] launched pid 33457
+[15:06:50] on READY platforms (y=192/160)      <- still stuck, six minutes later
+[15:07:08] cached entry failed, re-searching
+[15:08:28] S=1 gave no live fight
+```
+
+A fresh GAME launch did not recover it. What did was restarting the TRAINER, which killed the game
+and started over cleanly:
+
+```
+[15:11:42] live AND drivable (gate confirmed)
+[15:11:58] control gate A_px=12.0 (PASS)
+g0i0r0: me=[162..477] them=[20..488] kills=3 deaths=3 opp_span=469
+[15:13:18] control gate A_px=401.0 (PASS)      <- 401 px of movement, a working match
+```
+
+So the stall is not always a per-process condition; something in the trainer's accumulated state
+(instance bookkeeping, entry cache, or the game's own session) can degrade until the whole thing is
+restarted. That is a fifth failure mode, and like the others it was found by contradicting a claim I
+had already written down.
+
+Practical rule for the loop: if A_px stays single-digit across two entry cycles, restart the
+trainer, not just the game.
