@@ -3832,3 +3832,34 @@ key log.
 Also in this tick: the goldfish's third falsification (selection receiving invalid episodes) is
 fixed and the run restarted to load it. Selection now logs when it excludes anything, so the leak
 cannot silently return.
+
+## Session 182 — startMatch(4) is NOT a shortcut to a real fight (measured)
+
+Pau's hook exposes `pump_startmatch`, which calls the game's own `startMatch(mode)` on the main
+thread with `self` set to the cached Match instance. If that worked, entry would be one FFI call
+instead of a minute of menu navigation. Tested live:
+
+```
+[match] startMatch(4) self=0x1283cde00
+[match] startMatch(4) executed on main thread
+state: 191.0 128.0 132.0 128.0 1 1      <- fighters on the READY platforms (y=128)
+state: 215.0 128.0 106.0 128.0 0 0      <- 4 s later, nothing happening
+```
+
+Then, pressing keys to try to start the round:
+
+```
+key D  -> unchanged
+key F  -> unchanged
+key Enter -> them=246 y=22, me=74 y=22   <- advanced to another screen
+Enter x3 -> y=128 again, static
+hold D  -> unchanged
+```
+
+So `startMatch(4)` reaches a READY/platform state that Enter cycles through without ever producing
+a live round (live rounds are at y~560 with the CPU moving). This matches the older tree's note
+that the FFI route yields a passive opponent while the menu route yields a real one, and it
+explains the recurring `A_px=0.0` failures: the game sits in exactly this state.
+
+Recorded as a negative so nobody spends another hour re-testing the tempting shortcut. The menu
+route remains the only one that produces a real fight, at the cost of ~60 s per entry.

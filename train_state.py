@@ -885,7 +885,12 @@ class InstanceManager:
                 self.probe_match_vars_once()
                 return True
             log(f"instance {self.iid}: cached entry failed, re-searching")
-        for n_lead, s_count in ((1, 2), (2, 2), (1, 1), (2, 1)):
+        # TWO variants, then relaunch. Measured over this session: every recovery from an
+        # A_px=0.0 screen came from a FRESH LAUNCH (10:25, 10:27 both recovered within seconds
+        # of one), and no observed recovery ever came from exhausting all four variants, which
+        # cost ~4 minutes of cycling before the same relaunch. The two most common variants are
+        # enough to identify the route; the other two are a tax on every failure.
+        for n_lead, s_count in ((1, 2), (2, 2)):
             log(f"instance {self.iid}: trying entry n_lead={n_lead} S={s_count}")
             # (the duplicate `or self._try_entry(...)` here ran entry TWICE on the first
             # variant, doubling entry cost for nothing)
