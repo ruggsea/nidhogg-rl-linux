@@ -1,0 +1,23 @@
+{
+ "t1": {
+  "purpose": "TASK: Report the value of the state key \"rooms.2\" in state/facts.json and the sha256 of state/facts.json.",
+  "ts": 1794168737.872442,
+  "task": "/tmp/task_t1.md",
+  "results": "/Users/ruggsea/Projects/nidhogg-pau/state/agent_t1_result.md",
+  "game": false
+ },
+ "g1": {
+  "purpose": "TASK: Report the value of the state key \"rooms.2\" in state/facts.json and the sha256 of state/facts.json.",
+  "ts": 1794168755.0715399,
+  "task": "/tmp/task_g1.md",
+  "results": "/Users/ruggsea/Projects/nidhogg-pau/state/agent_g1_result.md",
+  "game": true
+ },
+ "audit1": {
+  "purpose": "TASK: Audit this claim against the repository's own records.",
+  "ts": 1794168846.215851,
+  "task": "/tmp/task_audit1.md",
+  "results": "/Users/ruggsea/Projects/nidhogg-pau/state/agent_audit1_result.md",
+  "game": false
+ }
+}

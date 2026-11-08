@@ -5026,3 +5026,50 @@ Changes made in response:
 Remaining from the review, not yet done: one leased writer for the input files (so a subagent cannot
 write `/tmp/nid_keys` behind the trainer's back), and generating the user-facing report from the claims
 ledger so a number that is not a ledger row cannot reach the user.
+
+## Session 223 — roles, and keeping the harness project-local
+
+### The operating model, made explicit
+
+  * **Node "engineer"** (this session): builds and maintains the harness and the loop. It does NOT
+    drive the game.
+  * **Node "operator"** (tmux session `nidhogg-agent`, deepseek-v4-pro): owns the game. It must claim
+    `tools/gameslot.py` before launching or pressing keys.
+  * **Subagents** (`tools/agents.py spawn`): short-lived, focused, one task, results to a file.
+
+Measured violation of that model, by me: the slot read FREE while I ran `game.py` bind tests, i.e. the
+engineer was pressing keys on the operator's game. The lock existed and I ignored it. From here the
+engineer does not touch the game while the operator holds the slot.
+
+### Communication, now two-way
+
+`tools/agents.py send/tail/wait` let the engineer talk to a child and read what it is doing, but a child
+had no way back. Added `tools/mailbox.py`:
+
+    python3 tools/mailbox.py post --to operator --from engineer "..."
+    python3 tools/mailbox.py check --as operator
+    python3 tools/mailbox.py post --to engineer --from operator "..."
+
+Append-only files with per-reader cursors (`state/mail/<name>.md`, `state/mail/.<name>.cursor`), so no
+message is lost or overwritten.
+
+### The pi install is not ours to modify
+
+I had written `goldfish.md` and `decomp.md` into `~/.pi/agent/agents/`. Removed. Both now live in
+`.pi/agents/` inside this repo, and `tools/agents.py spawn --persona .pi/agents/<name>.md` appends them
+per-process. Verified `~/.pi/agent/agents/` contains neither, and `~/.pi/agent/settings.json` has no
+project entries. Everything the project needs is now under the repo: `game.py`, `tools/`, `state/`,
+`loop/`, `bin/`, `.pi/agents/`.
+
+### Harness affordance added this tick: `game.py`
+
+One choke point for driving the game, replacing ad-hoc file writes plus wall-clock sleeps:
+
+    game.status()        processes, fps, room (named), bound fighter, slot owner
+    game.enter_training()  highlight-bar navigation, verified by room
+    game.state()         OUR fighter (bound by response) + opponent + room + frame
+    game.do("right", 12) hold a direction for 12 GAME FRAMES
+    game.rounds(60)      report round transitions (room changes / teleports)
+
+`game.do()` refuses movement keys outside an arena room, which is the rule that keeps D/A from
+cycling the language in OPTIONS.
