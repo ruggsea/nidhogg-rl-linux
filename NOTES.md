@@ -4826,3 +4826,47 @@ attestation audit (docs/AUDIT_ATTEST.md).
 
 Honest status: no attested control yet, `rounds won` = 0, no win rate. The loop continues until
 out/ATTESTED exists.
+
+## Session 217 — deterministic navigation found; binding still picks false responders
+
+### Navigation is now deterministic (screenshot-verified at each step)
+
+Measuring the keys properly settled it:
+
+```
+S (83)        -> moves the cursor DOWN, and WRAPS
+W (87)        -> does NOT move this menu at all
+ArrowUp (38)  -> acts as BACK (closes the menu)
+Enter (13)    -> select
+```
+
+Because the cursor starts on **MULTIPLAYER** on every fresh menu open (seen three times), and `S`
+wraps, five presses land exactly on SINGLE PLAYER:
+
+```
+Enter                       -> main menu (cursor MULTIPLAYER)
+S x5                        -> SINGLE PLAYER          [verified by screenshot]
+Enter                       -> submenu overlay (ARCADE / TRAINING), still room 2
+S                           -> TRAINING
+Enter                       -> partner list
+Enter                       -> partner submenu (DIFFICULTY / START)
+S                           -> START
+Enter                       -> room 17 -> 29 (rCastleCenter), fighters published
+```
+
+That is the first fully deterministic path from a fresh launch to an arena, with no searching, no
+guessing and no risk of landing in OPTIONS (which cycles the language).
+
+### Binding is not yet trustworthy
+
+At room 29, `bind_by_response` reported `BOUND to instance 100404 (dx_D=+35, dx_A=-75)` - but that
+instance sits at **y=55**, not on the ground (fighters read y~160), and the control gate then measured
+D=0, A=0 against it. So the binder accepted a false responder: an object that moves when we press
+keys without being the fighter (camera, effect, UI). With the attract demo running in the same room
+there is no shortage of objects that move on their own.
+
+Needed: a binding criterion that also requires the candidate to look like a fighter - on the ground
+(y~160), within the arena x-range, and with motion of a plausible size - and to answer on TWO
+independent press/release cycles rather than one.
+
+Honest status: navigation solved, control attestation still not achieved, `rounds won` = 0.
