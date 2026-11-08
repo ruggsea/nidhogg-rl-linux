@@ -141,30 +141,43 @@ def bind(verbose=False):
         if verbose:
             print(f"  not in an arena (room {room()}) - refusing to press D/A")
         return None
-    wins = {}
+    # Direction-accumulating, not cycle-paired: requiring D-right AND A-left in the SAME cycle
+    # failed on live matches because the D hold's momentum carried into the A hold (measured:
+    # "1 candidate responded once" on a controllable match). Each direction is measured from a
+    # fresh baseline with a settle between, and the max displacement is accumulated across cycles.
+    rights = {}
+    lefts = {}
     for _ in range(3):
         a = instances()
         if not a:
             return None
         _hold(K["right"], 20)
         b = instances() or {}
-        _hold(K["left"], 20)
-        c = instances() or {}
-        for inst in set(a) & set(b) & set(c):
+        for inst in set(a) & set(b):
             obj, x, y = a[inst]
-            if obj not in PLAYER_OBJS or not (100 <= y <= 320):
-                continue
-            if (b[inst][1] - a[inst][1]) >= 6 and (c[inst][1] - b[inst][1]) <= -6:
-                wins[inst] = wins.get(inst, 0) + 1
-        good = [i for i, n in wins.items() if n >= 2]
-        if good:
-            _BOUND["id"] = good[0]
-            if verbose:
-                print(f"  bound to instance {good[0]} (obj {a[good[0]][0]})")
-            return good[0]
+            if obj in PLAYER_OBJS and 100 <= y <= 320:
+                rights[inst] = max(rights.get(inst, 0.0), b[inst][1] - a[inst][1])
+        wait(10)                       # settle: release, let momentum die
+        c = instances()
+        if not c:
+            return None
+        _hold(K["left"], 20)
+        d = instances() or {}
+        for inst in set(c) & set(d):
+            obj, x, y = c[inst]
+            if obj in PLAYER_OBJS and 100 <= y <= 320:
+                lefts[inst] = max(lefts.get(inst, 0.0), c[inst][1] - d[inst][1])
+        wait(10)
+    cands = [i for i in rights if rights.get(i, 0.0) >= 6 and lefts.get(i, 0.0) >= 6]
+    if not cands:
+        if verbose:
+            print(f"  no fighter answered both directions (D={ {k: round(v, 1) for k, v in rights.items()} } A={ {k: round(v, 1) for k, v in lefts.items()} })")
+        return None
+    best = max(cands, key=lambda i: rights[i] + lefts[i])
+    _BOUND["id"] = best
     if verbose:
-        print(f"  no fighter answered both directions ({len(wins)} responded once)")
-    return None
+        print(f"  bound to instance {best} (D +{rights[best]:.0f} A -{lefts[best]:.0f})")
+    return best
 
 
 def state():

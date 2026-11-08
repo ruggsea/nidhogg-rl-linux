@@ -470,7 +470,7 @@ class InstanceManager:
         except (OSError, ValueError):
             return None
 
-    def prove_control(self, hold=1.8, min_px=6.0):
+    def prove_control(self, hold=1.2, min_px=6.0):
         if not self.in_arena():
             log(f"instance {self.iid}: refusing to press D/A - not in an arena room "
                 f"(this is how the language got flipped to French)")
@@ -483,55 +483,78 @@ class InstanceManager:
         a policy that legitimately chooses "nothing" stands still, so a per-tick motion
         test blocks the very episodes we want to score (observed: the trainer looping on
         "live fight confirmed" while the adversary said "frozen", so nothing ever scored).
+
+        DIRECTIONALITY, not motion: the title screen's attract demo moves real fighters but they
+        never answer a held key. Holding D must move us RIGHT and holding A must move us LEFT.
+        Each direction is measured from a FRESH baseline with a settle between the holds, because
+        the D hold's momentum carried into the A hold and read as "A=+1" on a live match (measured:
+        gate D=+144 A=+1 -> FAIL, the exact failure this project kept seeing). A bound instance is
+        required: without it the gate reads the hook's "me" slot, which is the CPU (label swap), so
+        it can never pass.
         """
-        st, _ = self.read_state()
-        # position-based presence (flags are unreliable - see has_players)
-        if not self.has_players(st):
+        if self.bound_inst is None:
             self.gate_px = 0.0
+            self.gate_dir = {}
+            log(f"instance {self.iid}: gate requires a bound instance - run bind_by_response first")
             return False
-        # TRY BOTH DIRECTIONS. This only ever held D, so a fighter standing against the right
-        # wall cannot move right and the gate fails no matter how responsive the game is.
-        # Measured: "control gate A_px=8.0 (FAIL)" - exactly on the >8.0 threshold - and
-        # earlier "A_px=3.0 (FAIL)" / "A_px=0.0 (FAIL)", each triggering a full re-entry.
-        # DIRECTIONALITY, not motion. The title screen runs a LIVE ATTRACT MATCH: yellow vs orange
-        # fighting behind the logo (confirmed by screenshot). Those are real YellowPlayer /
-        # OrangePlayer instances and they move, so every motion-based gate passes on the title
-        # screen - which is what this project has been training against. An attract demo cannot
-        # satisfy a directional test: holding D must move us RIGHT and holding A must move us
-        # LEFT, in that order, each with the expected sign.
+        # Create space from the opponent so the direction holds do not walk us onto its sword.
+        self._make_space(seconds=1.5)
         results = {}
         for name, key, sign in (("D", 68, +1), ("A", 65, -1)):
-            if self.bound_inst is not None:
-                b = self.read_bound()
-                if not b:
-                    self.gate_px = 0.0
-                    return False
-                x0 = b["me_x"]
-            else:
-                st0, _ = self.read_state()
-                if not self.has_players(st0):
-                    self.gate_px = 0.0
-                    return False
-                x0 = st0["me_x"]
+            b = self.read_bound()
+            if not b:
+                self.gate_px = 0.0
+                return False
+            x0 = b["me_x"]
             best = 0.0
             t0 = time.time()
             while time.time() - t0 < hold:
                 self.press(key)
-                b2 = self.read_bound() if self.bound_inst is not None else None
+                b2 = self.read_bound()
                 if b2 is not None:
                     best = max(best, (b2["me_x"] - x0) * sign)
-                else:
-                    s2, _ = self.read_state()
-                    if s2 is not None:
-                        best = max(best, (s2["me_x"] - x0) * sign)
                 time.sleep(0.04)
             results[name] = best
+            time.sleep(0.5)          # settle between directions: kill the momentum
         self.gate_px = max(results.values())
         self.gate_dir = results
         ok = results.get("D", 0.0) > min_px and results.get("A", 0.0) > min_px
         log(f"instance {self.iid}: direction gate D=+{results.get('D', 0.0):.1f} "
             f"A={results.get('A', 0.0):.1f} -> {'PASS' if ok else 'FAIL'}")
         return ok
+
+    def _opponent_x(self):
+        """x of the nearest player-ish instance that is NOT our bound fighter, or None."""
+        me = self.read_bound()
+        if me is None:
+            return None
+        mx = me["me_x"]
+        best = None
+        try:
+            with open(INSTS.format(self.iid)) as f:
+                for line in f:
+                    p = line.split()
+                    if len(p) == 4 and int(p[0]) != self.bound_inst and int(p[1]) in (154, 242, 244, 245):
+                        x = float(p[2])
+                        if best is None or abs(x - mx) < abs(best - mx):
+                            best = x
+        except (OSError, ValueError):
+            return None
+        return best
+
+    def _make_space(self, seconds=1.5):
+        """Run the bound fighter AWAY from the nearest opponent, so the direction gate is not
+        polluted by a sword clash (which is what turned D=+144 A=+1 into a false FAIL)."""
+        ox = self._opponent_x()
+        me = self.read_bound()
+        if ox is None or me is None:
+            return
+        key = 65 if ox >= me["me_x"] else 68      # opponent on the right -> run left, else right
+        t0 = time.time()
+        while time.time() - t0 < seconds:
+            self.press(key)
+            time.sleep(0.04)
+        time.sleep(0.4)
 
     def _accept_restart(self, tries=3, wait=12.0):
         """Dismiss the post-round screen and start the next match.
@@ -933,12 +956,12 @@ class InstanceManager:
                 return None
             return out or None
 
-        def hold_key(code):
+        def hold_key(code, duration):
             t0 = time.time()
-            while time.time() - t0 < hold:
+            while time.time() - t0 < duration:
                 self.press(code)
-                time.sleep(0.05)
-            time.sleep(0.2)
+                time.sleep(0.04)
+            time.sleep(0.4)          # settle: release, let momentum die before the next read
 
         # Player-ish object indices, from the decompiled room/object survey. MEASURED in room 29:
         # instance obj=154 responded to D (+64) and A (-25) while obj=244 never moved at all - so
@@ -951,32 +974,44 @@ class InstanceManager:
             obj, x, y = t
             return obj in PLAYER_OBJS and 0.0 <= x <= 1600.0 and 100.0 <= y <= 320.0
 
-        wins = {}
+        # Direction-accumulating, not cycle-paired. The old test required D-right AND A-left in
+        # the SAME cycle (2 of 3), which failed on a live match: the D hold's momentum carried into
+        # the A hold, so A read +0 and the cycle was thrown away (measured: "1 candidates responded
+        # once" on a controllable match). Now each direction is measured from a FRESH baseline with
+        # a settle between, and the max displacement is accumulated across all cycles. A candidate
+        # must move right under D and left under A, but not in the same cycle. The attract demo still
+        # fails: its fighters move on their own script and never answer a held key.
+        rights = {}
+        lefts = {}
         for _ in range(attempts):
             a = snapshot()
             if not a:
-                log(f"instance {self.iid}: bind - no instance dump")
-                return None
-            hold_key(68)                       # D -> expect +dx
+                continue
+            hold_key(68, hold)                 # D -> expect rightward
             b = snapshot() or {}
-            hold_key(65)                       # A -> expect -dx
-            c = snapshot() or {}
-            for inst in set(a) & set(b) & set(c):
-                if not fighter_shaped(a[inst]):
-                    continue
-                dx_d = b[inst][1] - a[inst][1]
-                dx_a = c[inst][1] - b[inst][1]
-                if dx_d >= min_px and dx_a <= -min_px:
-                    wins[inst] = wins.get(inst, 0) + 1
-            best = [i for i, n in wins.items() if n >= 2]
-            if best:
-                self.bound_inst = best[0]
-                log(f"instance {self.iid}: BOUND to instance {best[0]} "
-                    f"(responded on {wins[best[0]]} cycles, on the ground)")
-                return best[0]
-        log(f"instance {self.iid}: bind found no fighter-shaped responder "
-            f"({len(wins)} candidates responded once) - not a controllable match")
-        return None
+            for inst in set(a) & set(b):
+                if fighter_shaped(a[inst]):
+                    rights[inst] = max(rights.get(inst, 0.0), b[inst][1] - a[inst][1])
+            c = snapshot()
+            if not c:
+                continue
+            hold_key(65, hold)                 # A -> expect leftward
+            d = snapshot() or {}
+            for inst in set(c) & set(d):
+                if fighter_shaped(c[inst]):
+                    lefts[inst] = max(lefts.get(inst, 0.0), c[inst][1] - d[inst][1])
+
+        cands = [i for i in rights if rights.get(i, 0.0) >= min_px and lefts.get(i, 0.0) >= min_px]
+        if not cands:
+            log(f"instance {self.iid}: bind found no fighter-shaped responder "
+                f"(D={ {k: round(v, 1) for k, v in rights.items()} } "
+                f"A={ {k: round(v, 1) for k, v in lefts.items()} })")
+            return None
+        best = max(cands, key=lambda i: rights[i] + lefts[i])
+        self.bound_inst = best
+        log(f"instance {self.iid}: BOUND to instance {best} "
+            f"(D +{rights[best]:.0f} A -{lefts[best]:.0f})")
+        return best
 
     def _opponent_moves(self, seconds=5.0, min_px=15.0):
         """True if the CPU actually plays during this window.
