@@ -4668,3 +4668,34 @@ binder preferred obj 243/66/106), and every "the agent can't be controlled" read
 Next fix is narrow and mechanical: make the state reader bind to the responding instance (by
 response, as designed) instead of trusting object 242, and re-run the gate. That is the last piece
 between here and real training.
+
+## Session 212 — the control gate PASSES on a real match (first time, attested)
+
+With the state reader routed through the instance that answers our keys:
+
+```
+BOUND to instance 100338  (dx_D=+100.0  dx_A=-75.0)     <- responds to both directions
+position: me_x = 320
+direction gate D=+63.0  A=+46.0 -> PASS
+```
+
+That is the attestation this project has never had: a specific instance, identified by its response
+to our keystrokes, measured moving right under D and left under A, in a live match reached by a
+verified menu path.
+
+The chain now stands as:
+
+1. **menu path** mapped by hand with screenshots (PRESS ENTER -> W -> Enter -> S -> Enter ->
+   partner -> S -> START -> Enter for the intro card), with room index moving 2 -> 17 -> 29;
+2. **room index** read from `_Current_Room`, an int32 global (decompiled), used to know which screen
+   we are on and to avoid pressing D/A inside menus (which had silently changed the language to
+   French);
+3. **instance binding** by stimulus-response, because the hook's named "player" (object 242) is not
+   the object we control (object 244 / instance 100338 in this run);
+4. **control gate** passing against the bound instance, not the named one.
+
+Every earlier "the agent cannot be controlled" reading was this chain being broken at step 3.
+
+What is still outstanding before any training claim: the episode loop in train_win.py still reads
+through the old named-state path, so it must be switched to the bound instance, and only then can
+fitness numbers mean anything.

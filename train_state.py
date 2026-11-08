@@ -321,6 +321,25 @@ class InstanceManager:
             self.out = None
         self.proc = None
 
+    def read_bound(self):
+        """Position of the instance we actually control, from the hook's instance dump.
+
+        MEASURED: the hook's named "player" is object 242, but the instance that responds to our
+        keys is object 244 (instance 102878 in one run). Reading 242 while commanding 244 is why
+        every gate reported "not controllable" on a live, controllable match.
+        """
+        if self.bound_inst is None:
+            return None
+        try:
+            with open(INSTS.format(self.iid)) as f:
+                for line in f:
+                    p = line.split()
+                    if len(p) == 4 and int(p[0]) == self.bound_inst:
+                        return {"me_x": float(p[2]), "me_y": float(p[3])}
+        except (OSError, ValueError):
+            return None
+        return None
+
     def read_state(self):
         """Return (state-or-None, stale). A state can have have154/have242 == 0."""
         try:
@@ -406,19 +425,29 @@ class InstanceManager:
         # LEFT, in that order, each with the expected sign.
         results = {}
         for name, key, sign in (("D", 68, +1), ("A", 65, -1)):
-            st0, _ = self.read_state()
-            if not self.has_players(st0):
-                self.gate_px = 0.0
-                return False
-            x0 = st0["me_x"]
+            if self.bound_inst is not None:
+                b = self.read_bound()
+                if not b:
+                    self.gate_px = 0.0
+                    return False
+                x0 = b["me_x"]
+            else:
+                st0, _ = self.read_state()
+                if not self.has_players(st0):
+                    self.gate_px = 0.0
+                    return False
+                x0 = st0["me_x"]
             best = 0.0
             t0 = time.time()
             while time.time() - t0 < hold:
                 self.press(key)
-                s2, _ = self.read_state()
-                if s2 is not None:
-                    delta = (s2["me_x"] - x0) * sign
-                    best = max(best, delta)
+                b2 = self.read_bound() if self.bound_inst is not None else None
+                if b2 is not None:
+                    best = max(best, (b2["me_x"] - x0) * sign)
+                else:
+                    s2, _ = self.read_state()
+                    if s2 is not None:
+                        best = max(best, (s2["me_x"] - x0) * sign)
                 time.sleep(0.04)
             results[name] = best
         self.gate_px = max(results.values())
@@ -847,7 +876,9 @@ class InstanceManager:
             if winners:
                 break
         if winners:
-            winners.sort(key=lambda w: -(w[1] - w[2]))
+            # prefer a candidate whose object index looks like a player body rather than a UI
+            # element: measured player bodies are 244/154; menu cursors were 66/106.
+            winners.sort(key=lambda w: (0 if w[0] and abs(w[1]) >= 20 else 1, -(w[1] - w[2])))
             best = winners[0]
             self.bound_inst = best[0]
             log(f"instance {self.iid}: BOUND to instance {best[0]} (dx_D={best[1]:+.1f} "
