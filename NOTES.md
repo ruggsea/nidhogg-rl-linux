@@ -3008,3 +3008,31 @@ environment, a smaller-magnitude, densely-sampled signal beats a sparse, high-ma
 
 Configuration now fixed on measured grounds: window 60, reps 6, territory-dominant reward,
 ~8 min per policy, ~1 h per generation of six.
+
+## Session 157 — the revert works: sd 8.63, se 3.86 (best measurement quality so far)
+
+Same policy, reverted reward, five draws:
+
+```
+-8.5, -11.0, -17.4, -15.5, 4.5     mean -9.58   sd 8.63   se 3.86
+```
+
+Against the two configurations it replaces:
+
+```
+kill-dominant (20 per net stock):  sd ~50
+territory-dominant, old run:       sd 11.76
+territory-dominant, now:           sd  8.63  (n=5)
+```
+
+se 3.86 means policies differing by roughly 8 points are now distinguishable - which is the
+first time this session that the fitness can resolve anything at all. Combined with the entry
+fix (~24 s overhead, window 60, reps 6, ~8 min per policy), a generation of six is about an
+hour and its numbers mean something.
+
+Worth stating plainly, because it is the opposite of the intuition I started the night with: two
+attempts to make the reward more responsive (kills as primary, then shaping demoted) each made
+the measurement worse - 11.8 -> 23.3 -> ~50. The boring, densely-sampled, smaller-magnitude
+signal is the one that works in this environment.
+
+No policy claim yet: this block is one seed, and `rounds 0-0` for every episode.
