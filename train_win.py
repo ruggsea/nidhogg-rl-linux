@@ -500,8 +500,22 @@ def play(mgr, w, seconds, seed, tag, log=print):
                + kills_reward
                + SHAPING * float(np.clip(progress, -5, 5))
                + SHAPING * float(np.clip(territory, -12, 12)))
+    # AN EPISODE AGAINST A STATUE IS NOT AN EPISODE. Measured (Session 166): five of six
+    # episodes had the CPU pinned at x=203 for the full 60 s - kills=0, deaths=0, rounds 0-0 -
+    # while the entry gate reported PASS because only OUR fighter was tested. A training match
+    # must have an opponent that plays, so an episode where the opponent never moved 15 px is
+    # discarded no matter how good the rest of the numbers look.
+    _th_span = None
+    try:
+        _th_span = abs(best_them - worst_them) if (best_them is not None and worst_them is not None) else None
+    except Exception:
+        pass
+    inert_opponent = (_th_span is not None and _th_span < 15.0 and real_samples > 20)
+    if inert_opponent:
+        log(f"  {tag}: DISCARDED - opponent moved only {_th_span:.1f} px in {real_samples} "
+            f"samples (inert opponent, not a training match)")
     # unscorable if we never reached a live, drivable match, or could not see enough of it
-    no_match = (real_samples < 20) or bool(inert)
+    no_match = (real_samples < 20) or bool(inert) or inert_opponent
     # attribute every abandonment instead of inferring it later
     # COORDINATE CALIBRATION. The round win/loss detector compares against GOAL_X=1650 and
     # GOAL_X_OPP=250, and `me_armed` needs me_x > GOAL_X-700 = 950. Every position observed
@@ -516,6 +530,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
         _th_rng = f" them=[{worst_them:.0f}..{best_them:.0f}]"
     log(f"  {tag}: exit={exit_reason} samples={real_samples} inert={bool(inert)} "
         f"adv={_adv}{_me_rng}{_th_rng} kills={them_deaths} deaths={me_deaths} "
+        f"opp_span={(_th_span if _th_span is not None else -1):.0f} "
         f"reset={_reset_ok}")
     rec = {"no_match": bool(no_match), "adversary": _adv,
            "real_samples": real_samples,

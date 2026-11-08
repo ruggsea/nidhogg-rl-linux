@@ -3304,3 +3304,29 @@ tries the other variant / accept-restart instead of proceeding.
 
 This is a genuine candidate explanation for why nothing ever improved: for long stretches the
 agent may have been practising against a statue.
+
+## Session 166 (cont.) — real matches are back, and a warning about the earlier "good" numbers
+
+With the inert-opponent filter in place, the first episode is a genuine fight:
+
+```
+g0i0r0: me=[311..404] them=[3..464] opp_span=461 kills=1 deaths=5 fit=-39.7
+```
+
+`opp_span=461` (the CPU crossed the whole arena) against the inert episodes' `opp_span=0..2`.
+
+**This retroactively weakens one of my own earlier claims.** I reported "sd 8.62, se 3.85 - the
+best measurement quality so far" and treated the low variance as evidence of a well-configured
+instrument. But if a large share of those episodes were against a stationary CPU, then low
+variance was substantially a symptom of NOTHING HAPPENING, not of a better measurement. A statue
+produces very reproducible results. The honest revision: the earlier sd figures are suspect in
+proportion to how many of those episodes were inert - which I did not measure at the time and
+cannot now recover.
+
+Both filters are now in place:
+
+  * entry requires a CPU that moves (10 s / 8 px, deliberately light to avoid false rejections);
+  * episodes are DISCARDED if the opponent's span is under 15 px over the whole window, with
+    `opp_span=` printed on every episode line so the two cases are distinguishable in the log.
+
+Going forward every fitness number carries the evidence that a real opponent was in the ring.

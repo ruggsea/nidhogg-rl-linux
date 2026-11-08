@@ -818,7 +818,11 @@ class InstanceManager:
                 # for a human). I removed this check earlier because "we press no keys during
                 # entry, so a quiet CPU means nothing" - that was wrong: in TRAINING the CPU
                 # plays on its own, so a motionless CPU is exactly the discriminator.
-                if self._opponent_moves(seconds=5.0, min_px=15.0):
+                # 10 s / 8 px: a live CPU can start idle for a second or two, and a false
+                # rejection here costs a whole entry cycle. The decisive test is at episode
+                # level (train_win marks an episode invalid if the opponent never moves),
+                # so this one only has to catch the blatant case.
+                if self._opponent_moves(seconds=10.0, min_px=8.0):
                     return True
                 log(f"instance {self.iid}: gate passed but the OPPONENT is inert "
                     f"(x stayed at {self._last_them_x:.0f}) - not a training match")
