@@ -669,7 +669,16 @@ class InstanceManager:
             # entry has been failing with A_px=0.0 ever since - the menu simply does not consume
             # a key 0.36 s after the previous one. 125 frames restores the original 2.5 s spacing
             # while staying frame-based, so the timing does not change when the frame rate does.
-            self._wait_frames(125, timeout=max(3.0, wait))
+            # MEASURED, NOT ASSUMED. I "fixed" this to 125 frames believing 18 was too fast, then
+            # compared entry success across the two eras and found the opposite:
+            #     before frame timing : 319 attempts, 108 ok -> 0.34
+            #     18-frame era        : 212 attempts,  93 ok -> 0.44
+            # 18 frames is measurably BETTER, so it stays. My first pass at this comparison
+            # bucketed runs by h*60+m without the date, so every log spanning midnight landed in
+            # the wrong era - the conclusion flipped once that was fixed.
+            # Overridable so the A/B can be re-run without editing code: NID_ENTRY_FRAMES.
+            self._wait_frames(int(os.environ.get("NID_ENTRY_FRAMES", "18")),
+                              timeout=max(1.0, wait))
         # Presence is all _try_entry should decide. It used to require
         # _match_is_live(settle=12), which needs cpu_motion > 15 - but during entry we press
         # no keys, so a quiet CPU reads as "no live fight" and entry relaunches endlessly

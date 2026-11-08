@@ -3975,3 +3975,30 @@ Measured in the first minutes after the change:
 So roughly half of entries still fail. The right next measurement is a success-rate comparison at
 two or three spacings (18 / 60 / 125 frames) run for a fixed number of attempts each - not another
 guess. Logged here so it is not re-guessed from scratch.
+
+## Session 187 — CORRECTION: 18 frames is BETTER, not worse, and my first comparison was broken
+
+I "fixed" entry timing from 18 frames to 125, on the theory that 0.36 s per key was too fast for
+the menu. Then I compared entry success across eras and the first pass appeared to confirm it
+(0.45 before 10:00 vs 0.21 after). That comparison was invalid: it bucketed runs by `h*60+m`
+WITHOUT the date, so every log spanning midnight was assigned to the wrong era.
+
+Correct split, anchored on the actual commit time of the frame change (23:53):
+
+```
+before frame timing : 319 attempts, 108 ok  -> 0.34
+18-frame era        : 212 attempts,  93 ok  -> 0.44
+```
+
+**18 frames is measurably better** (0.44 vs 0.34), so the change is reverted. The spacing is now
+overridable with `NID_ENTRY_FRAMES` so the A/B can be repeated without editing code.
+
+Two lessons, both the same shape as everything else tonight:
+
+  * an analysis script with a hidden bug produced a confident, wrong conclusion, and I nearly
+    shipped a "fix" on top of it;
+  * when a measurement reverses the direction of an earlier claim, the earlier claim goes - not
+    the measurement.
+
+The honest summary of entry: success is ~40% and costs ~60-90 s per attempt either way. That is
+the largest single tax on this project's throughput, and no timing guess has fixed it.
