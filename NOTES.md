@@ -4052,3 +4052,24 @@ policy is bad, rather than wondering whether the data was real.
 
 One thing to watch: the fitness spread in this run (5.4, -17.8, -11.4, 3.8, -2.2) is wide, which is
 the opposite of the artificially quiet blocks that pleased me earlier. Wide here is honest.
+
+## Session 190 — full 6-rep block, and the goldfish's prediction confirmed
+
+```
+g0i0: reps=6 fits=[5.42, -17.78, -11.39, 3.78, -2.23, 16.64]  mean -0.93  sd 13.47  se 5.50
+```
+
+Two results in one line.
+
+**First full 6/6 valid block.** Every rep usable - the entry-gate disqualification removal did what
+it was meant to. No statues, no frozen agents, no rejects.
+
+**And the sd is 13.47, not 4.** The goldfish said last hour that my "filters cut sd to 4, so we can
+resolve 4 points" claim was a small-n fluke and predicted the median block would land near 8-17.
+This is the first clean block since, and it lands at 13.47 with se 5.50 - squarely in the predicted
+range, three times worse than my claim. The correction was right and the apparent improvement was
+noise, exactly as it argued.
+
+What the instrument can actually resolve: about 11 points at n=6 (2*se), not 4. Given fitness is
+quantized in 6-point steps by `6*(kills-deaths)`, that means roughly two net kills must separate
+two policies before this run can tell them apart.
