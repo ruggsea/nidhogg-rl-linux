@@ -407,12 +407,16 @@ static void pump_room_goto(void) {
     if (up < 12.0 && frame < 300) return;
     static int goto_count = 0;
     if (goto_count >= 1) return;      // 2nd room_goto KILLS the game (verified)
-    FILE *f = fopen(ctl_path("nid_room"), "r");
+    // RENAMED from "nid_room" to "nid_roomgoto". The old name collided with the room-index OUTPUT
+    // namespace: publishing the current room to /tmp/nid_room_<id>.txt made the hook read its own
+    // output as a command and call room_goto(0) every frame, killing the game ("Game ended before
+    // loading first room"). A command file must never share a name pattern with an output file.
+    FILE *f = fopen(ctl_path("nid_roomgoto"), "r");
     if (!f) return;
     char b[64] = {0};
     size_t n = fread(b, 1, sizeof b - 1, f);
     fclose(f);
-    FILE *w = fopen(ctl_path("nid_room"), "w"); if (w) fclose(w);
+    FILE *w = fopen(ctl_path("nid_roomgoto"), "w"); if (w) fclose(w);
     if (!n) return;
     int idx = atoi(b);
     LOG("[room] goto %d requested (call %d)\n", idx, goto_count + 1);

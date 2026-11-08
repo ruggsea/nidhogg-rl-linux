@@ -15,8 +15,13 @@ Every serious time sink today was an invisible environmental condition:
 This prints one block per check with PASS/WARN/FAIL and writes JSON to state/health.json so a trainer
 or an agent can depend on it. It never modifies anything except its own output file.
 
+A report that nothing consumes is decoration. `--gate` makes it refuse: exit non-zero on WARN or
+FAIL, so a launcher or trainer can refuse to start. This is the difference between documenting a
+landmine and defusing it.
+
     python3 tools/doctor.py            # human table
     python3 tools/doctor.py --json     # machine
+    python3 tools/doctor.py --gate     # refuse: exit 1 unless overall=PASS
 """
 import json
 import os
@@ -168,6 +173,8 @@ def main():
     os.makedirs("state", exist_ok=True)
     with open(OUT, "w") as fh:
         json.dump({"ts": time.time(), "overall": worst, "checks": checks}, fh, indent=1)
+    if "--gate" in sys.argv:
+        return 0 if worst == "PASS" else 1
     return 0 if worst != "FAIL" else 1
 
 

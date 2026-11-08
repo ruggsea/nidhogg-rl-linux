@@ -21,7 +21,7 @@ if [[ ! -f "$PROMPT" ]]; then echo "missing $PROMPT" >&2; exit 1; fi
 if [[ ! -f "$REPO/state/facts.json" ]]; then echo "missing state/facts.json" >&2; exit 1; fi
 
 # environment check before spending tokens
-python3 tools/doctor.py || echo "(doctor reported a problem - read it before trusting any result)"
+python3 tools/doctor.py --gate || { echo "doctor --gate failed - refusing to start"; exit 1; }
 
 if [[ "${1:-}" == "--tmux" ]]; then
   tmux kill-session -t nidhogg-agent 2>/dev/null || true

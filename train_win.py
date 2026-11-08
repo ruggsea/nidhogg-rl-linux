@@ -775,6 +775,18 @@ def main():
                     "cwd": os.getcwd()}, _m, indent=1)
     print(f"run records -> {RUN_DIR}", flush=True)
 
+    # HARD GATE: refuse to train on an unhealthy environment. Measured reasons this matters: the
+    # launcher silently ran the game at nice 19 / background QoS (30 fps instead of 120) for a whole
+    # day, and a stale /tmp/nid_room_<id>.txt made the hook call room_goto(0) and kill the game.
+    # Both were visible in exactly the checks doctor.py runs.
+    import subprocess as _sp
+    _doc = _sp.run([sys.executable, "tools/doctor.py", "--gate"], capture_output=True, text=True)
+    print(_doc.stdout.strip(), flush=True)
+    if _doc.returncode != 0:
+        print("REFUSING TO TRAIN: doctor --gate did not pass "
+              "(fix the WARN/FAIL above, or run tools/doctor.py to see the detail)")
+        return
+
     os.environ["NID_ORDERS"] = "1"
     os.system('pkill -f "MacOS/Nidhogg" 2>/dev/null')
     # (removed) this used to run `pkill -f train_win.py`, whose pattern matches the very

@@ -4993,3 +4993,36 @@ Two bugs found while building the new tools, both of the kind this project speci
     the very tool meant to catch falsy conditions; fixed with `is not None`;
   * the first acquire test looked like the lock was broken, but it was correctly detecting that the
     holding process had already exited.
+
+## Session 222 — deepseek-v4-pro review of the harness, and what I changed because of it
+
+The review (docs/HARNESS_REVIEW.md) was blunt and correct. Its four accusations:
+
+1. **"The harness wasn't the failure - you were uncalibrated."** Four of five false claims were not a
+   tool gap; they were reporting before reading. `claim.py` fixes replay, not calibration.
+2. **"'The environment fought me' is false."** `ps` showed nice=19 all day; the stale control file was
+   a file with an mtime; a dead probe thread meant no state file. *They were unread, not invisible.*
+3. **"Your claim.py does not do the one thing you said was missing."** It re-ran commands and caught
+   drift, not falsehood. A wrong-but-stable measurement verifies forever.
+4. **"You polished the means and never touched the end."** After 12 hours, `rounds_won = 0` and no
+   round transition has ever been observed. That is the measurement the project is for.
+
+Changes made in response:
+
+  * **`claim.py` now requires a `--falsifier`**: a command that must exit 0 if the claim is FALSE.
+    `verify` reports OK / DRIFT / REFUTED / ERROR. Five historical false claims are encoded as
+    fixtures and all five are caught (`tools/claim.py fixtures` -> 5/5).
+  * **the `room_goto` landmine is defused, not documented**: the command file was renamed to
+    `nid_roomgoto`, so it can no longer share a namespace with the `nid_room_now` output that killed
+    the game. `doctor` now reports the old file as absent.
+  * **`doctor.py --gate` refuses**: exit non-zero on WARN or FAIL, and both `train_win.py` and
+    `bin/restart-agent.sh` call it and abort. It reports overall=PASS right now (160 fps, pri 97,
+    one process, no stale command file).
+  * **`tools/roundprobe.py`**: drives the bound fighter at the opponent and logs every room change and
+    teleport, so the round boundary is *observed* rather than assumed. Not yet run to completion -
+    attestation was intermittent in the last attempt (gate D=+144 but A=+1, likely a round ending
+    mid-test).
+
+Remaining from the review, not yet done: one leased writer for the input files (so a subagent cannot
+write `/tmp/nid_keys` behind the trainer's back), and generating the user-facing report from the claims
+ledger so a number that is not a ledger row cannot reach the user.
