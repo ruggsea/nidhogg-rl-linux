@@ -3109,3 +3109,28 @@ restart once, which both loads the fixed hook and fires the probe.
 
 Status unchanged otherwise: 4 policies measured, best gap 1.8 sigma (not established),
 `rounds 0-0` everywhere.
+
+## Session 161 — Phase 4 analysis tooling ready; gen 0 at 30/36 episodes
+
+Added `analyze_vars.py`: turns `[vars]` captures into a table (int/float/double per variable)
+and, with more than one capture, diffs them. A round counter must increment while a timer ticks,
+so both will move - what matters is which one counts rounds rather than seconds. A variable that
+is simply ABSENT is also evidence: `pFindOrAlloc` would have created the slot, so no line means
+the name does not exist on that object.
+
+Verified it fails cleanly with no capture present (no file -> "the query did not reach an
+instance"), so it will not silently report an empty success.
+
+Gen 0 is at 30 of 36 episodes. Policies so far (all `rounds 0-0`):
+
+```
+g0i1  n=5  mean  +7.06  sd 19.72  se  8.82
+g0i3  n=3  mean  -2.62  sd  9.07  se  5.23
+g0i4  n=4  mean  -5.70  sd 24.72  se 12.36
+g0i0  n=5  mean -10.03  sd  8.62  se  3.85
+g0i2  n=3  mean -10.51  sd  6.86  se  3.96
+```
+
+Nothing reaches 2 sigma, so no ordering is established. Note how wide the spreads are for the
+higher-mean policies (sd 19.7 and 24.7): the current leader is also the least predictable, which
+is a reason to distrust the ordering as much as the sigma count is.
