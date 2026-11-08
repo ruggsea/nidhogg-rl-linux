@@ -529,6 +529,7 @@ def main():
     ap.add_argument("--window", type=float, default=45.0)
     ap.add_argument("--seed", type=int, default=5)
     ap.add_argument("--init", action="store_true")
+    ap.add_argument("--reps", type=int, default=2)
     args = ap.parse_args()
 
     os.environ["NID_ORDERS"] = "1"
@@ -617,8 +618,30 @@ def main():
                 # vanished with no log line at all. That is why runs showed entry working
                 # and then no episodes, with nothing to read.
                 try:
-                    results[i] = play(mgrs[slot], pop.W[i], args.window, gen * 997 + i,
-                                      f"g{gen}i{i}")
+                    # REPEATED MEASURES. Measured this session: the same seed scored 19.4 in
+                    # one episode and -1.6 in another, and the ranking REVERSED between runs
+                    # (always-attack 25.6 -> 2.2, always-right -1.6 -> 19.4). One episode
+                    # cannot rank two policies; per-episode noise swamps the difference. Each
+                    # individual is played `reps` times and the fitness averaged.
+                    runs = [play(mgrs[slot], pop.W[i], args.window,
+                                 gen * 997 + i * 7 + rep, f"g{gen}i{i}r{rep}")
+                            for rep in range(getattr(args, "reps", 2))]
+                    valid = [r for r in runs if r and not r.get("no_match")]
+                    if not valid:
+                        results[i] = runs[0] if runs else None
+                    else:
+                        avg = dict(valid[0])
+                        avg["fitness"] = float(np.mean([r["fitness"] for r in valid]))
+                        avg["fitness_all"] = [round(r["fitness"], 2) for r in valid]
+                        for k in ("rounds_won", "rounds_lost", "matches_won",
+                                  "matches_lost", "kills", "deaths"):
+                            avg[k] = int(np.mean([r.get(k, 0) for r in valid]))
+                        avg["tag"] = f"g{gen}i{i}"
+                        avg["no_match"] = False
+                        results[i] = avg
+                        print(f"  g{gen}i{i}: reps={len(valid)} "
+                              f"fits={avg['fitness_all']} mean={avg['fitness']:.2f}",
+                              flush=True)
                 except Exception:
                     import traceback
                     print(f"  g{gen}i{i}: play() RAISED:", flush=True)

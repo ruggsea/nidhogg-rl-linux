@@ -2719,3 +2719,27 @@ dx= 40 -> F (attack)
 
 Population raised to 8 so the new seed is actually in the initial generation (the seeds fill the
 first `size` slots, so with pop 6 the seventh would never have been tested).
+
+## Session 146 (correction) — my seed ranking was noise, and now it is measured as such
+
+I reported last hour that "always attack" won (fit 25.6 vs -20..5.3). The very next run
+reversed it:
+
+```
+             run A    run B
+always right  -1.6    19.4
+always left  -15.3    15.0
+always attack 25.6     2.2
+```
+
+Same policies, same code, opposite conclusions. Per-episode variance swamps the difference
+between two policies, so a single episode cannot rank them - which is exactly Pau's rule
+"never trust a single sample", applied to my own claim an hour earlier.
+
+Fix: repeated measures. Each individual is now played `--reps` times (default 2) and its
+fitness averaged, with every individual result logging `fits=[...] mean=...` so the spread is
+visible rather than hidden inside one number. Selection now compares means of repeated
+episodes instead of single draws.
+
+The seventh seed ("close the gap, then attack inside 60 px") stays in the population - it is a
+reasonable hypothesis, not a proven winner, and the reps change is what would show it.
