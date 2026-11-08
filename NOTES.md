@@ -4433,3 +4433,34 @@ is the single most important number in it.
 
 Consequence: real training appears to be reachable roughly one screen in nine. Everything measured
 before this commit describes the title screen.
+
+## Session 204 — name matching is also unreliable: fighters on screen, no matching instances
+
+Live, with the window visible:
+
+* screenshot: an actual gameplay arena - two fighters mid-duel, a dropped sword, the "GO" arrow.
+* the hook at that same moment: `have154=0 have242=0` - **no instance matched YellowPlayer or
+  OrangePlayer**, while two fighters are plainly on screen.
+* pressing D x25 and A x25 changed nothing in the published state (x pinned at 73.0), because there
+  was no player instance bound to update.
+
+So the failure is deeper than entry. Three separate identification methods have now been shown
+wrong on this build:
+
+  1. "the fighters are present"        -> true on the title screen (attract match)
+  2. "our input moves our fighter"      -> true on the attract demo (D drifts right, A does nothing)
+  3. "the instance is named YellowPlayer" -> false on screens that plainly contain fighters
+
+The only method that has survived testing is the **directional** one: D must move us right AND A
+must move us left. That is a proper stimulus-response oracle - it names the stimulus (the key) and
+the response (signed movement), which is exactly what Pau's contract requires for a field to be
+called `proven`.
+
+Next step, concrete: use the directional test to IDENTIFY the player instance rather than assume the
+name. Sweep candidate instances, press D then A, and bind to whichever record responds with the
+correct signs. That is Pau's INTERFACE row 13 ("which instance is us"), which he proved on READY with
+8/8 transitions - and which this project has never actually established, only assumed.
+
+What this means for today's results: the 211 recorded episodes were measured through an
+identification method that does not hold. None of the kill/death or fitness numbers in this log can
+be trusted to describe an agent playing Nidhogg.
