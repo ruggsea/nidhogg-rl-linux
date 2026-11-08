@@ -3922,3 +3922,34 @@ per episode: kills>deaths in 8/44, equal in 13/44
 
 The agent still loses exchanges about 3:2 and has no verified round win. Lower noise does not make
 it better; it makes the fact that it is worse legible.
+
+## Session 185 — CORRECTION: "the filters cut sd from 17-20 to 4" is FALSIFIED
+
+I claimed in Session 184 that the three filters reduced fitness noise from sd ~17-20 to sd 4.02,
+making the instrument able to resolve ~4 points. A goldfish audit took it apart with numbers:
+
+**1. The "before" range was cherry-picked.** Across all pre-filter blocks the within-policy sd
+ranged **0.49 to 56.07**, median 15.9 - and included 8.62 measured TWICE on this same policy
+before any filter existed. One of the three blocks I cited as "before" (sd 17.30) is actually
+AFTER the filters were installed.
+
+**2. The filters cannot have caused the drop, because they never touch this policy.** g0i0 is the
+"always right" seed: it always moves, the opponent always moved, and every cited episode was
+`rounds 0-0`. All three filters were vacuously satisfied in the "before" blocks too. The same
+policy, same formula, same window gives **8.62 / 17.30 / 4.02** across three runs - that spread is
+run-to-run environmental luck, which is what Session 153 already concluded.
+
+**3. n=6 cannot support sd ~4.** The 95% CI for the true sd from 4.02 with n=6 is **[2.51, 9.86]**,
+which overlaps the 8.62 baseline entirely.
+
+**4. The damning part:** low sd is the signature of a QUIET block, not of a cleaned instrument. The
+frozen "always-left" policy had sd 4.09 and a statue block had sd 0.49. I have now twice been
+pleased by low variance that meant nothing was happening.
+
+**5. And "resolves 4 points" is meaningless for this reward:** fitness is dominated by
+`6*(kills-deaths)`, quantized in 6-point steps. A resolution finer than one net kill is not a
+capability, it is arithmetic from a single small sample.
+
+The pattern in my own failures is now unmistakable: I attribute a change to my intervention, using
+a single run, when the variation is environmental. That is the same error as the phantom wins and
+the phantom kills, just wearing a statistical costume.
