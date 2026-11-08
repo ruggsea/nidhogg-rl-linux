@@ -4175,3 +4175,28 @@ reach22       -12.26
 ```
 
 Still nothing at 2 sigma. 33 episodes in this run.
+
+## Session 195 — five blocks compared, and the histogram's prediction is weakly consistent
+
+```
+feint         n=4  mean  5.05  sd 16.50  se 8.25   (one rep discarded)
+reach70       n=6  mean  3.43  sd 13.50  se 5.51
+always_attack n=6  mean  2.58  sd  9.02  se 3.68
+always_right  n=6  mean -0.93  sd 12.38  se 5.05
+reach22       n=6  mean -12.26  sd 24.06  se 9.82
+```
+
+Nothing clears 2 sigma; the widest gap (reach22 vs feint, 1.35 sigma) still does not.
+
+What IS worth noting is a behavioural consistency rather than a score: `reach70` - the policy that
+attacks on approach, added specifically because 55% of deaths happen while walking forward - records
+**one** death-while-advancing across six episodes, against `feint`'s five-ish. Its mean sits with the
+attack policies rather than with the walk-into-them ones.
+
+That is the shape of a real effect and it is still not a result: n=6 with se 5.5 cannot separate
+3.43 from 2.58 or from -0.93. The one thing the data supports is that the death histogram pointed at
+a believable mechanism, and the policy built for it behaves as predicted on that mechanism even
+though the score has not moved enough to prove it.
+
+This is what the remaining hours should be used for: accumulate reps on these five seeds until the
+gaps either clear 2 sigma or collapse.
