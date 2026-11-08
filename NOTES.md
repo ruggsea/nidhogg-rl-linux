@@ -4599,3 +4599,35 @@ Note also, from the earlier measurement: this screen renders at 15-30 fps under 
 
 Next step, unchanged: verify by hand that the mapped menu path (SINGLE PLAYER -> TRAINING -> partner
 -> START) actually produces a screen where the gate PASSES. Until then we are training on a demo.
+
+## Session 210 — three real defects found by the live check, one of them mine and destructive
+
+### 1. `_Current_Room` is an int32 global, not a pointer (decompiled)
+
+```
+leaq _Current_Room(%rip), %rax
+cvtsi2sd (%rax), %xmm0          <- loads the value itself
+```
+
+Earlier code dereferenced it as a pointer and always returned -1. Now it reads correctly, and it
+distinguishes screens: **room 2 = title / PRESS ENTER**, and after an Enter it showed **29** (the
+demo with two moving characters at x ~974-1011). This is the screenshot-independent discriminator
+the project needed.
+
+### 2. The hook was executing `room_goto(0)` continuously - this caused the visible error
+
+I published the current room index to `/tmp/nid_room_<id>.txt`... which is ALSO the file
+`pump_room_goto()` consumes as a COMMAND. So every frame the hook read its own published "0" and
+attempted `room_goto(0)`. The game printed "Game ended before loading first room" and died. That is
+the error reported live. The index now goes to `/tmp/nid_room_now_<id>.txt` (separate channel) and
+a stale command file was deleted; verified: zero goto events, game alive, index readable.
+
+### 3. Our own control test mutates the game's settings
+
+The direction gate presses D and A repeatedly. When the game is in a MENU, those keystrokes are
+menu input - measured: the language switched to **FRANÇAIS** while testing, which also invalidates
+every assumption about menu labels and order. The disk prefs (`language="en"`, read-only) were
+untouched, so a relaunch restored English, but the hazard is real:
+
+**D/A must never be pressed unless the room index says we are in an arena.** That is the next fix:
+gate the gate on the room.

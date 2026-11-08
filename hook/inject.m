@@ -830,6 +830,16 @@ static void publish_screen(const char *names[], int n) {
     fclose(f);
 }
 
+// CURRENT ROOM INDEX. _Current_Room (0x101530d98) is an INT32 GLOBAL, not a pointer:
+//     leaq _Current_Room(%rip), %rax
+//     cvtsi2sdl (%rax), %xmm0      <- loads the value, converts int -> double
+// proven from `otool -tvV` at 0x100d396bc. An earlier attempt dereferenced it as a pointer and
+// always returned -1, so the room was never usable as a "are we in a match" signal.
+static int current_room_index(void) {
+    intptr_t sl = _dyld_get_image_vmaddr_slide((uint32_t)game_index);
+    return *(const int *)(0x101530d98ULL + (uint64_t)sl);
+}
+
 static void publish_state(void) {
     static const char *last = 0;
     (void)last;
@@ -837,6 +847,13 @@ static void publish_state(void) {
     if (!published_once) { published_once = 1; LOG("[pub] first publish attempt\n"); }
     char path[64];
     snprintf(path, sizeof path, "/tmp/nid_state_%s.txt", g_id);
+    { char rp[64];
+      // NOT /tmp/nid_room_<id>.txt: that is the room_goto COMMAND file. Publishing the current
+      // index there made the hook execute room_goto(0) continuously ("[room] goto 0 executed on
+      // main thread"), which killed the game. Use a separate channel.
+      snprintf(rp, sizeof rp, "/tmp/nid_room_now_%s.txt", g_id);
+      FILE *rf = fopen(rp, "w");
+      if (rf) { fprintf(rf, "%d\n", current_room_index()); fclose(rf); } }
     FILE *f = fopen(path, "w");
     if (!f) return;
     fprintf(f, "%.1f %.1f %.1f %.1f %d %d\n",
