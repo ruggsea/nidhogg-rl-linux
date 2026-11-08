@@ -1,3 +1,180 @@
-=== RUN 1 21:23:37 ===
+=== RUN 1 22:06:39 ===
 1. LAUNCH (always fresh)
-[21:23:44] instance 0: launched pid 27308
+[22:06:46] instance 0: launched pid 22291
+   launched, boot wait 48s, room=29
+2. NAVIGATE (mapped path)
+   try 0: diff vs SINGLE PLAYER = 57.7
+   no menu bar visible - pressing Enter to open the menu (1)
+   try 2: diff vs SINGLE PLAYER = 28.7
+   try 3: diff vs SINGLE PLAYER = 23.8
+   try 4: diff vs SINGLE PLAYER = 37.2
+   try 5: diff vs SINGLE PLAYER = 26.3
+   try 6: diff vs SINGLE PLAYER = 33.0
+   try 7: diff vs SINGLE PLAYER = 8.3
+   SINGLE PLAYER is under the highlight bar
+   enter SINGLE PLAYER    room=2 rMainMenu
+   S -> TRAINING          room=2 rMainMenu
+   enter TRAINING         room=2 rMainMenu
+   pick partner           room=2 rMainMenu
+   S -> START             room=2 rMainMenu
+   START                  room=17 rLevelSelect
+   skip intro             room=29 arena
+   skip intro again       room=29 arena
+   result: room=29 (arena) me_x=897.0
+3. ROOM
+   room=29  left title room: True
+3b. SETTLE (wait for the round to accept input)
+   settled
+4-5. BIND + CONTROL GATE (re-bind on failure; CPU is active)
+[22:08:16] instance 0: BOUND to instance 103188 (D +199 A -234)
+   attempt 1: bound instance 103188
+   attempt 1: gate FAIL {}
+[22:08:34] instance 0: BOUND to instance 103496 (D +224 A -176)
+   attempt 2: bound instance 103496
+[22:08:34] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 2: gate FAIL {}
+[22:08:48] instance 0: BOUND to instance 104320 (D +134 A -158)
+   attempt 3: bound instance 104320
+[22:08:48] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 3: gate FAIL {}
+[22:09:02] instance 0: bind found no fighter-shaped responder (D={} A={})
+   attempt 4: no responder; trying round restart
+[22:09:15] instance 0: bind found no fighter-shaped responder (D={105039: 0.0} A={105039: 272.0})
+   attempt 5: no responder; trying round restart
+[22:09:17] instance 0: refusing to bind - not in an arena room
+   attempt 6: no responder; trying round restart
+[22:09:31] instance 0: BOUND to instance 105167 (D +230 A -235)
+   attempt 7: bound instance 105167
+[22:09:34] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 7: gate FAIL {}
+[22:09:47] instance 0: BOUND to instance 105702 (D +189 A -161)
+   attempt 8: bound instance 105702
+[22:09:47] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 8: gate FAIL {}
+[22:10:01] instance 0: bind found no fighter-shaped responder (D={105893: 0.0, 105894: 216.0, 105897: 194.0} A={105893: 222.0})
+   attempt 9: no responder; trying round restart
+[22:10:15] instance 0: BOUND to instance 106018 (D +217 A -217)
+   attempt 10: bound instance 106018
+[22:10:21] instance 0: direction gate D=+137.0 A=53.2 -> PASS
+   bound instance: 106018
+   gate: PASS  {'D': 137.0, 'A': 53.23}
+6. OPPONENT IS NOT A STATUE
+   opponent moved: True
+
+VERDICT: ATTESTED - training run is meaningful
+  room=ok  bind=ok  gate=ok  opponent=ok
+=== RUN 2 22:10:27 ===
+1. LAUNCH (always fresh)
+[22:10:33] instance 0: launched pid 30896
+   launched, boot wait 48s, room=29
+2. NAVIGATE (mapped path)
+   try 0: diff vs SINGLE PLAYER = 57.9
+   no menu bar visible - pressing Enter to open the menu (1)
+   try 2: diff vs SINGLE PLAYER = 28.7
+   try 3: diff vs SINGLE PLAYER = 23.8
+   try 4: diff vs SINGLE PLAYER = 37.2
+   try 5: diff vs SINGLE PLAYER = 26.3
+   try 6: diff vs SINGLE PLAYER = 33.0
+   try 7: diff vs SINGLE PLAYER = 8.3
+   SINGLE PLAYER is under the highlight bar
+   enter SINGLE PLAYER    room=2 rMainMenu
+   S -> TRAINING          room=2 rMainMenu
+   enter TRAINING         room=2 rMainMenu
+   pick partner           room=2 rMainMenu
+   S -> START             room=2 rMainMenu
+   START                  room=17 rLevelSelect
+   skip intro             room=29 arena
+   skip intro again       room=29 arena
+   result: room=29 (arena) me_x=897.0
+3. ROOM
+   room=29  left title room: True
+3b. SETTLE (wait for the round to accept input)
+   settled
+4-5. BIND + CONTROL GATE (re-bind on failure; CPU is active)
+[22:12:04] instance 0: BOUND to instance 103051 (D +227 A -218)
+   attempt 1: bound instance 103051
+   attempt 1: gate FAIL {}
+[22:12:22] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 2: no responder; trying round restart
+[22:12:36] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 3: no responder; trying round restart
+[22:12:49] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 4: no responder; trying round restart
+[22:13:03] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 5: no responder; trying round restart
+[22:13:16] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 6: no responder; trying round restart
+[22:13:30] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 7: no responder; trying round restart
+[22:13:44] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 8: no responder; trying round restart
+[22:13:57] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 9: no responder; trying round restart
+[22:14:11] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 10: no responder; trying round restart
+   bound instance: None
+   gate: FAIL  {}
+6. OPPONENT IS NOT A STATUE
+   opponent moved: True
+
+VERDICT: NOT ATTESTED - bind, gate failed
+  room=ok  bind=FAIL  gate=FAIL  opponent=ok
+=== RUN 3 22:14:19 ===
+1. LAUNCH (always fresh)
+[22:14:25] instance 0: launched pid 39756
+   launched, boot wait 48s, room=29
+2. NAVIGATE (mapped path)
+   try 0: diff vs SINGLE PLAYER = 57.7
+   no menu bar visible - pressing Enter to open the menu (1)
+   try 2: diff vs SINGLE PLAYER = 28.7
+   try 3: diff vs SINGLE PLAYER = 23.8
+   try 4: diff vs SINGLE PLAYER = 37.2
+   try 5: diff vs SINGLE PLAYER = 26.3
+   try 6: diff vs SINGLE PLAYER = 33.0
+   try 7: diff vs SINGLE PLAYER = 8.3
+   SINGLE PLAYER is under the highlight bar
+   enter SINGLE PLAYER    room=2 rMainMenu
+   S -> TRAINING          room=2 rMainMenu
+   enter TRAINING         room=2 rMainMenu
+   pick partner           room=2 rMainMenu
+   S -> START             room=2 rMainMenu
+   START                  room=17 rLevelSelect
+   skip intro             room=29 arena
+   skip intro again       room=29 arena
+   result: room=29 (arena) me_x=894.0
+3. ROOM
+   room=29  left title room: True
+3b. SETTLE (wait for the round to accept input)
+   settled
+4-5. BIND + CONTROL GATE (re-bind on failure; CPU is active)
+[22:15:56] instance 0: BOUND to instance 103063 (D +233 A -222)
+   attempt 1: bound instance 103063
+[22:15:56] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 1: gate FAIL {}
+[22:16:10] instance 0: BOUND to instance 103238 (D +134 A -40)
+   attempt 2: bound instance 103238
+[22:16:10] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 2: gate FAIL {}
+[22:16:31] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 3: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:16:53] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 4: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:17:15] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 5: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:17:37] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 6: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:17:59] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 7: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:18:21] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 8: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:18:43] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 9: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:19:03] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 10: gate FAIL {'D': 0.0, 'A': 0.0}
+   bound instance: 103238
+   gate: FAIL  {'D': 0.0, 'A': 0.0}
+6. OPPONENT IS NOT A STATUE
+   opponent moved: True
+
+VERDICT: NOT ATTESTED - gate failed
+  room=ok  bind=ok  gate=FAIL  opponent=ok

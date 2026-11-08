@@ -17,6 +17,7 @@ Only if all six pass is a training run worth starting.
     python3 tools/attest.py            # full run
     python3 tools/attest.py --no-launch  # attest whatever is already running
 """
+import json
 import os
 import sys
 import time
@@ -134,34 +135,65 @@ def main():
     time.sleep(4.0)
     print("   settled")
 
-    print("4. BIND BY RESPONSE (D must move us right, A left)")
+    # The CPU in TRAINING is ACTIVE (measured: 29-244 px while we stand still), so it can kill
+    # our bound fighter between bind and gate - the bound instance is then destroyed and re-created
+    # with a new id, and the gate reads a dead id (FAIL {}). Bind and gate are therefore retried as
+    # a PAIR: a gate failure that leaves no bound instance triggers a fresh bind, and prove_control
+    # re-runs _make_space each call so a cornered fighter gets a new chance to move.
+    print("4-5. BIND + CONTROL GATE (re-bind on failure; CPU is active)")
     bound = None
-    for attempt in range(3):
-        bound = mgr.bind_by_response()
-        if bound is not None:
-            break
-        print(f"   no responder on attempt {attempt + 1}; retrying after a pause")
-        time.sleep(2.5)
-    print(f"   bound instance: {bound}")
-    ok["bind"] = bound is not None
-
-    print("5. CONTROL GATE on the bound instance")
     passed = False
-    for attempt in range(3):
+    for attempt in range(10):
+        if mgr.read_bound() is None:
+            bound = mgr.bind_by_response()
+            if bound is None:
+                # Fighter dead / round over. In TRAINING the CPU can kill us mid-bind, after
+                # which the game shows a post-round screen (rMatchStats) and the next match only
+                # starts on Enter/Space (measured 7.6 s). Try the cheap restart, then settle.
+                print(f"   attempt {attempt + 1}: no responder; trying round restart")
+                mgr._accept_restart(tries=1, wait=10.0)
+                for _ in range(10):
+                    st, _ = mgr.read_state()
+                    if st and st.get("me_x"):
+                        break
+                    time.sleep(0.5)
+                time.sleep(2.0)
+                continue
+            print(f"   attempt {attempt + 1}: bound instance {bound}")
         passed = mgr.prove_control()
         if passed:
             break
-        time.sleep(1.5)
+        print(f"   attempt {attempt + 1}: gate FAIL {getattr(mgr, 'gate_dir', {})}")
+        time.sleep(2.0)
+    print(f"   bound instance: {bound}")
     print(f"   gate: {'PASS' if passed else 'FAIL'}  {getattr(mgr, 'gate_dir', {})}")
+    ok["bind"] = bound is not None
     ok["gate"] = passed
 
     print("6. OPPONENT IS NOT A STATUE")
-    moves = mgr._opponent_moves(seconds=6.0, min_px=8.0)
+    # The CPU idles briefly between behaviours (and right after a round transition), so one
+    # 6 s window can read 0 px. Retry a few windows: the point is that the CPU moves on its own
+    # at all, not that it never stands still.
+    moves = False
+    for attempt in range(4):
+        moves = mgr._opponent_moves(seconds=6.0, min_px=8.0)
+        if moves:
+            break
+        print(f"   opponent still on attempt {attempt + 1}; retrying")
+        time.sleep(2.0)
     print(f"   opponent moved: {moves}")
     ok["opponent"] = moves
 
-    print("\nVERDICT:", "ATTESTED - training run is meaningful" if all(ok.values())
-          else "NOT ATTESTED - " + ", ".join(k for k, v in ok.items() if not v) + " failed")
+    verdict = ("ATTESTED - training run is meaningful" if all(ok.values())
+               else "NOT ATTESTED - " + ", ".join(k for k, v in ok.items() if not v) + " failed")
+    print("\nVERDICT:", verdict)
+    # append every verdict so progress can be counted rather than remembered
+    os.makedirs("state", exist_ok=True)
+    with open("state/attest_runs.log", "a") as f:
+        f.write(json.dumps({"ts": time.time(), "verdict": verdict,
+                            "ok": ok, "room": room(iid),
+                            "gate": getattr(mgr, "gate_dir", {}),
+                            "bound": bound}) + "\n")
     print("  " + "  ".join(f"{k}={'ok' if v else 'FAIL'}" for k, v in ok.items()))
 
 

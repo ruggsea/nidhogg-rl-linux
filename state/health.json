@@ -1,21 +1,21 @@
 {
- "ts": 1794169242.5420532,
+ "ts": 1794178633.30647,
  "overall": "PASS",
  "checks": [
   {
    "check": "game processes",
    "status": "PASS",
-   "detail": "1 running pids=[1496]"
+   "detail": "1 running pids=[39756]"
   },
   {
    "check": "priority",
    "status": "PASS",
-   "detail": "nice=0 pri=97 cpu=88.3%"
+   "detail": "nice=0 pri=97 cpu=93.3%"
   },
   {
    "check": "frame rate",
    "status": "PASS",
-   "detail": "160.0 fps"
+   "detail": "80.0 fps"
   },
   {
    "check": "room",
@@ -35,12 +35,17 @@
   {
    "check": "hook log",
    "status": "PASS",
-   "detail": "age 0.2s (a stale log means the probe thread is not running)"
+   "detail": "age 0.7s (a stale log means the probe thread is not running)"
   },
   {
    "check": "legacy room command",
    "status": "PASS",
    "detail": "absent or empty (hook now uses nid_roomgoto)"
+  },
+  {
+   "check": "mute",
+   "status": "PASS",
+   "detail": "game muted via prefs (unmuted=0, musicVol=0)"
   },
   {
    "check": "keys file",

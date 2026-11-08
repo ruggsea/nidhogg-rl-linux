@@ -220,7 +220,12 @@ class InstanceManager:
                 NID_QUIET="1",
                 # NID_VISIBLE=1 keeps the window on screen for the whole run. Measured: on screen
                 # the game runs 48 fps, parked it runs 24 fps.
-                **({"NID_SHOW": "1"} if os.environ.get("NID_VISIBLE") else {}),
+                # VISIBLE BY DEFAULT. The user relaxed the constraint on 2026-11-08: the game may be
+                # on screen as long as it is muted. Measured: on screen 120-320 fps versus ~24-30
+                # parked, because macOS throttles an essentially-offscreen window - so parking costs
+                # 2x and also produced most of the "the game is stalling" red herrings.
+                # NID_HIDDEN=1 parks the window anyway (for when the screen must stay clear).
+                **({} if os.environ.get("NID_HIDDEN") else {"NID_SHOW": "1"}),
                 NID_FOCUS="1",
                 NID_MAN="1",
                 NID_THREAD="1",
@@ -401,11 +406,9 @@ class InstanceManager:
             return None, True
 
     @staticmethod
-    @staticmethod
     def _pos_valid(x):
         return x is not None and 0.5 < abs(x) < 3000.0
 
-    @staticmethod
     @staticmethod
     def screen_kind(st):
         """Cheap screen classification from the coordinates alone.
@@ -497,23 +500,37 @@ class InstanceManager:
             self.gate_dir = {}
             log(f"instance {self.iid}: gate requires a bound instance - run bind_by_response first")
             return False
-        # Create space from the opponent so the direction holds do not walk us onto its sword.
-        self._make_space(seconds=1.5)
+        # The CPU in TRAINING is ACTIVE: it closes in during a hold and blocks or kills the
+        # fighter (measured D=+5 A=+63 -> FAIL). Each direction is retried with FRESH space made
+        # away from the opponent, so a single cornered attempt does not fail the whole gate.
         results = {}
         for name, key, sign in (("D", 68, +1), ("A", 65, -1)):
-            b = self.read_bound()
-            if not b:
-                self.gate_px = 0.0
-                return False
-            x0 = b["me_x"]
             best = 0.0
-            t0 = time.time()
-            while time.time() - t0 < hold:
-                self.press(key)
-                b2 = self.read_bound()
-                if b2 is not None:
-                    best = max(best, (b2["me_x"] - x0) * sign)
-                time.sleep(0.04)
+            for _ in range(3):
+                if self.read_bound() is None:
+                    self.gate_px = 0.0
+                    self.gate_dir = {}
+                    log(f"instance {self.iid}: bound instance gone mid-gate (killed?); re-bind needed")
+                    return False
+                self._make_space(seconds=1.0)
+                b = self.read_bound()
+                if not b:
+                    self.gate_px = 0.0
+                    self.gate_dir = {}
+                    return False
+                x0 = b["me_x"]
+                this = 0.0
+                t0 = time.time()
+                while time.time() - t0 < hold:
+                    self.press(key)
+                    b2 = self.read_bound()
+                    if b2 is not None:
+                        this = max(this, (b2["me_x"] - x0) * sign)
+                    time.sleep(0.04)
+                best = max(best, this)
+                if this > min_px:
+                    break
+                time.sleep(0.5)      # settle, then make space again before retrying
             results[name] = best
             time.sleep(0.5)          # settle between directions: kill the momentum
         self.gate_px = max(results.values())
@@ -1003,6 +1020,7 @@ class InstanceManager:
 
         cands = [i for i in rights if rights.get(i, 0.0) >= min_px and lefts.get(i, 0.0) >= min_px]
         if not cands:
+            self.bound_inst = None
             log(f"instance {self.iid}: bind found no fighter-shaped responder "
                 f"(D={ {k: round(v, 1) for k, v in rights.items()} } "
                 f"A={ {k: round(v, 1) for k, v in lefts.items()} })")

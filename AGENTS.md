@@ -6,8 +6,12 @@ work the next open step. The engineer session builds the harness; it does not dr
 ## The one thing that matters
 
 Train an agent that beats the CPU in the **real, locally installed** macOS Nidhogg. No simulator, no
-computer vision for state (memory reads only). Keep the game off the user's screen, muted via the game's
-own prefs, one instance.
+computer vision for state (memory reads only). One instance.
+
+The game **may be visible** (relaxed 2026-11-08) but **must be muted**, and the muting is done only
+through the game's own prefs (`[audio] unmuted=0`, `musicVol=0`, restored from `prefs_locked.ini` and
+chmod 444 during a run). Never touch the Mac's system volume. Visible is measured 120-320 fps versus
+~24-30 parked, so visible is the default; `NID_HIDDEN=1` parks it and costs 2x.
 
 ## Own the game before touching it
 

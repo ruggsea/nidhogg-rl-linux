@@ -100,6 +100,25 @@ def file_age(path):
         return None
 
 
+def mute_check():
+    """The game must be MUTED (by its own prefs, never the system volume)."""
+    prefs = os.path.expanduser("~/Library/Application Support/com.messhof.nidhogg/prefs.ini")
+    try:
+        txt = open(prefs).read()
+    except OSError:
+        return "WARN", "cannot read prefs.ini"
+    import re as _re
+    m = _re.search(r'unmuted="([^"]+)"', txt)
+    vol = _re.search(r'musicVol="([^"]+)"', txt)
+    if not m:
+        return "WARN", "no unmuted key in prefs"
+    unmuted = float(m.group(1) or 0)
+    music = float(vol.group(1) or 0) if vol else 0.0
+    if unmuted == 0 and music == 0:
+        return "PASS", "game muted via prefs (unmuted=0, musicVol=0)"
+    return "FAIL", f"game NOT muted (unmuted={unmuted}, musicVol={music}) - restore prefs_locked.ini"
+
+
 def main():
     iid = 0
     checks = []
@@ -152,6 +171,9 @@ def main():
             f"{legacy} is non-empty - an OLD hook build would execute this as room_goto")
     else:
         add("legacy room command", "PASS", "absent or empty (hook now uses nid_roomgoto)")
+
+    m_status, m_detail = mute_check()
+    add("mute", m_status, m_detail)
 
     stale_keys = file_age(KEYS.format(iid))
     add("keys file", "PASS", f"age {stale_keys}s" if stale_keys is not None else "absent")
