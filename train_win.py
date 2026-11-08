@@ -403,6 +403,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
             # x>=GOAL_X, but nothing yet proves the GAME agrees. A real round transition moves
             # both fighters far (the arena resets); if our fighter simply keeps walking, the
             # proxy is fiction. Watched once, quietly, right after each crossing.
+            _paid = False
             try:
                 _watch = []
                 _tw = time.time()
@@ -420,17 +421,30 @@ def play(mgr, w, seconds, seed, tag, log=print):
                     # transition, which is not a round end.
                     _transition = _me_span > 200 and _th_span > 200
                     cross_verdicts.append(bool(_transition))
+                    _paid = bool(_transition)
                     print(f"  {tag}: CROSSING VERIFY me_span={_me_span:.0f} "
                           f"them_span={_th_span:.0f} transition={_transition}", flush=True)
+                    _paid = bool(_transition)
             except Exception:
                 pass
-            rounds_won += 1; match_rounds_won += 1
-            me_crossed = True; me_armed = False
-            last_round_t = now_t
-            next_accept_t = now_t + 2.5
-            if match_rounds_won >= ROUNDS_TO_WIN:
-                matches_won += 1
-                match_rounds_won = match_rounds_lost = 0
+            # DO NOT PAY FOR UNVERIFIED ROUNDS. A goldfish audit found rounds_won was
+            # incremented unconditionally: the verifier only appended to a list, so a crossing
+            # with no observed round transition was still awarded 60 points. Measured: 4
+            # crossings at GOAL_X=440, none followed by a transition (me_span 6-19 px) - the
+            # search was being paid for walking past a coordinate.
+            # No `continue`: that would skip the prev-sample update below and silently break
+            # crossing detection on every following sample.
+            if _paid:
+                rounds_won += 1; match_rounds_won += 1
+                me_crossed = True; me_armed = False
+                last_round_t = now_t
+                next_accept_t = now_t + 2.5
+                if match_rounds_won >= ROUNDS_TO_WIN:
+                    matches_won += 1
+                    match_rounds_won = match_rounds_lost = 0
+            else:
+                print(f"  {tag}: crossing NOT counted (no round transition observed)",
+                      flush=True)
         if st["me_x"] < GOAL_X - 400:
             me_crossed = False
         if st["them_x"] > GOAL_X * 0.45:
@@ -444,6 +458,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
             # LOSSES GET THE SAME SCRUTINY. Only wins were verified, which is asymmetric:
             # a "loss" fires when the CPU reaches x <= 20, and that could equally be a
             # respawn after we killed it. Symmetric evidence, or neither claim stands.
+            _loss_ok = False
             try:
                 _watch = []
                 _tw = time.time()
@@ -455,18 +470,22 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 if _watch:
                     _me_span = max(w["me_x"] for w in _watch) - min(w["me_x"] for w in _watch)
                     _th_span = max(w["them_x"] for w in _watch) - min(w["them_x"] for w in _watch)
-                    loss_verified.append(bool(_me_span > 200 and _th_span > 200))
+                    _loss_ok = bool(_me_span > 200 and _th_span > 200)
+                    loss_verified.append(_loss_ok)
                     print(f"  {tag}: LOSS VERIFY me_span={_me_span:.0f} "
                           f"them_span={_th_span:.0f}", flush=True)
             except Exception:
                 pass
-            rounds_lost += 1; match_rounds_lost += 1
-            them_crossed = True; them_armed = False
-            last_round_t = now_t
-            next_accept_t = now_t + 2.5
-            if match_rounds_lost >= ROUNDS_TO_WIN:
-                matches_lost += 1
-                match_rounds_won = match_rounds_lost = 0
+            if _loss_ok:
+                rounds_lost += 1; match_rounds_lost += 1
+                them_crossed = True; them_armed = False
+                last_round_t = now_t
+                next_accept_t = now_t + 2.5
+                if match_rounds_lost >= ROUNDS_TO_WIN:
+                    matches_lost += 1
+                    match_rounds_won = match_rounds_lost = 0
+            else:
+                print(f"  {tag}: loss NOT counted (no round transition observed)", flush=True)
         if st["them_x"] > GOAL_X_OPP + 400:
             them_crossed = False
         # After a round ends the game waits on a READY screen. Pressing accept starts

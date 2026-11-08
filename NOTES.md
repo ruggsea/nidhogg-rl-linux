@@ -3634,3 +3634,31 @@ entry-gate failure is reported as a warning.
 
 Tonight's archived evidence is now re-checkable by anyone with:
     python3 check_runs.py results/runs/archive-2026-11-08-night
+
+## Session 177 — the reward no longer pays for unverified rounds
+
+The goldfish audit found `rounds_won` was incremented unconditionally while the verifier merely
+appended to a list: a crossing with no observed round transition was still awarded 60 points.
+Measured consequence: four crossings at GOAL_X=440, none followed by a transition (me_span
+6-19 px) - the search was being paid for walking past a coordinate.
+
+Both awards are now gated on the verification:
+
+```
+if _paid:      rounds_won += 1 ...        else: print("crossing NOT counted")
+if _loss_ok:   rounds_lost += 1 ...       else: print("loss NOT counted")
+```
+
+Two implementation traps avoided while doing it:
+
+  * the obvious `continue` after a failed award would have skipped the `prev = st` update and
+    silently broken crossing detection on every later sample - so the awards are guarded blocks,
+    not early exits;
+  * `_paid` / `_loss_ok` were first bound INSIDE the try, then read outside it; an exception
+    would have raised NameError mid-episode. Both are now initialised before the try, and a small
+    AST check confirms neither name is loaded before it is bound.
+
+Consequence to expect: with GOAL_X=500 the detector has never fired, so `rounds_won` will stay 0
+and the 60-point term will earn nothing. That is the honest outcome - better a term that cannot
+pay than one that pays for artifacts - and it means the fitness now rests on the two channels that
+are actually measured: net kills and territory.
