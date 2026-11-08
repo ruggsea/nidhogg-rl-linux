@@ -269,6 +269,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
     cross_verdicts = []
     loss_verified = []
     real_samples = 0
+    max_y_me = None
     exit_reason = "window-complete"
     sum_me = 0.0
     min_abs_dx = None
@@ -335,6 +336,8 @@ def play(mgr, w, seconds, seed, tag, log=print):
             continue
         saw_player = True
         real_samples += 1
+        if max_y_me is None or st["me_y"] > max_y_me:
+            max_y_me = st["me_y"]
         sum_me += st["me_x"]
         adx = abs(st["them_x"] - st["me_x"])
         min_abs_dx = adx if min_abs_dx is None else min(min_abs_dx, adx)
@@ -617,6 +620,14 @@ def play(mgr, w, seconds, seed, tag, log=print):
     _me_span_obs = (abs(best_me - start_me) if (best_me is not None and start_me is not None)
                     else 0.0)
     frozen_agent = (_me_span_obs < 15.0 and real_samples > 20)
+    # A PLATFORM EPISODE IS NOT A FIGHT. Measured: live rounds put both fighters at y~560; READY
+    # and menu-platform states sit at y~128-160. An episode that never leaves the platform band
+    # cannot contain a round, but the fighter can still shuffle sideways enough to defeat the
+    # frozen-agent check - seen in this run as g1i1r2 sampling y=128 throughout.
+    platform_episode = (max_y_me is not None and max_y_me < 300.0 and real_samples > 20)
+    if platform_episode:
+        log(f"  {tag}: DISCARDED - fighters never left the platform band "
+            f"(max y={max_y_me:.0f}, live rounds are ~560)")
     if frozen_agent:
         log(f"  {tag}: DISCARDED - our fighter moved only {_me_span_obs:.1f} px in "
             f"{real_samples} samples (no policy signal)")
@@ -631,7 +642,8 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # 10 s entry probe had failed. That throws away good fights - the most expensive resource in
     # this project. Disqualification is now decided by during-episode evidence only; an entry
     # failure is recorded as a warning.
-    no_match = (real_samples < 20) or inert_opponent or frozen_agent
+    no_match = ((real_samples < 20) or inert_opponent or frozen_agent
+                or platform_episode)
     # attribute every abandonment instead of inferring it later
     # COORDINATE CALIBRATION. The round win/loss detector compares against GOAL_X=1650 and
     # GOAL_X_OPP=250, and `me_armed` needs me_x > GOAL_X-700 = 950. Every position observed
@@ -656,6 +668,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
                     "opp_span": _th_span, "me_span_range": [start_me, best_me],
                     "kills": them_deaths, "deaths": me_deaths,
                     "frozen_agent": bool(frozen_agent),
+                    "platform_episode": bool(platform_episode),
                     "rounds_won": rounds_won, "rounds_lost": rounds_lost,
                     "cross_verified": cross_verdicts, "loss_verified": loss_verified,
                     "death_acts": death_actions, "gate_px": mgr.gate_px,

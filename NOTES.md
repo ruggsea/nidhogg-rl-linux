@@ -4225,3 +4225,22 @@ entirely on net kills and territory.
 
 This is the first point all day where the search is running on data that survives every check I
 know how to apply. Whether it climbs is now a real question rather than a measurement artefact.
+
+## Session 197 — a fourth discard criterion: platform episodes
+
+Watching generation 1 run, the raw trace showed an episode sampling y=128 throughout:
+
+```
+g1i1r2 t= 0.58 raw=(125.5, 128.0, 101.0, 128.0, 1.0, 1.0)
+```
+
+y=128 is the READY/platform band - live rounds are at y~560. So the episode contained no round at
+all, yet it passed the frozen-agent check because a fighter on a platform can still shuffle sideways
+past the 15 px threshold.
+
+Fourth discard criterion added: if our fighter never leaves the platform band (max y < 300) across an
+episode with enough samples, the episode is discarded and the reason printed. The flag is recorded.
+
+That is now four distinct ways an episode can be real-looking and worthless: statue opponent, frozen
+agent, unverified round claims, and platform-only episodes. Each was found by looking at raw samples
+rather than at scores, and each was invisible to the check written for the previous one.
