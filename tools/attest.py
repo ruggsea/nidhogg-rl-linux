@@ -49,46 +49,46 @@ def esc_home(mgr, log=print, tries=5):
 
 
 def navigate(mgr, log=print):
-    """Deterministic path, with a CLOSED-LOOP anchor for the first Enter.
+    """Navigate to TRAINING using the HIGHLIGHT-BAR signal, then walk the submenus.
 
-    Measured key behaviour on this build:
-        S (83)       moves the menu cursor DOWN, and WRAPS
-        W (87)       does NOT move the main menu
-        ArrowUp (38) acts as BACK
-        Enter (13)   selects
+    The main menu scrolls under a fixed highlight bar, so the selected row can only be identified by
+    the text under that bar. nav3.band() crops it and scroll_until() presses S until the wanted item
+    is selected - which is what finally made this work unattended:
 
-    The trap in the first version: at 120 fps the main menu is often already up by the time we press
-    Enter, so that Enter SELECTS MULTIPLAYER instead of dismissing a splash - and every following key
-    is then interpreted inside the multiplayer submenu (measured: ended in rControlsRoom via OPTIONS).
-    So the anchor is verified: if we land in rMultiMenu (room 3), Esc back and apply the S x5 wrap
-    from the known MULTIPLAYER position.
+        try 7: diff vs SINGLE PLAYER = 8.3
+        SINGLE PLAYER is under the highlight bar
     """
-    def step(code, what, wait=1.8):
+    import nav3
+    from PIL import Image
+
+    # make sure a menu is open (fresh launch sits on the title screen)
+    for _ in range(3):
+        if nav3.band() is not None:
+            break
+        mgr.press(13)
+        time.sleep(2.0)
+
+    ref = Image.open("/tmp/band_singleplayer.png").convert("L")
+    if not nav3.scroll_until(mgr, ref, "SINGLE PLAYER", log=log):
+        log("   FAIL: never scrolled SINGLE PLAYER under the bar")
+        return False
+
+    for code, what, wait in ((13, "enter SINGLE PLAYER", 2.4),
+                             (83, "S -> TRAINING", 1.4),
+                             (13, "enter TRAINING", 2.0),
+                             (13, "pick partner", 2.0),
+                             (83, "S -> START", 1.4),
+                             (13, "START", 3.0),
+                             (13, "skip intro", 2.5),
+                             (13, "skip intro again", 2.0)):
         mgr.press(code)
         time.sleep(wait)
-        log(f"   {what:24s} room={room(mgr.iid)} -> {mgr.room_name(room(mgr.iid))}")
+        log(f"   {what:22s} room={room(mgr.iid)} {mgr.room_name(room(mgr.iid))}")
 
-    step(13, "first Enter", 2.5)
-    if room(mgr.iid) == 3:
-        step(27, "Esc out of MULTIPLAYER", 1.5)   # cursor stays on MULTIPLAYER
-    # from MULTIPLAYER, five downs wrap to SINGLE PLAYER
-    for i in range(5):
-        mgr.press(83)
-        time.sleep(1.0)
-    log(f"   S x5 -> SINGLE PLAYER     room={room(mgr.iid)}")
-    step(13, "enter SINGLE PLAYER", 2.4)
-    step(83, "S -> TRAINING", 1.4)
-    step(13, "enter TRAINING", 2.0)
-    step(13, "pick partner", 2.0)
-    step(83, "S -> START", 1.4)
-    step(13, "START", 3.0)
-    step(13, "skip intro", 2.5)
-    step(13, "skip intro again", 2.0)
     st, _ = mgr.read_state()
     r = room(mgr.iid)
-    ok = r in mgr.ARENA_ROOMS
-    log(f"   result: room={r} ({mgr.room_name(r)}) fighters={bool(st and st.get('me_x'))}")
-    return ok
+    log(f"   result: room={r} ({mgr.room_name(r)}) me_x={st and st.get('me_x')}")
+    return r in mgr.ARENA_ROOMS
 
 
 def main():
@@ -123,13 +123,35 @@ def main():
     print(f"   room={r}  left title room: {left_title}")
     ok["room"] = left_title
 
+    # The round does not accept input immediately: after entering the arena the game shows a "GO"
+    # moment. Measured: binding straight away finds no responder; a short settle fixes it.
+    print("3b. SETTLE (wait for the round to accept input)")
+    for _ in range(10):
+        st, _ = mgr.read_state()
+        if st and st.get("me_x"):
+            break
+        time.sleep(0.5)
+    time.sleep(4.0)
+    print("   settled")
+
     print("4. BIND BY RESPONSE (D must move us right, A left)")
-    bound = mgr.bind_by_response()
+    bound = None
+    for attempt in range(3):
+        bound = mgr.bind_by_response()
+        if bound is not None:
+            break
+        print(f"   no responder on attempt {attempt + 1}; retrying after a pause")
+        time.sleep(2.5)
     print(f"   bound instance: {bound}")
     ok["bind"] = bound is not None
 
     print("5. CONTROL GATE on the bound instance")
-    passed = mgr.prove_control()
+    passed = False
+    for attempt in range(3):
+        passed = mgr.prove_control()
+        if passed:
+            break
+        time.sleep(1.5)
     print(f"   gate: {'PASS' if passed else 'FAIL'}  {getattr(mgr, 'gate_dir', {})}")
     ok["gate"] = passed
 

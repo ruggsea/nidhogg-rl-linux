@@ -384,15 +384,17 @@ class InstanceManager:
             if len(vals) < 6:
                 return None, stale
             o154x, o154y, p242x, p242y, h154, h242 = (float(v) for v in vals[:6])
-            # THE LABELS ARE SWAPPED. MEASURED in a live arena (room 29): the instance at object
-            # 154 moved RIGHT under D (+64 px) and LEFT under A (-25 px) - that is the fighter we
-            # control. The instance at object 244/242 did not move at all under either key. So the
-            # first pair in the state file (labelled "them") is US, and the second pair (labelled
-            # "me") is the CPU. Every observation built on the old mapping had the sign of dx
-            # inverted, which is a plausible reason the policies learned to walk into the opponent.
+            # FIXED SLOTS ARE NOT RELIABLE ACROSS ROOMS. Measured: in one arena the instance that
+            # answered D/A was object 154 (the FIRST pair), in another it was object 244 (the SECOND
+            # pair). Which object index the player uses depends on the room, so no fixed mapping of
+            # "slot 1 = me" or "slot 2 = me" is correct in general.
+            #
+            # The authoritative fighter is the one that RESPONDS to our keys - bind_by_response()
+            # finds it and read_pair()/read_bound() return its coordinates. This reader is kept only
+            # as a fallback for the have-flags and for when binding has not run.
             return {
-                "me_x": o154x, "me_y": o154y,
-                "them_x": p242x, "them_y": p242y,
+                "them_x": o154x, "them_y": o154y,
+                "me_x": p242x, "me_y": p242y,
                 "have154": int(h154), "have242": int(h242),
             }, stale
         except (OSError, ValueError):
