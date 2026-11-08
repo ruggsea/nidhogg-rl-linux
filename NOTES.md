@@ -4505,3 +4505,39 @@ Not yet verified end-to-end: the next run has to show either
 `BOUND to instance <id> (dx_D=+.. dx_A=-..)` on a real match, or repeated
 "found no responder among N candidates" on attract screens. Both outcomes are informative, and the
 first `BOUND` line is the precondition for trusting any training number at all.
+
+## Session 207 — the menu path, mapped by hand with screenshots
+
+I stopped guessing and walked the menu myself, capturing every screen. The real path:
+
+```
+PRESS ENTER
+  -> MAIN MENU:  NEWS / SINGLE PLAYER / MULTIPLAYER / OPTIONS / EXTRAS
+                 (the cursor starts on MULTIPLAYER - the ARCADE path. That is why the
+                  opponent was always a standing placeholder: we were selecting 2-player
+                  mode with no second human every single time.)
+  -> W           move to SINGLE PLAYER
+  -> ENTER       submenu: ARCADE / TRAINING
+  -> S           move to TRAINING
+  -> ENTER       partner list: NO DIVEKICKS / NO THROWS / DIVEKICKER / RUN N LUNGE /
+                 BRAWLER / NEVER LUNGES / PARRY MASTER / RANDOM
+  -> ENTER       pick partner -> DIFFICULTY slider (A/D to adjust) + START
+  -> S           move to START
+  -> ENTER       start
+  -> ENTER       skip the level-intro card
+```
+
+Two findings that matter as much as the path:
+
+1. **The cursor starts on MULTIPLAYER.** Every entry sequence we ever ran began with an Enter
+   that selected 2-player mode. The inert opponent was not a bug in our detection - it was the
+   mode we were actually choosing.
+2. **A level-intro card waits for a keypress indefinitely.** The "castle" splash sits there until
+   something is pressed. That is the "stuck state" that has cost this project hours and that I
+   earlier attributed to focus, zombies and paused screens.
+
+3. **There is a DIFFICULTY slider in TRAINING.** This project believed there was no curriculum
+   control on this build. There is one, per partner type.
+
+Sequence installed in `_try_entry`. `rounds won` still 0; nothing about the agent has improved yet,
+but the thing we were training against has finally been identified.

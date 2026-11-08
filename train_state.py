@@ -669,13 +669,45 @@ class InstanceManager:
             time.sleep(wait)
 
     def _try_entry(self, s_count=1, n_lead=1):
-        """Menu entry: n_lead Enters (title/popup), W, Enter, S x1, then 3 confirms."""
+        """Walk the menu to SINGLE PLAYER -> TRAINING -> partner -> START.
+
+        MAPPED BY HAND with screenshots, because every guessed sequence was wrong:
+
+            PRESS ENTER
+              -> MAIN MENU            NEWS / SINGLE PLAYER / MULTIPLAYER / OPTIONS / EXTRAS
+                                      (careful: the cursor starts on MULTIPLAYER, which is the
+                                       ARCADE path - that is why the opponent was always a
+                                       standing placeholder)
+              -> W                    move cursor to SINGLE PLAYER
+              -> ENTER                submenu: ARCADE / TRAINING
+              -> S                    move to TRAINING
+              -> ENTER                TRAINING partner list:
+                                      NO DIVEKICKS / NO THROWS / DIVEKICKER / RUN N LUNGE /
+                                      BRAWLER / NEVER LUNGES / PARRY MASTER / RANDOM
+              -> ENTER                pick partner -> submenu with a DIFFICULTY slider + START
+              -> S                    move to START
+              -> ENTER                start the match
+              -> ENTER                skip the level-intro card (measured: without a keypress the
+                                      game sits on the "castle" intro indefinitely - this is the
+                                      "stuck" state that wasted so much of today)
+
+        The DIFFICULTY slider is a curriculum control this project did not know it had.
+        """
         self._wait_ready()
         self._menu_home()
-        seq = [(13, 2.5)] * max(1, n_lead)
-        seq += [(87, 2.5), (13, 2.5)]
-        seq += [(83, 2.5)] * max(1, s_count)
-        seq += [(13, 2.5), (13, 2.5), (13, 2.5)]
+        # MAPPED SEQUENCE (verified by hand against screenshots, see docstring above).
+        # 13=Enter, 87=W(up), 83=S(down)
+        seq = [
+            (13, 2.5),            # PRESS ENTER
+            (87, 2.0),            # MULTIPLAYER -> SINGLE PLAYER
+            (13, 2.5),            # into SINGLE PLAYER submenu
+            (83, 2.0),            # ARCADE -> TRAINING
+            (13, 2.5),            # into TRAINING partner list
+            (13, 2.5),            # pick partner (first entry)
+            (83, 2.0),            # DIFFICULTY -> START
+            (13, 2.5),            # START
+            (13, 2.0),            # skip the level-intro card
+        ]
         for code, wait in seq:
             self.press(code)
             # frame-based, not wall-clock: see _wait_frames. The `wait` value is kept only
@@ -941,7 +973,15 @@ class InstanceManager:
                 # level (train_win marks an episode invalid if the opponent never moves),
                 # so this one only has to catch the blatant case.
                 if self._opponent_moves(seconds=10.0, min_px=8.0):
-                    return True
+                    # BIND BY RESPONSE before anything else is trusted: the direction gate proved
+                    # that some visible record answers our keys; this finds WHICH one and remembers
+                    # it. Until this returns an id, no state read has a verified link to the fighter
+                    # we are controlling.
+                    if self.bind_by_response() is not None:
+                        return True
+                    log(f"instance {self.iid}: gate and opponent both fine, but no instance "
+                        f"could be bound to our keys - not trustworthy, rejecting")
+                    continue
                 log(f"instance {self.iid}: gate passed but the OPPONENT is inert "
                     f"(x stayed at {self._last_them_x:.0f}) - not a training match")
                 st_r, _ = self.read_state()
