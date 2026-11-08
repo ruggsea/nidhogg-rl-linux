@@ -3036,3 +3036,21 @@ the measurement worse - 11.8 -> 23.3 -> ~50. The boring, densely-sampled, smalle
 signal is the one that works in this environment.
 
 No policy claim yet: this block is one seed, and `rounds 0-0` for every episode.
+
+## Session 157 (confirmed) — completed block, and the decision to stop fiddling
+
+```
+g0i0: reps=5 fits=[-10.96, -17.37, -15.46, 4.53, -10.88]  mean -10.03
+      sd 8.62   se 3.85
+```
+
+Two independent 5-draw blocks of the same policy (SD 8.63 and 8.62) agree, so this is a stable
+property of the configuration rather than a lucky sample.
+
+Measurement quality is now: se ~3.9 per policy for ~8 minutes of play. That is enough to resolve
+policy differences of ~8 points, which is the first time tonight that is true.
+
+Decision: stop changing things under the run. Every configuration change since Session 140 has
+been justified by a measurement, but they have also reset the generation count each time, so no
+policy has had a chance to accumulate selection pressure. The run is left on
+`window 60 / reps 6 / territory-dominant reward / entry fixed` and monitored.
