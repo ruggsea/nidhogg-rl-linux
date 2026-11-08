@@ -4970,3 +4970,26 @@ recorded in the code.
 
 This also explains why the direction gate kept failing while the game was clearly controllable: it
 was measuring the CPU's instance.
+
+## Session 221 — harness rebuild (after 12 h of fighting my own tools)
+
+The user's diagnosis, which is correct: my harness was not ergonomic for this task, and I kept
+paying for it. Concretely, today's costs and the affordance that addresses each:
+
+| failure | what it cost | affordance now |
+|---|---|---|
+| claims in prose, evidence never attached | hours; four false claims | `tools/claim.py` - a claim is (text, command, sha of output); `verify` re-runs them all |
+| environment conditions invisible (nice 19, 30 fps, stale room command file, missing NID_THREAD) | a whole day of "the game is flaky" | `tools/doctor.py` - one command, writes `state/health.json` |
+| two agents driving one game at once | an hour of contradictory navigation results | `tools/gameslot.py` - file lock with liveness + TTL |
+| facts re-derived after each compaction | repeated work | `state/facts.json` - machine-readable verified facts |
+| context: 42 MB transcript, compacted twice | lost state | `loop/CONTINUE.md` - operator prompt for a fresh session |
+| restarting the agent by hand | inconsistent setup | `bin/restart-agent.sh` - runs doctor, then starts a fresh pi on deepseek-v4-pro with the prompt appended |
+
+Also written: `docs/HARNESS_BRIEF.md`, a self-critical brief handed to a `deepseek-v4-pro` consultant
+(reading the condensed transcript plus my failure list) to design the rest adversarially.
+
+Two bugs found while building the new tools, both of the kind this project specialises in:
+  * `doctor.py` reported a perfect state file as FAIL because `0.0 or 99` is 99 - a falsy-zero bug in
+    the very tool meant to catch falsy conditions; fixed with `is not None`;
+  * the first acquire test looked like the lock was broken, but it was correctly detecting that the
+    holding process had already exited.

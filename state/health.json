@@ -1,0 +1,51 @@
+{
+ "ts": 1794167473.282579,
+ "overall": "WARN",
+ "checks": [
+  {
+   "check": "game processes",
+   "status": "PASS",
+   "detail": "1 running pids=[45515]"
+  },
+  {
+   "check": "priority",
+   "status": "PASS",
+   "detail": "nice=0 pri=97 cpu=92.1%"
+  },
+  {
+   "check": "frame rate",
+   "status": "PASS",
+   "detail": "160.0 fps"
+  },
+  {
+   "check": "room",
+   "status": "PASS",
+   "detail": "20 (rMatchStats)"
+  },
+  {
+   "check": "state file",
+   "status": "PASS",
+   "detail": "age 0.0s"
+  },
+  {
+   "check": "instance dump",
+   "status": "PASS",
+   "detail": "age 0.0s"
+  },
+  {
+   "check": "hook log",
+   "status": "PASS",
+   "detail": "age 0.4s (a stale log means the probe thread is not running)"
+  },
+  {
+   "check": "room command file",
+   "status": "WARN",
+   "detail": "exists (0 bytes) - this file is a room_goto COMMAND; a stale one kills the game"
+  },
+  {
+   "check": "keys file",
+   "status": "PASS",
+   "detail": "age 0.0s"
+  }
+ ]
+}
