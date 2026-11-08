@@ -1,26 +1,26 @@
 {
- "ts": 1794179452.414737,
- "overall": "WARN",
+ "ts": 1794180451.510637,
+ "overall": "PASS",
  "checks": [
   {
    "check": "game processes",
    "status": "PASS",
-   "detail": "1 running pids=[94255]"
+   "detail": "1 running pids=[12277]"
   },
   {
    "check": "priority",
    "status": "PASS",
-   "detail": "nice=0 pri=97 cpu=91.7%"
+   "detail": "nice=0 pri=97 cpu=88.2%"
   },
   {
    "check": "frame rate",
-   "status": "WARN",
-   "detail": "no frame counter in the hook log"
+   "status": "PASS",
+   "detail": "106.7 fps"
   },
   {
    "check": "room",
    "status": "PASS",
-   "detail": "4 (rOnlineLobby)"
+   "detail": "2 (rMainMenu)"
   },
   {
    "check": "state file",
@@ -35,7 +35,7 @@
   {
    "check": "hook log",
    "status": "PASS",
-   "detail": "age 0.0s (a stale log means the probe thread is not running)"
+   "detail": "age 0.2s (a stale log means the probe thread is not running)"
   },
   {
    "check": "legacy room command",

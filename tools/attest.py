@@ -69,6 +69,16 @@ def navigate(mgr, log=print):
         mgr.press(13)
         time.sleep(2.0)
 
+    # Measured failure mode: 1 run in 4 landed in room 4 (rOnlineLobby) because the S x5 wrap assumes
+    # the cursor starts on MULTIPLAYER. Back out to the main menu first; the highlight-bar search does
+    # not depend on cursor position.
+    for _ in range(4):
+        if room(mgr.iid) not in (3, 4):
+            break
+        log(f"   in {mgr.room_name(room(mgr.iid))} - backing out to the main menu")
+        mgr.press(27)
+        time.sleep(1.2)
+
     ref = Image.open("/tmp/band_singleplayer.png").convert("L")
     if not nav3.scroll_until(mgr, ref, "SINGLE PLAYER", log=log):
         log("   FAIL: never scrolled SINGLE PLAYER under the bar")

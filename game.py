@@ -264,6 +264,19 @@ def enter_training(max_scrolls=8, verbose=True):
         _hold(K["enter"], 20)
         time.sleep(1.5)
 
+    # RECOVER FROM THE WRONG MENU. Measured failure: one run in four landed in room 4
+    # (rOnlineLobby) because it selected MULTIPLAYER - the S x5 wrap assumes the cursor starts on
+    # MULTIPLAYER, which is false when the previous session left the menu elsewhere. The
+    # highlight-bar search below does not depend on cursor position, so: back out to the main menu
+    # and let it search.
+    for _ in range(4):
+        if room() not in (3, 4):
+            break
+        if verbose:
+            print(f"  in {room_name()} - backing out to the main menu")
+        _hold(K["esc"], 20)
+        time.sleep(1.2)
+
     ref = Image.open("/tmp/band_singleplayer.png").convert("L")
     if not nav3.scroll_until(TS.InstanceManager(iid=IID), ref, "SINGLE PLAYER", log=print if verbose else (lambda *a: None)):
         if verbose:
