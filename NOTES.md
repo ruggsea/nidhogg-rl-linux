@@ -3273,3 +3273,34 @@ Gate fix verified in the same log:
 [06:28:52] control gate A_px=8.0 (FAIL)     <- pressed D only, fighter at the wall
 [06:28:53] control gate A_px=26.0 (PASS)    <- immediately after trying A
 ```
+
+## Session 166 — THE BIG ONE: the opponent was inert and the gate said PASS
+
+Every episode in the run I just stopped:
+
+```
+g0i0r0: gate A_px=19.0 PASS   me=[101..142]  them=[201..203]  kills=0 deaths=0
+g0i0r1: gate A_px= 9.0 PASS   me=[110..142]  them=[203..203]  kills=0 deaths=0
+g0i0r2: gate A_px=26.0 PASS   me=[132..142]  them=[203..203]  kills=0 deaths=0
+g0i0r3: gate A_px=17.0 PASS   me=[102..142]  them=[203..203]  kills=0 deaths=0
+...
+5 of 6 episodes: them=[203..203]
+```
+
+The CPU stood at x=203 for the entire 60 s in five of six episodes. Zero pixels of movement, zero
+kills, zero deaths - and the control gate passed every time, because the gate only ever asked
+whether OUR fighter responds to input. That is ARCADE/READY (Pau's notes: the two-player route
+waits for a second human who never arrives), not TRAINING against the CPU.
+
+I removed the CPU-motion check in Session 141 with the reasoning "during entry we press no keys,
+so a quiet CPU proves nothing". That reasoning was wrong: in TRAINING the CPU plays on its own,
+so a motionless opponent is precisely the discriminator. Removing it is what let inert matches
+through, and it is consistent with the `rounds 0-0` / `kills=0` pattern in a large share of
+episodes tonight.
+
+Restored as `_opponent_moves(seconds=5, min_px=15)` inside `_drivable_now`, so entry now requires
+BOTH "our input reaches the game" AND "the CPU actually plays". When the CPU is inert the entry
+tries the other variant / accept-restart instead of proceeding.
+
+This is a genuine candidate explanation for why nothing ever improved: for long stretches the
+agent may have been practising against a statue.

@@ -106,6 +106,7 @@ class InstanceManager:
         self.needs_reset = False
         self.gate_px = 0.0
         self.gate_ts = 0.0
+        self._last_them_x = 0.0
 
     def _note_recovery(self):
         if self.current_tag:
@@ -687,6 +688,30 @@ class InstanceManager:
         return False
 
 
+    def _opponent_moves(self, seconds=5.0, min_px=15.0):
+        """True if the CPU actually plays during this window.
+
+        TRAINING has a CPU that moves on its own; ARCADE/READY has a second human's slot that
+        never arrives. Measured inert case: them_x pinned at 203.00 for a full 60 s episode.
+        """
+        st, _ = self.read_state()
+        if self.has_players(st):
+            self._last_them_x = st["them_x"]
+            x0 = st["them_x"]
+        else:
+            self._last_them_x = 0.0
+            return False
+        lo = hi = x0
+        t0 = time.time()
+        while time.time() - t0 < seconds:
+            s2, _ = self.read_state()
+            if self.has_players(s2):
+                self._last_them_x = s2["them_x"]
+                lo = min(lo, s2["them_x"])
+                hi = max(hi, s2["them_x"])
+            time.sleep(0.1)
+        return (hi - lo) >= min_px
+
     def start_from_round_boundary(self, wait=3.0):
         """Force a fresh round so every episode begins from a comparable state.
 
@@ -786,7 +811,20 @@ class InstanceManager:
                 continue
             self.prime_controls(prime)
             if self.prove_control(gate):
-                return True
+                # AN INERT OPPONENT IS NOT A TRAINING MATCH. Measured: six consecutive
+                # episodes reported "them=[203..203]" - the CPU never moved a single pixel in
+                # 60 s - with kills=0 deaths=0, and the gate still said PASS because WE could
+                # move. That is ARCADE/READY (Pau's notes: the 2-player versus screen waits
+                # for a human). I removed this check earlier because "we press no keys during
+                # entry, so a quiet CPU means nothing" - that was wrong: in TRAINING the CPU
+                # plays on its own, so a motionless CPU is exactly the discriminator.
+                if self._opponent_moves(seconds=5.0, min_px=15.0):
+                    return True
+                log(f"instance {self.iid}: gate passed but the OPPONENT is inert "
+                    f"(x stayed at {self._last_them_x:.0f}) - not a training match")
+                if not self._accept_restart(tries=1, wait=accept_wait):
+                    return False
+                continue
             if not self._accept_restart():
                 return False
         return False
