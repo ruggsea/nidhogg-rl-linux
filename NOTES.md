@@ -3054,3 +3054,26 @@ Decision: stop changing things under the run. Every configuration change since S
 been justified by a measurement, but they have also reset the generation count each time, so no
 policy has had a chance to accumulate selection pressure. The run is left on
 `window 60 / reps 6 / territory-dominant reward / entry fixed` and monitored.
+
+## Session 158 — summarizer added; first two policies compared honestly
+
+`summarize.py` reads a training log and reports each policy's mean, sd, standard error, and the
+difference from the best with its own standard error and a sigma count. This exists because the
+training log's "best 10.63" line invites exactly the mistake this session kept making: reading a
+number as a result without asking whether it clears the noise.
+
+First output:
+
+```
+policy       n     mean      sd     se   vs best
+g0i1         5     7.06   19.72   8.82
+g0i0         5   -10.03    8.62   3.85    -17.09 +- 9.62 (1.8 sigma)
+```
+
+So "always left" (i1) leads "always right" (i0) by 17 points at 1.8 sigma - suggestive, not
+established. With more generations the comparison will either clear 2 sigma or it will not, and
+the tool says which.
+
+Worth noting for its own sake: i1 has a MUCH wider spread (sd 19.7) than i0 (sd 8.62). A policy
+whose outcome varies wildly across episodes is not a better policy, it is an unpredictable one,
+and averaging hides that. Reporting sd next to the mean is the point.
