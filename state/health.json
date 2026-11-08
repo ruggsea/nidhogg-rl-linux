@@ -1,26 +1,26 @@
 {
- "ts": 1794168296.530144,
- "overall": "PASS",
+ "ts": 1794168509.871379,
+ "overall": "WARN",
  "checks": [
   {
    "check": "game processes",
    "status": "PASS",
-   "detail": "1 running pids=[45515]"
+   "detail": "1 running pids=[91608]"
   },
   {
    "check": "priority",
    "status": "PASS",
-   "detail": "nice=0 pri=97 cpu=91.4%"
+   "detail": "nice=0 pri=97 cpu=90.7%"
   },
   {
    "check": "frame rate",
-   "status": "PASS",
-   "detail": "160.0 fps"
+   "status": "WARN",
+   "detail": "no frame counter in the hook log"
   },
   {
    "check": "room",
    "status": "PASS",
-   "detail": "20 (rMatchStats)"
+   "detail": "27 (arena)"
   },
   {
    "check": "state file",
@@ -35,12 +35,12 @@
   {
    "check": "hook log",
    "status": "PASS",
-   "detail": "age 0.2s (a stale log means the probe thread is not running)"
+   "detail": "age 0.0s (a stale log means the probe thread is not running)"
   },
   {
-   "check": "room command file",
+   "check": "legacy room command",
    "status": "PASS",
-   "detail": "absent (good)"
+   "detail": "absent or empty (hook now uses nid_roomgoto)"
   },
   {
    "check": "keys file",

@@ -143,13 +143,15 @@ def main():
     add("hook log", "PASS" if ok_h else "FAIL",
         f"age {a_h}s (a stale log means the probe thread is not running)")
 
-    # the dangerous stale command file: this is a room_goto COMMAND, not an output
-    if os.path.exists(ROOM_CMD.format(iid)):
-        size = os.path.getsize(ROOM_CMD.format(iid))
-        add("room command file", "WARN",
-            f"exists ({size} bytes) - this file is a room_goto COMMAND; a stale one kills the game")
+    # LEGACY landmine. The hook now reads /tmp/nid_roomgoto_<id>.txt, so this old path is no longer
+    # consumed as a command. It is still reported if present so an old build cannot be ignored, but
+    # only a NON-EMPTY file matters (an empty file has nothing to execute).
+    legacy = ROOM_CMD.format(iid)
+    if os.path.exists(legacy) and os.path.getsize(legacy) > 0:
+        add("legacy room command", "WARN",
+            f"{legacy} is non-empty - an OLD hook build would execute this as room_goto")
     else:
-        add("room command file", "PASS", "absent (good)")
+        add("legacy room command", "PASS", "absent or empty (hook now uses nid_roomgoto)")
 
     stale_keys = file_age(KEYS.format(iid))
     add("keys file", "PASS", f"age {stale_keys}s" if stale_keys is not None else "absent")
