@@ -2950,3 +2950,35 @@ Enter only works from a round-over screen, so a short wait distinguishes the cas
 
 The deeper entry cost is the menu search itself (`run_entry` trying variants, each ~90 s, then
 relaunching). That is the next target: without it, no amount of reps is affordable.
+
+## Session 155 — entry relaunch fixed, and the window-length trade-off measured
+
+Entry no longer relaunches after every failed variant: all four variants are tried on the SAME
+process, with one relaunch only if all fail. Measured effect on throughput:
+
+```
+before: 4 episodes of 20 s in 9 min    (~150 s per episode)
+after:  6 episodes of 20 s in 4m22s    (~44 s per episode)
+```
+
+So per-episode overhead fell from ~130 s to ~24 s, a ~5x improvement in episodes per hour.
+
+Then the question the short window was supposed to answer: does it buy precision? No.
+
+```
+20 s window: sd 41.5  (fits 22.9, -1.3, 22.1, -84.0, -40.0, 1.0)
+60 s window: sd 11.8  (Session 151)
+```
+
+and with the measured ~24 s overhead per episode, the cost to reach se=5 is:
+
+```
+20 s window: n=69 episodes -> ~51 min per policy
+60 s window: n= 6 episodes -> ~8.4 min per policy
+```
+
+**The longer window is ~6x more efficient.** Variance falls faster with window length than cost
+grows, so short episodes were the wrong trade (and the 45 s window I switched to two hours ago
+was on the wrong side of it too). Configuration going forward: window 60, reps 6.
+
+This is the first quantitative basis for choosing the window rather than guessing it.

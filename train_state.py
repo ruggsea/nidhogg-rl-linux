@@ -781,14 +781,27 @@ class InstanceManager:
                 self._raise_speed()
                 log(f"instance {self.iid}: TRAINING reached n_lead={n_lead} S={s_count}; cached")
                 return True
-            log(f"instance {self.iid}: S={s_count} gave no live fight - relaunching")
-            try:
-                self.close()
-            except Exception:
-                pass
-            time.sleep(1.5)
-            self.launch()
-            time.sleep(BOOT_WAIT)
+            # DO NOT RELAUNCH AFTER EVERY FAILED VARIANT. That cost BOOT_WAIT (55 s) per
+            # attempt, so a four-variant search spent 3-4 minutes in menu navigation while
+            # the game was running perfectly well. Menu navigation does not need a fresh
+            # process: try every variant on the SAME process first, and relaunch once only if
+            # all of them fail. Measured context: episodes were ~20 s against ~2.5 min of
+            # entry, i.e. 90% overhead.
+            log(f"instance {self.iid}: S={s_count} gave no live fight - trying next variant")
+        log(f"instance {self.iid}: no variant worked on this process - one relaunch")
+        try:
+            self.close()
+        except Exception:
+            pass
+        time.sleep(1.5)
+        self.launch()
+        time.sleep(BOOT_WAIT)
+        # last chance on the fresh process, using the most common variant
+        if self._enter_confirmed(2, 1):
+            InstanceManager.ENTRY = (1, 2)
+            self._raise_speed()
+            log(f"instance {self.iid}: TRAINING reached after relaunch")
+            return True
         log(f"instance {self.iid}: no entry variant produced a live fight")
         return False
 
