@@ -3525,3 +3525,28 @@ Fixes:
 The honest scoreboard for the night: the agent has not won a round that we can demonstrate, and
 `kills > deaths` never once happened in an episode. Everything else was instrumentation learning
 to tell the truth.
+
+## Session 173 — honest scoreboard with the fixed proxy
+
+With `GOAL_X = 500` (no more spurious mid-field "wins") and the stricter verifier, episodes read:
+
+```
+g0i0r0: me=[321..419] them=[199..464] kills=1 deaths=5 opp_span=265 death_acts=['D_right']
+g0i0r1: me=[45..472]  them=[2..464]   kills=1 deaths=3 opp_span=462 death_acts=['D_right']
+kills/deaths across recent episodes: 1/5, 1/3, 1/2, 1/7, 0/0
+```
+
+**Deaths exceed kills in every real episode, without exception.** The agent loses every exchange,
+and it loses them while advancing (`D_right`). That is the state of the policy, measured on
+matches where the CPU actually played, with a round proxy that no longer flatters it.
+
+The night's actual result, stated plainly:
+
+  * the agent has NOT beaten the CPU, has NOT won a verified round, and has NOT improved;
+  * what improved is the ability to tell truth from noise - five distinct bugs that silently
+    discarded episodes, an inert-opponent filter that exposed runs against statues, a control
+    variable that invalidated my own Phase 4 data, and a crossing verifier that exposed my own
+    round counter as fiction.
+
+Every number quoted before Session 166 in this log should be treated as suspect, because the
+episodes behind them were not checked for a live opponent.
