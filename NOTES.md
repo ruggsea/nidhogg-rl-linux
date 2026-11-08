@@ -4569,3 +4569,33 @@ the game included, runs slower under that.
 `NID_SHOW` in the environment now selects visible mode and survives `clean_files()` (the control
 file does not), and `NID_VISIBLE=1` makes the trainer set it. Trade-off is explicit: visible is 2x
 faster but the game is on screen.
+
+## Session 209 — the attract demo looks EXACTLY like a match, and the gate is the only thing that knows
+
+Screenshot at 18:25 with the trainer running: a real-looking duel - yellow fighter with sword on
+the left, orange CPU with sword on the right, "GO" arrow, both on the ground, blood on the floor.
+State at the same instant: `me_x=192 them_x=359`, both flags 1.
+
+And the direction gate, at that same moment:
+
+```
+direction gate D=+21.0 A=0.0 -> FAIL
+```
+
+Pressing D moves the fighter right; pressing A does nothing. That is the attract demo, not control.
+
+**So the honest answer to "are we just on the main screen?" is yes - even when the screen shows two
+armed fighters in an arena.** Visually indistinguishable. My new `screen_kind()` check (x > 1200 =>
+menu) does NOT catch this case, because the demo's coordinates are perfectly normal arena values
+(192, 359). It only catches the logo screen where the characters sit at x ~1288-1365.
+
+That leaves exactly one trustworthy test in this codebase: **D must move us right AND A must move us
+left**. Everything else - presence, motion, opponent motion, coordinate range - is satisfied by the
+demo. This is the third time tonight the same lesson has been delivered, and it is the reason the
+training data cannot be trusted.
+
+Note also, from the earlier measurement: this screen renders at 15-30 fps under the trainer versus
+120-318 fps for a lone launch. The slow-motion look and the "stuck" states are the same starvation.
+
+Next step, unchanged: verify by hand that the mapped menu path (SINGLE PLAYER -> TRAINING -> partner
+-> START) actually produces a screen where the gate PASSES. Until then we are training on a demo.

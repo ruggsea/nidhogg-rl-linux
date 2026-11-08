@@ -633,6 +633,14 @@ def play(mgr, w, seconds, seed, tag, log=print):
     _me_span_obs = (abs(best_me - start_me) if (best_me is not None and start_me is not None)
                     else 0.0)
     frozen_agent = (_me_span_obs < 15.0 and real_samples > 20)
+    # ARE WE ON THE MAIN SCREEN AGAIN? Title/menu characters read at x ~1288-1365; an arena is
+    # 0..512. This is logged on every episode so the answer never has to be assumed, and such an
+    # episode is discarded: it cannot contain a match.
+    _screen = mgr.screen_kind(st0)
+    if _screen == "menu":
+        log(f"  {tag}: DISCARDED - coordinates say MAIN SCREEN, not an arena "
+            f"(me_x={st0.get('me_x')}, them_x={st0.get('them_x')})")
+    main_screen = (_screen == "menu")
     # A PLATFORM EPISODE IS NOT A FIGHT. Measured: live rounds put both fighters at y~560; READY
     # and menu-platform states sit at y~128-160. An episode that never leaves the platform band
     # cannot contain a round, but the fighter can still shuffle sideways enough to defeat the
@@ -664,7 +672,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # this project. Disqualification is now decided by during-episode evidence only; an entry
     # failure is recorded as a warning.
     no_match = ((real_samples < 20) or inert_opponent or frozen_agent
-                or platform_episode)
+                or platform_episode or main_screen)
     # attribute every abandonment instead of inferring it later
     # COORDINATE CALIBRATION. The round win/loss detector compares against GOAL_X=1650 and
     # GOAL_X_OPP=250, and `me_armed` needs me_x > GOAL_X-700 = 950. Every position observed
@@ -702,7 +710,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
         f"adv={_adv}{_me_rng}{_th_rng} kills={them_deaths} deaths={me_deaths} "
         f"opp_span={(_th_span if _th_span is not None else -1):.0f} "
         f"death_acts={death_actions} cross_verified={cross_verdicts} "
-        f"reset={_reset_ok}")
+        f"reset={_reset_ok} screen={_screen}")
     rec = {"no_match": bool(no_match), "adversary": _adv,
            "real_samples": real_samples,
            "advance": round(advance, 2), "conceded": round(conceded, 2),

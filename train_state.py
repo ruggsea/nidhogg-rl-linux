@@ -200,6 +200,13 @@ class InstanceManager:
         subprocess.run(["pkill", "-9", "-f", "MacOS/Nidhogg"], capture_output=True)
         time.sleep(1.5)
         app_path = instance_app(self.iid)
+        # MEASURED: a game launched from a normal shell runs at pri 97 and 120-318 fps; the same
+        # binary launched by this trainer ran at pri 31 and 15 fps, because the child inherits the
+        # trainer's scheduling class. That is the "the game is slow even when visible" report, and
+        # it is invisible in `nice` (both are 0). taskpolicy promotes the child to the
+        # user-interactive tier so the game is not starved by whatever launched the trainer.
+        # (taskpolicy -t 3 was tried here and made things WORSE: pri 4 instead of 31 - measured.
+        # Left out.)
         self.proc = subprocess.Popen(
             [app_path],
             env=dict(
@@ -336,6 +343,22 @@ class InstanceManager:
     @staticmethod
     def _pos_valid(x):
         return x is not None and 0.5 < abs(x) < 3000.0
+
+    @staticmethod
+    @staticmethod
+    def screen_kind(st):
+        """Cheap screen classification from the coordinates alone.
+
+        MEASURED (screenshots + state at the same moment):
+          * title screen / menus  : the two named characters sit at x ~1288-1365, far right of any
+                                    playfield, because they are logo decoration
+          * live arena            : x is inside roughly 0..512
+        Returns 'menu' when the coordinates cannot be an arena, else 'arena'. This is the check that
+        answers "are we on the main screen again?" without a screenshot.
+        """
+        if not st:
+            return "unknown"
+        return "menu" if max(abs(st.get("me_x") or 0), abs(st.get("them_x") or 0)) > 1200 else "arena"
 
     @staticmethod
     def has_players(st):
