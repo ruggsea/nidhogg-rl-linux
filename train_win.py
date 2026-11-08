@@ -609,11 +609,22 @@ def play(mgr, w, seconds, seed, tag, log=print):
     except Exception:
         pass
     inert_opponent = (_th_span is not None and _th_span < 15.0 and real_samples > 20)
+    # A FROZEN AGENT IS NOT AN EPISODE EITHER. Measured: the "always left" seed pinned itself to
+    # the left wall and produced me=[114..114], [16..16], [95..95] - zero movement - while the
+    # opponent played, so those episodes passed the statue check and were scored. Their fitness
+    # describes the CPU, not our policy, and feeding them to selection rewards nothing. Both
+    # fighters must move for an episode to count.
+    _me_span_obs = (abs(best_me - start_me) if (best_me is not None and start_me is not None)
+                    else 0.0)
+    frozen_agent = (_me_span_obs < 15.0 and real_samples > 20)
+    if frozen_agent:
+        log(f"  {tag}: DISCARDED - our fighter moved only {_me_span_obs:.1f} px in "
+            f"{real_samples} samples (no policy signal)")
     if inert_opponent:
         log(f"  {tag}: DISCARDED - opponent moved only {_th_span:.1f} px in {real_samples} "
             f"samples (inert opponent, not a training match)")
     # unscorable if we never reached a live, drivable match, or could not see enough of it
-    no_match = (real_samples < 20) or bool(inert) or inert_opponent
+    no_match = (real_samples < 20) or bool(inert) or inert_opponent or frozen_agent
     # attribute every abandonment instead of inferring it later
     # COORDINATE CALIBRATION. The round win/loss detector compares against GOAL_X=1650 and
     # GOAL_X_OPP=250, and `me_armed` needs me_x > GOAL_X-700 = 950. Every position observed
@@ -637,6 +648,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
                     "inert_opponent": bool(inert_opponent),
                     "opp_span": _th_span, "me_span_range": [start_me, best_me],
                     "kills": them_deaths, "deaths": me_deaths,
+                    "frozen_agent": bool(frozen_agent),
                     "rounds_won": rounds_won, "rounds_lost": rounds_lost,
                     "cross_verified": cross_verdicts, "loss_verified": loss_verified,
                     "death_acts": death_actions, "gate_px": mgr.gate_px,

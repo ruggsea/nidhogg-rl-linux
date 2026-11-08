@@ -3753,3 +3753,31 @@ useful number produced today: it bounds how much of this project's history was e
 Also worth saying plainly: a policy that walks into a wall and stops is a real failure mode the
 search will keep producing, and the fix belongs in the reward (no movement should earn nothing)
 as well as in the audit.
+
+## Session 179 (cont.) — the same guard added where it changes selection
+
+Auditing frozen episodes is not enough: the trainer was still scoring them and feeding them to
+the GA. Both fighters must now move for an episode to count, checked in the episode loop:
+
+```
+frozen_agent = (|best_me - start_me| < 15 px and real_samples > 20)
+no_match = ... or inert_opponent or frozen_agent
+```
+
+and the flag is written into the run record (`frozen_agent`) so a later audit can see it was
+detected rather than silently dropped.
+
+Why this is a reward fix and not just bookkeeping: a frozen episode's fitness is produced entirely
+by the opponent's behaviour, so selection that includes them is selecting on the CPU's mood. With
+the "always left" seed pinned at the wall, that was roughly a third of a policy's draws.
+
+Current run after the change:
+
+```
+g0i0r0 fit=  4.1 rounds 0-0
+g0i0r1 fit= 11.0 rounds 0-0
+g0i0r2 fit=-17.7 rounds 0-0
+```
+
+No `DISCARDED` yet for g0i0 because the "always right" seed genuinely moves - the guard is there
+for the policies that do not, and it will fire the moment selection produces one.
