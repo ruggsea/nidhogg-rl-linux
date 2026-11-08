@@ -72,7 +72,11 @@ HOLD_TICKS = 8   # MEASURED: 8 -> advance 123-134 px per episode; 20 -> only 14-
 # teleports land at the ends. The old values (1650 / 250) made `me_armed` require me_x > 950,
 # which no sample ever reached - so a round win was structurally impossible regardless of the
 # policy. These are set from the measurement instead.
-GOAL_X = 440.0         # our goal line is at the right end of the measured arena
+# 440 was too early: verified crossings there produced NO round transition (me_span 6-19 px,
+# our fighter never teleported), so the proxy was firing mid-field on an arbitrary x and
+# paying the 60-point round term for nothing. Measured arena extremes reach ~512, so the line
+# is now at the actual end.
+GOAL_X = 500.0         # our goal line is at the right end of the measured arena
 GOAL_X_OPP = 20.0      # the CPU goal line is at the left end
 # A crossing must be WALKED, not teleported: respawns jump the whole arena in one sample and
 # would otherwise be scored as goals. Any single-sample move larger than this invalidates a
@@ -401,7 +405,11 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 if _watch:
                     _me_span = max(w["me_x"] for w in _watch) - min(w["me_x"] for w in _watch)
                     _th_span = max(w["them_x"] for w in _watch) - min(w["them_x"] for w in _watch)
-                    _transition = _me_span > 200 or _th_span > 200
+                    # BOTH fighters must reposition. Measured: four crossings gave
+                    # me_span 6-19 px - our fighter never teleported - so no round was
+                    # ending. The old `or` accepted a CPU merely running 220 px as a
+                    # transition, which is not a round end.
+                    _transition = _me_span > 200 and _th_span > 200
                     cross_verdicts.append(bool(_transition))
                     print(f"  {tag}: CROSSING VERIFY me_span={_me_span:.0f} "
                           f"them_span={_th_span:.0f} transition={_transition}", flush=True)

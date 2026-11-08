@@ -3494,3 +3494,34 @@ seed5 reach70                             68, 68, 68, 70, 70
 
 So the population now contains a policy that does the thing the evidence says is needed. Whether
 it actually wins is a measurement, not a claim - and the crossing verifier is armed to tell us.
+
+## Session 172 — THE PROXY IS DISHONEST: crossings do not end rounds
+
+Four self-verifications of the round proxy, each watching 1.5 s after our fighter crossed x=440:
+
+```
+g0i0r0: me_span=12  them_span=220  transition=True    <- my lax rule (either span > 200)
+g0i0r1: me_span=11  them_span=43   transition=False
+g0i0r1: me_span=19  them_span=0    transition=False
+g0i0r2: me_span=6   them_span=20   transition=False
+```
+
+**Our fighter never teleported** - spans of 6-19 px - in any of the four. A round transition
+resets BOTH fighters. So nothing happened when we crossed; the CPU simply running 220 px one time
+fooled the first, lax criterion.
+
+Which means: the "rounds 1-0" and "rounds 2-0" reported in Sessions 169 and 172 were **our own
+proxy firing on an arbitrary mid-field coordinate**, not wins. The 60-point round terms have been
+paying for nothing. This is the fourth time tonight that a number looked like progress and was
+not, and the first where I had built the instrument that caught it.
+
+Fixes:
+  * the verifier now requires BOTH fighters to reposition (`and`, not `or`);
+  * the goal line moved from 440 to 500, the actual measured arena end, on the theory that the
+    real goal is the edge rather than a third of the way in;
+  * `rounds_won` remains reported but must be treated as unverified until a crossing comes back
+    with both spans over 200 px.
+
+The honest scoreboard for the night: the agent has not won a round that we can demonstrate, and
+`kills > deaths` never once happened in an episode. Everything else was instrumentation learning
+to tell the truth.

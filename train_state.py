@@ -688,6 +688,28 @@ class InstanceManager:
         return False
 
 
+    def break_ready(self, tries=2):
+        """Get out of a READY state where both fighters stand on platforms and nothing moves.
+
+        MEASURED (log 08:18-08:20): repeated entries sat with `them` pinned at 202 and y=128 -
+        the platform height named in this repo's own findings - while live rounds show y~560.
+        The gate passed (we could shuffle) but no round began, so every episode was discarded as
+        "opponent inert" and entry searched variants forever.
+
+        Sends Enter and reports whether the fighters left the platforms.
+        """
+        for _ in range(tries):
+            self.press(13)
+            t0 = time.time()
+            while time.time() - t0 < 3.0:
+                st, _ = self.read_state()
+                if self.has_players(st) and (st["me_y"] > 500 or st["them_y"] > 500):
+                    log(f"instance {self.iid}: READY broken - on the ground "
+                        f"(y={st['me_y']:.0f}/{st['them_y']:.0f})")
+                    return True
+                time.sleep(0.15)
+        return False
+
     def _opponent_moves(self, seconds=5.0, min_px=15.0):
         """True if the CPU actually plays during this window.
 
@@ -826,6 +848,12 @@ class InstanceManager:
                     return True
                 log(f"instance {self.iid}: gate passed but the OPPONENT is inert "
                     f"(x stayed at {self._last_them_x:.0f}) - not a training match")
+                st_r, _ = self.read_state()
+                if self.has_players(st_r) and st_r["me_y"] < 300 and st_r["them_y"] < 300:
+                    # both on platforms => READY, not a dead match: try to start the round
+                    if self.break_ready():
+                        if self._opponent_moves(seconds=8.0, min_px=8.0):
+                            return True
                 if not self._accept_restart(tries=1, wait=accept_wait):
                     return False
                 continue
