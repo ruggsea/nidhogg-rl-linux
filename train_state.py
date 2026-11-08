@@ -718,7 +718,7 @@ class InstanceManager:
         log(f"instance {self.iid}: no round boundary within {wait:.0f}s - starting anyway")
         return False
 
-    def _drivable_now(self, tries=3):
+    def _drivable_now(self, tries=2, prime=0.7, gate=0.9, accept_wait=4.0):
         """Entry is not finished until the gate says input reaches the simulation.
 
         "Live fight confirmed" has been wrong before, and this session measured why: the
@@ -730,14 +730,20 @@ class InstanceManager:
         So: prime the controls, run the ACTIVE gate, and if it fails try the cheap Enter
         accept-restart (a round boundary is one press away) before giving up.
         """
+        # TIMING MATTERS MORE THAN THOROUGHNESS HERE. Measured from timestamps in a
+        # pop-2/reps-10 run: episodes were ~20 s of measurement against ~2.5 min of entry
+        # overhead, so 90% of wall clock went into getting ready. The old numbers here
+        # (prime 1.0 + gate 1.2 + accept-restart waits of up to 12 s, x3 tries) could spend
+        # 40 s per attempt. Enter only ever works from a round-over screen (elsewhere it does
+        # nothing at all, measured), so a short wait distinguishes the cases just as well.
         for _ in range(tries):
             st, _ = self.read_state()
             if not self.has_players(st):
-                if not self._accept_restart():
+                if not self._accept_restart(tries=1, wait=accept_wait):
                     return False
                 continue
-            self.prime_controls(1.0)
-            if self.prove_control(1.2):
+            self.prime_controls(prime)
+            if self.prove_control(gate):
                 return True
             if not self._accept_restart():
                 return False

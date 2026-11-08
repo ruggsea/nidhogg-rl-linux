@@ -2922,3 +2922,31 @@ reasonable hypothesis, a cheap test, and the test said no. Options now:
 
 The third is still the only one that changes the character of the problem rather than paying
 for it, and it is blocked on reading GML variables of the non-player objects.
+
+## Session 154 — measured: 90% of wall clock is entry overhead, not measurement
+
+Timestamps from a pop-2 / reps-10 / window-20 run:
+
+```
+03:44:21 launched
+03:46:18 trying entry n_lead=1 S=2
+          g0i0r0 fit=  1.6      <- 20 s episode
+          g0i0r1 fit=-63.2      <- 20 s episode
+03:49:48 live AND drivable
+          g0i0r2 fit=-20.2
+03:51:32 live AND drivable
+          g0i0r3 fit=-20.4
+03:53:18 trying entry ...
+```
+
+Four 20-second episodes took nine minutes. Roughly **2.5 minutes of entry for every 20 seconds of
+measurement**, so ~90% of the wall clock is spent getting back into a match. That is the real
+reason statistical power is expensive here - not the noisy fitness on its own. Reps are the right
+idea, but at this overhead they cost six times what the arithmetic suggests.
+
+Reduced the fixed costs in `_drivable_now`: prime 1.0->0.7 s, gate 1.2->0.9 s, and the
+accept-restart inside it to one 4 s attempt instead of waits up to 12 s repeated three times.
+Enter only works from a round-over screen, so a short wait distinguishes the cases just as well.
+
+The deeper entry cost is the menu search itself (`run_entry` trying variants, each ~90 s, then
+relaunching). That is the next target: without it, no amount of reps is affordable.
