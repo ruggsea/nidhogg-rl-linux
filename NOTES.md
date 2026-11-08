@@ -3357,3 +3357,50 @@ Also visible: two episodes have `entry_gate False` (A_px 0.0/1.0) yet still reco
 gate's short window can miss a responsive match, and those episodes are marked inert and
 discarded. That is the conservative direction (reject rather than accept), which is right for
 this project.
+
+## Session 168 — CORRECTION: round wins were NEVER reachable, and I said they were
+
+Two measurements landed this tick.
+
+### 1. How the agent dies (new instrumentation)
+
+Deaths now record the action held at the moment of death. First episodes:
+
+```
+g0i0r0 kills=1 deaths=4  death_acts=['D_right', 'D_right']
+g0i0r1 kills=2 deaths=4  death_acts=['D_right', 'F_attack']
+g0i0r2 kills=1 deaths=1  death_acts=['D_right']
+
+histogram: D_right 4, F_attack 1
+```
+
+Deaths happen overwhelmingly while ADVANCING. The agent walks into the opponent and dies. That is
+overcommitment, not passivity - and it is the first evidence about the mechanism rather than just
+the count.
+
+### 2. The round-win detector was self-contradictory
+
+```
+genuine_cross required:  prev["me_x"] < GOAL_X - 150   (a 150 px jump from below 290)
+                    AND  abs(now - prev) < CROSS_MAX_STEP (60)
+```
+
+Both conditions could never hold in the same sample. With GOAL_X = 440, the arming margin of 150
+px is a third of the arena. **`genuine_cross` was unreachable, so `rounds_won` was structurally
+impossible - again.** My Session 145 entry "round wins are mechanically reachable again" was
+therefore WRONG: I fixed the goal line and added the step limit but left the old arming margin
+behind, and I verified the claim by observing that our fighter reached x=425 rather than by
+testing that a crossing could register.
+
+Fixed: a crossing is `prev < GOAL_X and now >= GOAL_X`, step under 60 px, with the fighter armed
+by having been in its own half. Verified on a synthetic walk:
+
+```
+prev=430 now=435 -> cross=False
+prev=435 now=440 -> cross=True      (walking across the line is now a win)
+prev=440 now=445 -> cross=False
+```
+
+That is now the THIRD time tonight I have reported a capability that the code could not deliver,
+and each time the cause was the same: I checked that the pieces were present, not that the path
+was reachable end to end.
