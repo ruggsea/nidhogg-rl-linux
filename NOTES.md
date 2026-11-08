@@ -3683,3 +3683,37 @@ Three things line up, which is the point:
 
 Incidental observation, n=1 and not a claim: this is the first verified episode in hours where
 kills (3) exceeded deaths (2).
+
+## Session 178 — the scoreboard, computed only from recorded runs
+
+`report.py` prints the project's state from `results/runs/` alone - no /tmp log is evidence
+any more, because those get overwritten:
+
+```
+episodes recorded: 85   REAL: 30   (not real or discarded: 55)
+
+kills 53   deaths 74   (aggregate net -21)
+per episode: kills>deaths in 8/30, equal in 8/30
+fitness: mean 2.74  sd 18.86  n 6
+
+rounds counted 0W/1L   verified 0W/0L   refused-as-artifact 0W/2L
+
+success conditions:
+  a verified round win       : never
+  kills > deaths in aggregate: no
+  a measured win rate        : no - not enough verified rounds
+```
+
+This is the number to quote from now on. Note both columns, on purpose: the aggregate says the
+agent loses exchanges (53 kills against 74 deaths) and the per-episode count says it wins the
+exchange count in 8 of 30 episodes - the aggregate and the per-episode view disagree, which is
+exactly the confusion that produced a false claim earlier tonight. Both are true; neither alone
+is the story.
+
+Also worth noting: 55 of 85 recorded episodes cannot be used as evidence at all (statues,
+entry failures, or recorded before `opp_span` existed). Two-thirds of the history is unusable,
+which is why the earlier confident numbers were so unreliable.
+
+The current run's first verified episodes read `kills=3 deaths=2`, `kills=4 deaths=2`,
+`kills=1 deaths=2`, `kills=1 deaths=1` - the first stretch where kills have not been clearly
+behind. n is far too small to call an improvement, and I am not calling it one.
