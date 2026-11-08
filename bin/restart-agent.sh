@@ -23,6 +23,9 @@ if [[ ! -f "$REPO/state/facts.json" ]]; then echo "missing state/facts.json" >&2
 # environment check before spending tokens
 python3 tools/doctor.py --gate || { echo "doctor --gate failed - refusing to start"; exit 1; }
 
+# AGENTS.md in the repo is auto-discovered and is deliberately short; CONTINUE.md is appended as the
+# operator's kickoff. Keeping the global ~/.pi/agent/AGENTS.md out of this session is intentional:
+# it is 4k tokens of other projects' rules and this agent does not need them in context.
 if [[ "${1:-}" == "--tmux" ]]; then
   tmux kill-session -t nidhogg-agent 2>/dev/null || true
   tmux new -d -s nidhogg-agent \

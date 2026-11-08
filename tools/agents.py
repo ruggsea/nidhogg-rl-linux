@@ -111,8 +111,19 @@ def cost_line(name):
     return ""
 
 
+def plan_next():
+    """The plan's current step, shown in `list` so the plan is visible where you look at agents."""
+    try:
+        out = sh(f"{sys.executable} tools/plan.py next")
+        d = json.loads(out)
+        return f"{d['id']} {d['title']}"
+    except Exception:
+        return "(no plan)"
+
+
 def cmd_list():
     live = sessions()
+    print(f"plan: {plan_next()}")
     reg = reg_load()
     if not live:
         print("no agent sessions running")
