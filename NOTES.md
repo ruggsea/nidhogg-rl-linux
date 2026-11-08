@@ -4699,3 +4699,30 @@ Every earlier "the agent cannot be controlled" reading was this chain being brok
 What is still outstanding before any training claim: the episode loop in train_win.py still reads
 through the old named-state path, so it must be switched to the bound instance, and only then can
 fitness numbers mean anything.
+
+## Session 213 — attestation harness built; first run says NOT ATTESTED (and says where)
+
+`tools/attest.py` runs the whole chain and prints one verdict with per-step evidence:
+
+```
+1. LAUNCH      room=1
+2. NAVIGATE    PRESS ENTER..START -> room 2 -> 3
+3. ROOM        room=3   left title room: True
+4. BIND        bind found no responder among 4 candidates
+5. GATE        FAIL
+6. OPPONENT    moved: False
+VERDICT: NOT ATTESTED - bind, gate, opponent failed
+```
+
+This is the first time the project has had a single command that refuses to call a run meaningful.
+It is doing exactly its job.
+
+Where it failed: navigation landed in **room 3**, not the arena. The earlier hand-walked run went
+`2 -> 17 -> 29`; this one went `2 -> 3`. Most likely cause: on a fresh launch the splash needs longer
+than 2.0 s, so the first Enter is consumed by the splash and every subsequent key shifts by one -
+the sequence then selects a different menu item. The harness proves that a fixed key sequence with
+fixed delays is not enough; navigation needs to be closed-loop (press Enter until the room changes,
+verify the submenu by the room/state it produces) rather than open-loop with sleeps.
+
+That is the next fix, and it is a real one: an open-loop menu walk was the reason every earlier
+attempt at "training" could silently end up on a menu.

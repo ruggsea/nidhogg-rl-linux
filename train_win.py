@@ -92,6 +92,20 @@ GOAL_X_OPP = 20.0      # the CPU goal line is at the left end
 CROSS_MAX_STEP = 60.0
 
 
+def state_of(mgr):
+    """Episode state: the BOUND instance for us when one has been identified by response.
+
+    The named-state reader returns object 242/154, but the fighter we actually command has been
+    measured at object 244. When binding has succeeded, that instance is authoritative.
+    """
+    b = getattr(mgr, "bound_inst", None)
+    if b is not None:
+        rp = mgr.read_pair()
+        if rp:
+            return rp
+    return read_state(mgr.iid)
+
+
 def read_state(iid):
     try:
         v = open(TS.STATE.format(iid)).read().split()
@@ -181,7 +195,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
         _reset_ok = mgr.start_from_round_boundary()
     except Exception:
         _reset_ok = False
-    st0 = read_state(mgr.iid)
+    st0 = state_of(mgr)
     inert = st0 is None
     _adv = {"trust_match": False, "why": "not checked"}
     if not inert and hasattr(mgr, "prime_controls"):
@@ -193,7 +207,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
         xs = []
         tt = time.time()
         while time.time() - tt < 1.5:
-            s2 = read_state(mgr.iid)
+            s2 = state_of(mgr)
             if s2:
                 xs.append(s2["them_x"])
             time.sleep(0.1)
@@ -211,7 +225,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
             # attempts, which is exactly what this situation needs.
             gok = mgr._drivable_now()
             mgr.gate_ts = time.time()
-            st1 = read_state(mgr.iid)
+            st1 = state_of(mgr)
             fresh = st1 is not None and mgr.has_players(st1)
             _adv = {"entry_gate": gok, "A_px": round(mgr.gate_px, 1),
                     "fresh_state": fresh}
@@ -304,7 +318,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 me_deaths += 1
         if raw is not None:
             prev_flags = (raw[4], raw[5])
-        st = read_state(mgr.iid)
+        st = state_of(mgr)
         # "gone" now means OUR fighter is absent AND the state is unreadable. A flicker in
         # the OPPONENT's flag is not an absence: measured at t=0.25 s the CPU flag dropped
         # while its position read (262, 560). Treating that as gone aborted the episode.
@@ -424,7 +438,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 _watch = []
                 _tw = time.time()
                 while time.time() - _tw < 1.5:
-                    _s = read_state(mgr.iid)
+                    _s = state_of(mgr)
                     if _s:
                         _watch.append(_s)
                     time.sleep(0.05)
@@ -479,7 +493,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 _watch = []
                 _tw = time.time()
                 while time.time() - _tw < 1.5:
-                    _s = read_state(mgr.iid)
+                    _s = state_of(mgr)
                     if _s:
                         _watch.append(_s)
                     time.sleep(0.05)

@@ -340,6 +340,33 @@ class InstanceManager:
             return None
         return None
 
+    def read_pair(self):
+        """(me, them) from the instance dump, using the BOUND instance for us.
+
+        "them" is the nearest instance whose object index is a known player body (154 observed for
+        the orange fighter); if none is present the read fails rather than substituting a guess.
+        """
+        if self.bound_inst is None:
+            return None
+        try:
+            rows = []
+            with open(INSTS.format(self.iid)) as f:
+                for line in f:
+                    p = line.split()
+                    if len(p) == 4:
+                        rows.append((int(p[0]), int(p[1]), float(p[2]), float(p[3])))
+        except (OSError, ValueError):
+            return None
+        me = next((r for r in rows if r[0] == self.bound_inst), None)
+        if me is None:
+            return None
+        cands = [r for r in rows if r[0] != self.bound_inst and r[1] in (154, 244, 242)]
+        if not cands:
+            return None
+        them = min(cands, key=lambda r: abs(r[2] - me[2]))
+        return {"me_x": me[2], "me_y": me[3], "them_x": them[2], "them_y": them[3],
+                "have154": 1, "have242": 1}
+
     def read_state(self):
         """Return (state-or-None, stale). A state can have have154/have242 == 0."""
         try:
