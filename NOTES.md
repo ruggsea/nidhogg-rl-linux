@@ -2863,3 +2863,36 @@ Also noted: all four draws are NEGATIVE under a 45 s window. Shorter episodes tr
 territory terms before any ground is gained, so the reward is dominated by `conceded`. The 45 s
 window chosen last hour buys statistics at the cost of a signal that never turns positive - that
 trade needs revisiting, not repeating.
+
+## Session 152 — kills promoted to the objective, and a bias caught in the first ten minutes
+
+Taking option 2 from Session 151: the integer kill count becomes the primary signal and the
+noisy continuous terms are demoted to a quarter weight.
+
+```
+kills_reward = 20 * (kills - deaths)      (was: 6/4, and disabled before that)
+SHAPING      = 0.25                       (territory + progress)
+```
+
+First episodes under it:
+
+```
+g0i0r2: kills=3 deaths=3 -> fit= 28.9
+g0i0r3: kills=3 deaths=3 -> fit= 32.3
+g0i0  : reps=3 fits=[-22.55, 28.93, 32.31] mean=12.90
+```
+
+The 3/3 rows exposed a bias I had just introduced: with 25 per kill against 15 per death, an
+EVEN trade paid +30. A one-for-one exchange must be worth nothing, so the term is now a net
+measure - `20 * (kills - deaths)` - verified:
+
+```
+kills=3 deaths=3 -> +0     kills=6 deaths=8 -> -40
+kills=1 deaths=3 -> -40    kills=5 deaths=2 -> +60
+```
+
+What is NOT yet established: whether this reduces the spread. The block above shows sd ~30,
+which is WORSE than the 11.76 measured on the territory-dominated score - but that block still
+carried the biased +30 for even trades and only 3 valid reps. A new run is measuring it with
+the corrected term. Publishing a variance comparison before that finishes would be exactly the
+mistake this session has been full of.

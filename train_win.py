@@ -432,7 +432,16 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # jump threshold (which produced 485 false kills and had to be disabled). Weighted well
     # below a round win (60) but enough to shape a fight: taking a stock is progress toward
     # crossing, and dying hands the CPU ground.
-    kills_reward = 6.0 * them_deaths - 4.0 * me_deaths
+    # PRIMARY SIGNAL: net kills. An integer count per episode, so its variance is far lower
+    # than the continuous territory terms (measured sd ~12 across reps of one policy, vs a
+    # spread of ~5 for the kill counts themselves). Taking a stock is the mechanical
+    # precondition for crossing the goal, so this points at the objective as well as being
+    # measurable.
+    # NET stocks, not separate rewards. Measured immediately after the first version:
+    # g0i0r2 with kills=3, deaths=3 scored fit=28.9 and g0i0r3 with the same 3/3 scored 32.3 -
+    # i.e. an EVEN trade was being paid +30, because 25 per kill against 15 per death is a
+    # 5:3 ratio. A one-for-one exchange should be worth nothing. Now it is.
+    kills_reward = 20.0 * (them_deaths - me_deaths)
     # TERRITORY IS THE LEARNING SIGNAL. Measured: every individual scored an identical
     # -8.3 because a Training match is ONE round, so the win/loss term is a single bit
     # and the GA has nothing to differentiate on. These continuous terms give a gradient
@@ -477,11 +486,16 @@ def play(mgr, w, seconds, seed, tag, log=print):
         closeness = 1.0 * max(0.0, 1.0 - min_abs_dx / 200.0)
     territory = (2.0 * advance - 4.0 * conceded + proximity
                  + 12.0 * pushed + closeness)
+    # THE NOISY TERMS ARE DEMOTED, NOT REMOVED. Measured (Session 151): four reps of ONE
+    # policy gave sd 11.76 on a score dominated by the territory terms, which is larger than
+    # any plausible difference between two policies. Kills (integer) now carry the objective;
+    # territory and progress are kept at a quarter weight as directional shaping only.
+    SHAPING = 0.25
     fitness = (60.0 * rounds_won - 30.0 * rounds_lost
                + 150.0 * matches_won - 80.0 * matches_lost
                + kills_reward
-               + float(np.clip(progress, -5, 5))
-               + float(np.clip(territory, -12, 12)))
+               + SHAPING * float(np.clip(progress, -5, 5))
+               + SHAPING * float(np.clip(territory, -12, 12)))
     # unscorable if we never reached a live, drivable match, or could not see enough of it
     no_match = (real_samples < 20) or bool(inert)
     # attribute every abandonment instead of inferring it later
