@@ -474,12 +474,16 @@ extern void *g_match_inst_fwd;   // (declared for real with the instance globals
 static void pump_vars(void) {
     FILE *f = fopen(ctl_path("nid_vars"), "r");
     if (!f) return;
+    char trig[64] = {0};
+    size_t tn = fread(trig, 1, sizeof trig - 1, f);
     fclose(f);
     { FILE *w = fopen(ctl_path("nid_vars"), "w"); if (w) fclose(w); }
+    if (!tn) return;                    // empty file: not a request (was firing 8k times)
     if (!pFindOrAlloc || !pCInstanceFind) return;
     int *ids = NULL, n = 0;
     int objs[2] = {106, 107};                  // Match, MatchStats
-    const char *names[] = {"score", "score1", "score2", "p1score", "p2score",
+    const char *names[] = {"x", "y", "sprite_index", "image_index",
+                           "score", "score1", "score2", "p1score", "p2score",
                            "round", "rounds", "roundsWon", "roundsLost", "wins", "losses",
                            "winner", "match_score", "points", "state", "phase", "mode",
                            "timer", "time", "timeLeft", "started", "over", "finished"};

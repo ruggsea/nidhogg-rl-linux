@@ -3134,3 +3134,33 @@ g0i2  n=3  mean -10.51  sd  6.86  se  3.96
 Nothing reaches 2 sigma, so no ordering is established. Note how wide the spreads are for the
 higher-mean policies (sd 19.7 and 24.7): the current leader is also the least predictable, which
 is a reason to distrust the ordering as much as the sigma count is.
+
+## Session 162 — Phase 4: the query returns data, and immediately a trap in its own API
+
+With the cached Match pointer, the named-variable query finally runs and returns values:
+
+```
+[vars] obj=106 score       -> u0=0 f4=0.000 d1=0.000
+[vars] obj=106 p1score     -> u0=0 f4=0.000 d1=0.000
+[vars] obj=106 round       -> u0=0 f4=0.000 d1=0.000
+[vars] obj=106 roundsWon   -> u0=0 f4=0.000 d1=0.000
+...
+```
+
+**Every name returns zero, and that is not yet evidence of anything** - the API used is
+`FindOrAlloc`, which ALLOCATES the variable when it does not exist. So a zero reading cannot
+distinguish "this variable exists and is 0" from "we asked and the runtime created it just now".
+Reporting these zeros as "the Match object has score=0" would be precisely the kind of false
+positive this session has been hunting.
+
+Fix in progress: `x` and `y` are added to the query as CONTROL variables. They definitely exist
+on that instance (the object dump shows Match at x=309.75, y=100), so:
+  * if x/y come back as real values, the lookup path returns genuine data and the zeros for
+    score/round mean those names do not exist on Match;
+  * if x/y also come back as 0, the whole query path is invalid and none of it is evidence.
+
+Also fixed: the trigger fired on an EMPTY file, so once created it ran on every probe iteration
+(~8k redundant lookups in one log). It now requires non-empty content.
+
+This is a negative result with a concrete next step rather than a finding, and the honest summary
+is that Phase 4 still has no round counter.
