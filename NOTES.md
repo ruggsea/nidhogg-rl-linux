@@ -3890,3 +3890,35 @@ route, not a countdown that can be waited out or advanced.
 The cost of the wrong route is ~60-90 s per attempt, which is why episodes were arriving at ~2.7
 minutes each. Whether the S=1 route fixes it is a measurement, not an assumption - the next
 entries will say.
+
+## Session 184 — the filters paid off: first clean 6-rep block, sd 4.02 instead of 17-20
+
+```
+g0i0: reps=6 fits=[2.25, -0.87, -2.84, 6.11, 6.17, 6.38] mean 2.87 sd 4.02 se 1.64
+```
+
+All six reps valid for the first time. Compare with earlier blocks, which carried statues, frozen
+agents and unverified round awards in the mix:
+
+```
+before the filters : sd 17.7 - 20.3   (means -18.95, -11.56, -21.40 ...)
+after  the filters : sd  4.02         (mean 2.87)
+```
+
+**se = 1.64.** Policies differing by ~4 points are now distinguishable, which is a four-fold
+improvement in resolving power over anything measured earlier tonight and the first time the GA's
+selection can be justified at all.
+
+That is what the last several hours bought: not a better agent, but a measuring instrument that
+can see a difference of four fitness points instead of drowning everything below twenty.
+
+The scoreboard, meanwhile, is unchanged in substance:
+
+```
+episodes recorded: 126   USABLE: 44   (statue, frozen agent, or discarded: 82)
+kills 69   deaths 110   (aggregate net -41)
+per episode: kills>deaths in 8/44, equal in 13/44
+```
+
+The agent still loses exchanges about 3:2 and has no verified round win. Lower noise does not make
+it better; it makes the fact that it is worse legible.
