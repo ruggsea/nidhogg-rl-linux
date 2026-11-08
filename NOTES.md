@@ -3953,3 +3953,25 @@ capability, it is arithmetic from a single small sample.
 The pattern in my own failures is now unmistakable: I attribute a change to my intervention, using
 a single run, when the variation is environmental. That is the same error as the phantom wins and
 the phantom kills, just wearing a statistical costume.
+
+## Session 186 — entry key timing was almost certainly my own regression
+
+The entry keys were originally spaced 2.5 s apart and entry worked often. I converted them to 18
+GAME FRAMES (~0.36 s at 50 fps) for speed, and entry failures (`A_px=0.0`, variant cycling,
+relaunches) became the dominant time sink for the rest of the session. A menu does not consume a
+key 0.36 s after the previous one.
+
+Restored to 125 frames - the original 2.5 s spacing, still frame-based so it does not drift with
+frame rate.
+
+Measured in the first minutes after the change:
+```
+[11:55:10] using cached entry n_lead=1 S=2
+[11:56:29] live AND drivable (gate confirmed)      <- succeeded, 79 s
+[11:57:09] using cached entry ...                  <- next episode boundary
+[11:58:59] trying entry n_lead=1 S=2               <- cached path failed, searching
+```
+
+So roughly half of entries still fail. The right next measurement is a success-rate comparison at
+two or three spacings (18 / 60 / 125 frames) run for a fixed number of attempts each - not another
+guess. Logged here so it is not re-guessed from scratch.

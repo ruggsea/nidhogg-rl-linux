@@ -664,7 +664,12 @@ class InstanceManager:
             self.press(code)
             # frame-based, not wall-clock: see _wait_frames. The `wait` value is kept only
             # as a fallback when the frame counter cannot be read.
-            self._wait_frames(18, timeout=max(1.0, wait))
+            # 125 FRAMES, not 18. The entry keys were originally spaced 2.5 s apart and entry
+            # worked often; I converted them to 18 game frames (~0.36 s at 50 fps) for speed and
+            # entry has been failing with A_px=0.0 ever since - the menu simply does not consume
+            # a key 0.36 s after the previous one. 125 frames restores the original 2.5 s spacing
+            # while staying frame-based, so the timing does not change when the frame rate does.
+            self._wait_frames(125, timeout=max(3.0, wait))
         # Presence is all _try_entry should decide. It used to require
         # _match_is_live(settle=12), which needs cpu_motion > 15 - but during entry we press
         # no keys, so a quiet CPU reads as "no live fight" and entry relaunches endlessly
