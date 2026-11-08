@@ -54,6 +54,7 @@ KEYS = "/tmp/nid_keys_{}.txt"
 SPEED = "/tmp/nid_speed_{}.txt"
 BRAIN = "/tmp/nid_brain_{}.txt"
 INJECT_LOG = "/tmp/nid_inject_{}.log"
+VARS = "/tmp/nid_vars_{}.txt"
 OUT_LOG = "/tmp/nid_out_i{}.log"
 LOG_PATH = "/tmp/nid_train_state.jsonl"
 SUMMARY_PATH = "/tmp/nid_train_state_summary.json"
@@ -718,6 +719,33 @@ class InstanceManager:
         log(f"instance {self.iid}: no round boundary within {wait:.0f}s - starting anyway")
         return False
 
+    def probe_match_vars_once(self):
+        """After a fresh launch, ask the Match object for its named variables.
+
+        Phase 4 needs a round/score field, and the only route left on this build is the
+        instance's named variables (the builtin struct window 0x80..0x600 contains nothing
+        but timers). The hook caches the Match pointer from the object walk, so the query has
+        something to ask - but only in a process that loaded the fixed dylib. Doing this ONCE
+        per launch, from the trainer, means the data arrives without spawning an extra game
+        while a run is in progress.
+        """
+        if getattr(self, "_vars_probed", False):
+            return
+        self._vars_probed = True
+        try:
+            with open(VARS.format(self.iid), "w") as f:
+                f.write("vars\n")
+            time.sleep(2.5)
+            with open(INJECT_LOG.format(self.iid), errors="ignore") as f:
+                hits = [l for l in f if l.startswith("[vars]")]
+            if hits:
+                out = f"/tmp/nid_vars_out_{self.iid}.txt"
+                with open(out, "w") as f:
+                    f.write("\n".join(hits) + "\n")
+                log(f"instance {self.iid}: captured {len(hits)} Match variables -> {out}")
+        except OSError:
+            pass
+
     def _drivable_now(self, tries=2, prime=0.7, gate=0.9, accept_wait=4.0):
         """Entry is not finished until the gate says input reaches the simulation.
 
@@ -770,6 +798,7 @@ class InstanceManager:
             if self._enter_confirmed(s_count, n_lead):
                 self._raise_speed()
                 log(f"instance {self.iid}: live AND drivable (gate confirmed)")
+                self.probe_match_vars_once()
                 return True
             log(f"instance {self.iid}: cached entry failed, re-searching")
         for n_lead, s_count in ((1, 2), (2, 2), (1, 1), (2, 1)):
@@ -779,6 +808,7 @@ class InstanceManager:
             if self._enter_confirmed(s_count, n_lead):
                 InstanceManager.ENTRY = (n_lead, s_count)
                 self._raise_speed()
+                self.probe_match_vars_once()
                 log(f"instance {self.iid}: TRAINING reached n_lead={n_lead} S={s_count}; cached")
                 return True
             # DO NOT RELAUNCH AFTER EVERY FAILED VARIANT. That cost BOOT_WAIT (55 s) per

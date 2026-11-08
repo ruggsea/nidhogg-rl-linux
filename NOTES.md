@@ -3094,3 +3094,18 @@ takes effect at the next game launch).
 
 Training meanwhile is untouched and healthy: 18 episodes, three policies measured
 (g0i1 mean +7.06 se 8.82, g0i0 -10.03 se 3.85, g0i2 -10.51 se 3.96), all with `rounds 0-0`.
+
+## Session 160 — Phase 4 probe wired into the trainer (armed, not yet fired)
+
+`probe_match_vars_once()` runs once per launched process: it writes the `vars` trigger, waits,
+then copies any `[vars]` lines into `/tmp/nid_vars_out_<id>.txt`. This means the Match-variable
+data arrives from the normal training flow instead of needing an extra game process (which would
+have broken the "at most 2 instances" rule while a run is active).
+
+It is INERT until the next launch: the running process has the previous dylib and the trainer has
+the previous module. Deliberately not restarting yet - gen 0 is 24 episodes into 36, and the
+whole point of the last five ticks was to stop resetting the run. Plan: let gen 0 finish, then
+restart once, which both loads the fixed hook and fires the probe.
+
+Status unchanged otherwise: 4 policies measured, best gap 1.8 sigma (not established),
+`rounds 0-0` everywhere.
