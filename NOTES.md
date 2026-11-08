@@ -3457,3 +3457,40 @@ means the CPU travelled to the far left end, matching a round loss.
 
 Still outstanding, and I am not reporting a win rate until it is answered: does a crossing
 coincide with a real round transition? One crossing is all it takes.
+
+## Session 171 — the best seed never ran, and the data explains why advancing loses
+
+Two measurements and a fix.
+
+### What the data says about losing
+
+```
+g0i1 "always left"  n=5  mean  +6.95  sd 17.11
+g0i0 "always right" n=3  mean -26.03  sd 33.00    (-33.0 +- 20.5, 1.6 sigma)
+```
+
+Walking LEFT (away from our own goal line, toward the opponent) scores better than walking RIGHT
+(toward the goal). Combined with the death histogram from Session 168 - `D_right` 4 of 5 - the
+picture is coherent: **advancing without attacking is how the agent dies.** It walks into the
+sword and loses the exchange. The goal direction is correct; the behaviour approaching it is not.
+
+### The best seed had never been evaluated
+
+`Population` fills the first `size` slots with seeds, ordered. The "close the gap, then attack
+inside 70 px" seed - the one written specifically to fix the above - was in **slot 7 of a 6-slot
+population**, so it has never run. I also found its threshold was exactly `dx < 60`, meaning a
+fighter at dx=60 did not attack: the boundary case hid whether it worked at all.
+
+Fixes: the useless "always jump" seed is dropped (it scored near zero whenever it ran), the
+reach-and-attack seed is moved into the population, and its threshold is widened to dx < 70.
+Verified behaviour:
+
+```
+seed0 right    dx=200/120/80/50/20 -> 68, 68, 68, 68, 68
+seed2 attack                              70, 70, 70, 70, 70
+seed3 reach22                             68, 68, 68, 68, 70
+seed5 reach70                             68, 68, 68, 70, 70
+```
+
+So the population now contains a policy that does the thing the evidence says is needed. Whether
+it actually wins is a measurement, not a claim - and the crossing verifier is armed to tell us.

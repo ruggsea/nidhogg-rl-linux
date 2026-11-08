@@ -146,7 +146,11 @@ def scripted_seeds():
     def base():
         return np.zeros(N_WEIGHTS)
 
-    for idx in (1, 0, 2, 3):          # always right / left / attack / jump
+    # The "always jump" seed was dropped: it scored near zero every time it ran, and the slot
+    # is better spent on a policy that attacks. Order matters - Population fills the first
+    # `size` slots, so with pop 6 a seventh seed is NEVER evaluated (the reach-and-attack seed
+    # spent all night in slot 7 and never ran once).
+    for idx in (1, 0, 2):             # always right / left / attack
         w = base(); w[B3][idx] = 3.0; seeds.append(w.copy())
 
     # walk right, attack when in reach (obs[6] is the 1.0/0.0 reach flag)
@@ -172,7 +176,9 @@ def scripted_seeds():
     # walk toward the opponent otherwise.
     w = base()
     w[0 * 32 + 0] = -10.0             # obs[0] = dx/400 -> unit 0, negative: close gap wins
-    w[B1][0] = 1.5                    # threshold: attack once dx/400 < 0.15  (dx < 60 px)
+    w[B1][0] = 1.75                   # threshold: attack once dx/400 < 0.175 (dx < 70 px).
+                                      # 1.5 gave exactly dx<60, so a fighter at dx=60 did NOT
+                                      # attack - the boundary case masked whether the seed works.
     w[W2][0 * 16 + 0] = 10.0          # pass unit 0 to L2 unit 0
     w[W3][0 * OUT + 2] = 5.0          # -> attack
     w[B3][1] = 1.5                    # otherwise -> move right
