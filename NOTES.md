@@ -2689,3 +2689,33 @@ Also ruled out this tick, with numbers: no object in a live match matches "Score
 "Round", "Pip", "Win" or "Goal" (case-sensitive search, 145 instances walked), and Match(106)
 carries only a timer at +0xd0. The round counter is still unfound; the goal-crossing path is
 the working proxy in the meantime.
+
+## Session 146 — the seeds already said which behaviour wins
+
+Generation 0 with the scripted population scored:
+
+```
+g0i0 fit= -1.6   (always move right)
+g0i1 fit=-15.3   (always move left)
+g0i2 fit= 25.6   (ALWAYS ATTACK)      <- best by a wide margin
+g0i3 fit=-20.0   (always jump)
+g0i4 fit=  5.3   (walk right, attack only inside reach)
+```
+
+That is a direct comparison between hand-written behaviours on the same episode loop, and it
+says something useful: **swinging beats walking.** The always-attack seed scored 25.6 while
+every seed that spent its time moving scored between -20 and 5.3. But always-attacking never
+closes the gap, so it is a ceiling, not a solution.
+
+Added a seventh seed that combines the two: walk toward the opponent, attack the moment the gap
+is under 60 px (comfortably inside the measured 22 px strike range plus approach). Verified
+behaviour:
+
+```
+dx=300 -> D (approach)
+dx=120 -> D (approach)
+dx= 40 -> F (attack)
+```
+
+Population raised to 8 so the new seed is actually in the initial generation (the seeds fill the
+first `size` slots, so with pop 6 the seventh would never have been tested).

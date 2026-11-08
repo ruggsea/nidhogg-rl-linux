@@ -164,6 +164,19 @@ def scripted_seeds():
     w[W3][0 * OUT + 0] = 5.0          # unit 0 -> left
     w[B3][1] = 1.5
     seeds.append(w)
+
+    # MEASURED: in the first scored generation, the seed that ALWAYS attacks (i2) scored
+    # 25.6 while every moving seed scored between -20 and 5.3. Swinging beats walking, but
+    # always-attacking never closes the gap. This seed combines them: attack whenever the
+    # gap is under 60 px (well inside the measured 22 px strike range plus approach), and
+    # walk toward the opponent otherwise.
+    w = base()
+    w[0 * 32 + 0] = -10.0             # obs[0] = dx/400 -> unit 0, negative: close gap wins
+    w[B1][0] = 1.5                    # threshold: attack once dx/400 < 0.15  (dx < 60 px)
+    w[W2][0 * 16 + 0] = 10.0          # pass unit 0 to L2 unit 0
+    w[W3][0 * OUT + 2] = 5.0          # -> attack
+    w[B3][1] = 1.5                    # otherwise -> move right
+    seeds.append(w)
     return seeds
 
 
