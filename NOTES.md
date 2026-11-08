@@ -3077,3 +3077,20 @@ the tool says which.
 Worth noting for its own sake: i1 has a MUCH wider spread (sd 19.7) than i0 (sd 8.62). A policy
 whose outcome varies wildly across episodes is not a better policy, it is an unpredictable one,
 and averaging hides that. Reporting sd next to the mean is the point.
+
+## Session 159 — Phase 4: the variable query now has an instance to ask
+
+`get_inst_list(106)` returns 0 even though the instance-table walk plainly finds a live
+`Match`, which is why the named-variable query produced nothing at all (n=0). Fixed by caching
+the pointer the walk already had and using it for the variable lookup instead of the list API:
+
+```
+[objs] name="Match" ... inst=0x...      -> g_match_inst (also exposed to pump_vars)
+pump_vars: prefers g_match_inst for obj 106, falls back to get_inst_list for others
+```
+
+Nothing else changed, and the build does not touch the running training process (a rebuild only
+takes effect at the next game launch).
+
+Training meanwhile is untouched and healthy: 18 episodes, three policies measured
+(g0i1 mean +7.06 se 8.82, g0i0 -10.03 se 3.85, g0i2 -10.51 se 3.96), all with `rounds 0-0`.

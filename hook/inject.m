@@ -470,6 +470,7 @@ static void probe_byname(void) {
 // contains no plausible round counter, because GameMaker keeps GML variables in a separate
 // array reachable only by name lookup - which the runner already exposes and this hook
 // already wraps. Trigger: echo "vars" > /tmp/nid_vars_<id>.txt
+extern void *g_match_inst_fwd;   // (declared for real with the instance globals below)
 static void pump_vars(void) {
     FILE *f = fopen(ctl_path("nid_vars"), "r");
     if (!f) return;
@@ -484,9 +485,13 @@ static void pump_vars(void) {
                            "timer", "time", "timeLeft", "started", "over", "finished"};
     for (int o = 0; o < 2; o++) {
         ids = NULL; n = 0;
-        if (!safe_instlist(objs[o], &ids, &n) || n <= 0 || !ids) continue;
-        void *p = pCInstanceFind(ids[0]);
-        if (!p) continue;
+        void *p = NULL;
+        if (g_match_inst_fwd && o == 0) {
+            p = g_match_inst_fwd;              // prefer the pointer the object walk captured
+        } else if (safe_instlist(objs[o], &ids, &n) && n > 0 && ids) {
+            p = pCInstanceFind ? pCInstanceFind(ids[0]) : NULL;
+        }
+        if (!p) { LOG("[vars] obj=%d -> no instance\n", objs[o]); continue; }
         for (unsigned i = 0; i < sizeof names / sizeof names[0]; i++) {
             void *slot = pFindOrAlloc(p, names[i]);
             if (!slot) continue;
@@ -794,6 +799,7 @@ static void my_flushBuffer(id self, SEL _cmd) {
 #define OBJ_MAN 105
 
 static void *g_match_inst = NULL;
+void *g_match_inst_fwd = NULL;   // same pointer, visible to pump_vars (defined above it)
 static float g_p154x, g_p154y, g_p242x, g_p242y;
 // Pau's Phase 2 (docs/NEXT_STEPS.md): "player state machine - full key sweep against the
 // animation field". That needs the struct itself, not two coordinates, so keep the P1
@@ -980,6 +986,10 @@ static void pump_objs(void) {
                 }
                 if (nm[0] && strstr(nm, want)) {
                     matched++;
+                    if (strstr(nm, "Match") && !strstr(nm, "EntryPoint")) {
+                        g_match_inst = (void *)inst;
+                        g_match_inst_fwd = (void *)inst;
+                    }
                     int obj = *(const int *)(inst + 0xb8);
                     float fx = *(const float *)(inst + 0xec);
                     float fy = *(const float *)(inst + 0xf0);
