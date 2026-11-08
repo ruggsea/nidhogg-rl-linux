@@ -3810,3 +3810,25 @@ written the audit, declared the problem solved, and the trainer was still feedin
 to the GA.
 
 Third falsification from the goldfish tonight. Its record against me is now 3 for 3.
+
+## Session 181 — stall recovered; and a note on what the gate failure actually looks like
+
+The run sat for ~10 minutes with the entry cycling and the control gate returning `A_px=0.0`
+repeatedly. Checked before restarting: the hook WAS injecting keys (`[keys] f=7284 down 13`,
+`f=7281 down 83`) and frames were advancing, so injection was healthy - the game was simply
+parked on a screen where input does not reach the fighters. A fresh launch fixed it immediately:
+
+```
+[10:25:55] control gate A_px=2.0 (FAIL)
+[10:27:03] control gate A_px=6.0 (FAIL)
+[10:27:05] control gate A_px=13.0 (PASS)
+[10:27:15] live AND drivable (gate confirmed)
+```
+
+So `A_px == 0.0` means "this screen ignores input", not "the harness is broken" - worth recording
+because the two have been confused before, and the diagnostic that separates them is the hook's own
+key log.
+
+Also in this tick: the goldfish's third falsification (selection receiving invalid episodes) is
+fixed and the run restarted to load it. Selection now logs when it excludes anything, so the leak
+cannot silently return.
