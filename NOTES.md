@@ -3404,3 +3404,31 @@ prev=440 now=445 -> cross=False
 That is now the THIRD time tonight I have reported a capability that the code could not deliver,
 and each time the cause was the same: I checked that the pieces were present, not that the path
 was reachable end to end.
+
+## Session 169 — first non-zero round counter, and why I am not calling it a win yet
+
+After the crossing fix, episodes immediately started reporting rounds:
+
+```
+g0i0r0: me=[298..480] kills=3 deaths=3  fit= 69.2  rounds 1-0
+g0i0r1: me=[288..335] kills=2 deaths=5  fit=-55.8  rounds 0-1
+g0i0r2:                                 fit= 75.8  rounds 1-0
+g0i0r3:                                 fit= -9.0  rounds 0-0
+```
+
+Two round "wins" and one "loss" in four episodes, where the previous several hours produced
+exactly zero. The 60-point round term is firing for the first time.
+
+**What this does NOT yet establish**, and the distinction matters more than the number: our
+round detector is a PROXY. It fires when our fighter walks across x >= 440. Whether the GAME
+counts that as a won round is unverified - the game would show a round transition (both fighters
+repositioning, the HUD pip changing). So the honest statement is "our goal-line crossing proxy
+fired twice", not "the agent won two rounds".
+
+The distinction is exactly what went wrong in the older tree, where "10-0 wins" turned out to be
+phantom goal crossings. Before this is reported as a win rate, it needs confirming against
+something the game itself produces - a round transition or a HUD/score change.
+
+What can be said with confidence: the detector is no longer structurally dead, it now fires on
+genuine walks across the line (teleports are excluded by the 60 px step limit), and the fitness
+now contains a term that has actually varied.
