@@ -3219,3 +3219,25 @@ that except wait: forcing a relaunch would interrupt a generation mid-flight, wh
 thing this run has been protected from for the last two hours.
 
 Deliberately no changes this tick beyond observation. `rounds won` = 0 across all 45 episodes.
+
+## Session 164 — the control gate only ever tried one direction
+
+Live log, in the middle of the run:
+
+```
+[06:23:45] control gate A_px=8.0 (FAIL)
+[06:23:45] S=2 gave no live fight - trying next variant
+```
+
+Exactly on the `> 8.0` threshold, and the gate had only ever pressed **D**. A fighter standing
+against the right wall cannot move right, so the gate fails no matter how healthy the game is -
+and the cost is a full re-entry search. Earlier failures in the same run read `A_px=3.0` and
+`A_px=0.0`, which are consistent with the same cause.
+
+Now both directions are tried (D, then A if D produced nothing). This is a genuine bug rather
+than a tuning choice: the gate should measure "does input reach the simulation", and pressing one
+direction cannot answer that for a fighter at an edge.
+
+Restarted once, for two reasons: to load this fix, and to load the hook with the `x`/`y` control
+variables so Phase 4's question ("is the Match-variable query real data or self-created slots")
+finally gets an answer. Cost: the half-finished gen 1 (2 of 6 policies).

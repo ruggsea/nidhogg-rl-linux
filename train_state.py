@@ -363,15 +363,22 @@ class InstanceManager:
         if not self.has_players(st):
             self.gate_px = 0.0
             return False
+        # TRY BOTH DIRECTIONS. This only ever held D, so a fighter standing against the right
+        # wall cannot move right and the gate fails no matter how responsive the game is.
+        # Measured: "control gate A_px=8.0 (FAIL)" - exactly on the >8.0 threshold - and
+        # earlier "A_px=3.0 (FAIL)" / "A_px=0.0 (FAIL)", each triggering a full re-entry.
         x0 = st["me_x"]
-        t0 = time.time()
         moved = 0.0
-        while time.time() - t0 < hold:
-            self.press(68)                 # hold D
-            s2, _ = self.read_state()
-            if s2 is not None:
-                moved = max(moved, abs(s2["me_x"] - x0))
-            time.sleep(0.04)
+        for key in (68, 65):               # D, then A if D produced nothing
+            t0 = time.time()
+            while time.time() - t0 < hold:
+                self.press(key)
+                s2, _ = self.read_state()
+                if s2 is not None:
+                    moved = max(moved, abs(s2["me_x"] - x0))
+                time.sleep(0.04)
+            if moved > min_px:
+                break
         self.gate_px = moved
         log(f"instance {self.iid}: control gate A_px={moved:.1f} "
             f"({'PASS' if moved > min_px else 'FAIL'})")
