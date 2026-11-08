@@ -4330,3 +4330,31 @@ make a policy look worse OR better, and I could not have known which without rem
 
 The frozen-agent check (our own travel in pixels) remains, because it makes no assumption about
 where the fight happens, only that we did something.
+
+## Session 201 — the scoreboard, with the censoring removed and stated
+
+My y-filter was changing the headline number, so the scoreboard now uses the minimum defensible
+test and prints it on every run:
+
+```
+episodes recorded: 206   USABLE: 69   (137 unusable)
+filter: kept only when: opponent moved >= 15 px, our fighter moved >= 15 px (both RECORDED, not
+        inferred), and the window had >= 20 samples. Nothing about height, room, or outcome.
+
+kills 137   deaths 176   (aggregate ratio 0.78)
+per episode: kills>deaths in 20/69, equal in 19/69
+rounds counted 0W/1L   verified 0W/0L   refused-as-artifact 1W/18L
+```
+
+Three corrections this implies:
+
+  * **"the agent loses exchanges 3:2" was itself partly a filtering artifact.** With the y-filter
+    in place I reported 119/186 (0.64). With it removed: 137/176 (0.78). Same runs, different
+    answer, caused by which episodes I chose to count.
+  * the aggregate (0.78) and the per-episode view (20 wins vs 30 losses of the exchange count,
+    19 even) still disagree, which is why both are printed.
+  * only a third of recorded episodes survive the minimum test (69 of 206), so most of the
+    project's history still cannot be used as evidence.
+
+Also: 1, 2, 3 - the round detector has now logged 18 refused losses and 1 refused win, and **zero**
+verified rounds of either kind. The round terms in the fitness remain unpayable.

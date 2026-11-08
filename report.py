@@ -37,12 +37,19 @@ def load_all():
     return eps
 
 
-def is_real(e):
-    """A usable episode needs BOTH fighters to have done something.
+FILTER_DOC = ("kept only when: opponent moved >= 15 px, our fighter moved >= 15 px "
+              "(both RECORDED, not inferred), and the window had >= 20 samples. Nothing about "
+              "height, room, or outcome.")
 
-    The opponent check (`opp_span`) catches a statue CPU. The agent check catches the mirror
-    image, measured when the "always left" seed pinned itself to the left wall and never moved:
-    such an episode has a live opponent but no policy signal, so its fitness describes the CPU.
+
+def is_real(e):
+    """A usable episode needs BOTH fighters to have done something, and nothing else.
+
+    This deliberately encodes only two criteria. Earlier versions of this function also rejected
+    episodes by height (y < 200) on the theory that those were READY screens - that filter threw
+    away episodes with 150 px of our movement, kills on both sides and a full-arena opponent
+    crossing, i.e. ordinary fights in arenas with a different vertical baseline. Every extra filter
+    changes the headline number, so the test stays minimal and the counts are printed alongside it.
     """
     if e.get("no_match"):
         return False
@@ -52,7 +59,12 @@ def is_real(e):
     if (e.get("samples") or 0) < 20:
         return False
     me = e.get("me_span_range") or [None, None]
-    if me[0] is not None and me[1] is not None and abs(me[1] - me[0]) < 15.0:
+    if me[0] is None or me[1] is None:
+        # no record of how far OUR fighter travelled: cannot be verified, so it does not count.
+        # Loosening this silently admits the pre-filter era, whose episodes were never checked for
+        # a frozen agent - the exact class of episode that produced the "sd 4" fluke.
+        return False
+    if abs(me[1] - me[0]) < 15.0:
         return False
     return True
 
@@ -65,6 +77,7 @@ def main():
     real = [e for e in eps if is_real(e)]
     print(f"episodes recorded: {len(eps)}   USABLE: {len(real)}   "
           f"(statue, frozen agent, or discarded: {len(eps) - len(real)})")
+    print(f"filter: {FILTER_DOC}")
     if not real:
         print("\nNo REAL episodes recorded yet - nothing below can be claimed.")
         return
@@ -74,7 +87,7 @@ def main():
     per_ep = [(e.get("kills", 0), e.get("deaths", 0)) for e in real]
     better = sum(1 for a, b in per_ep if a > b)
     even = sum(1 for a, b in per_ep if a == b)
-    print(f"\nkills {k}   deaths {d}   (aggregate net {k - d:+d})")
+    print(f"\nkills {k}   deaths {d}   (aggregate net {k - d:+d}, ratio {k / max(1, d):.2f})")
     print(f"per episode: kills>deaths in {better}/{len(real)}, equal in {even}/{len(real)}")
     diffs = [e.get("fitness") for e in real if e.get("fitness") is not None]
     if len(diffs) > 1:
