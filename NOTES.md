@@ -4771,3 +4771,22 @@ check the hook's `[keys] down 68` log against the game's response), and find the
 carries the fighter on this screen - the dump has 268 candidates and the named read sees none.
 
 Honest status: real match reached, control NOT established, `rounds won` = 0, no win rate.
+
+## Session 215 — "the game is slow" root cause: the launcher deliberately deprioritised it
+
+Found in `train_state.launch()`:
+
+```python
+preexec_fn=lambda: (os.nice(19), os.system("taskpolicy -b -p ..."))   # <-- every launch
+```
+
+The game was being started at **nice 19 with background QoS** on every launch. Measured on the
+running process: `PRI=4  NI=19` and **30 fps**. Same binary, launched at normal priority: **120 fps**.
+That is the whole "it's slow again", and it was self-inflicted - a politeness setting that was once
+appropriate when the game was hidden in a corner is a 4x performance tax now that the trainer needs
+frame rate.
+
+Changed: normal priority is the default; `NID_NICE=1` opts back into nice19+background for anyone who
+needs the Mac to stay cool and accepts a 4x slowdown (and the stall-like states that come with it).
+
+Verified after the change: a fresh launch runs at 120 fps.

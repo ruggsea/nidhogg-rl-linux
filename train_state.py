@@ -229,8 +229,15 @@ class InstanceManager:
             stdout=self.out,
             stderr=subprocess.STDOUT,
             start_new_session=True,
-            preexec_fn=lambda: (os.nice(19),
-                                os.system(f"taskpolicy -b -p {os.getpid()} 2>/dev/null")),
+            # PRIORITY. This used to unconditionally run the game at nice 19 with background QoS
+            # (taskpolicy -b), which measured out at pri=4, nice=19 and ~30 fps - versus 120-318 fps
+            # for the same binary launched at normal priority. That is the "the game is slow"
+            # report, and it was self-inflicted. Normal priority is now the default; set NID_NICE=1
+            # to opt back into the polite/background mode (the Mac stays cooler but the game runs
+            # 4x slower and stall-like states become far more common).
+            preexec_fn=(lambda: (os.nice(19),
+                                 os.system(f"taskpolicy -b -p {os.getpid()} 2>/dev/null"))
+                        if os.environ.get("NID_NICE") else None),
         )
         self.started_at = time.monotonic()
         self.ever_have_players = False
