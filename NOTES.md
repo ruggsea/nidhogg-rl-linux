@@ -3330,3 +3330,30 @@ Both filters are now in place:
     `opp_span=` printed on every episode line so the two cases are distinguishable in the log.
 
 Going forward every fitness number carries the evidence that a real opponent was in the ring.
+
+## Session 167 — with real opponents, the numbers mean something (and they are worse and noisier)
+
+```
+g0i0r2: me=[5..258]   them=[204..359]  kills=5 deaths=6  opp_span=155
+g0i0r3: me=[110..262] them=[191..494]  kills=2 deaths=6  opp_span=302
+g0i0r4: me=[12..262]  them=[262..414]  kills=3 deaths=4  opp_span=152
+g0i0r5: me=[6..210]   them=[200..390]  kills=3 deaths=3  opp_span=191
+
+g0i0: reps=4 fits=[-39.68, -17.54, -6.51, -2.27]  mean -16.50  sd 16.74
+```
+
+Compare with the inert-opponent era an hour ago: `kills=0 deaths=0`, sd 8.62. Now every episode is
+a fight with 3-6 kills and 3-6 deaths, and sd is 16.74 - roughly double.
+
+That is the expected direction and it confirms the warning from Session 166: **the low variance I
+was pleased with was largely a stationary opponent.** Real matches are noisier because real
+matches have outcomes.
+
+The substance, strip out all methodology: **the agent dies more than it kills in every episode
+measured so far** (5-6, 2-6, 3-4, 3-3). It is not "failing to learn to win"; it is losing
+exchanges, which is consistent with `rounds won = 0` and with every earlier reading tonight.
+
+Also visible: two episodes have `entry_gate False` (A_px 0.0/1.0) yet still recorded kills - the
+gate's short window can miss a responsive match, and those episodes are marked inert and
+discarded. That is the conservative direction (reject rather than accept), which is right for
+this project.
