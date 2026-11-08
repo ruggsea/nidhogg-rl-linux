@@ -4485,3 +4485,23 @@ unfinished rather than dressed up.
 Given how much of today was spent trusting a reader that turned out to bind nothing, the standard
 for the next tick is: no training run restarts until `bind_player.py` prints a BOUND line on a real
 match. Everything downstream depends on that one line being real.
+
+## Session 206 — response-based binding implemented inside the trainer
+
+The manual-launch route cannot be used for the binding test: a hand-launched game does not start the
+hook's probe thread (`probe start` never appears), so no instance dump and no state. Under the
+trainer it works immediately - 54 candidate instances in one dump - but then the trainer's own
+keypresses contend for the same keys.
+
+So the test moved to where it belongs: `InstanceManager.bind_by_response()`. After entry it reads
+the instance dump, holds D, snapshots, holds A, snapshots, and looks for a candidate that moved
+RIGHT under D **and** LEFT under A - returning that instance id, or logging that no responder exists
+among the N candidates.
+
+That is the whole point of today's failure, expressed as code: bind by what the thing DOES when we
+press a key, never by what it is called or by the fact that it happens to move.
+
+Not yet verified end-to-end: the next run has to show either
+`BOUND to instance <id> (dx_D=+.. dx_A=-..)` on a real match, or repeated
+"found no responder among N candidates" on attract screens. Both outcomes are informative, and the
+first `BOUND` line is the precondition for trusting any training number at all.

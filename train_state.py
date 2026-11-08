@@ -55,6 +55,7 @@ SPEED = "/tmp/nid_speed_{}.txt"
 BRAIN = "/tmp/nid_brain_{}.txt"
 INJECT_LOG = "/tmp/nid_inject_{}.log"
 VARS = "/tmp/nid_vars_{}.txt"
+INSTS = "/tmp/nid_insts_{}.txt"
 OBJS = "/tmp/nid_objs_{}.txt"
 OUT_LOG = "/tmp/nid_out_i{}.log"
 LOG_PATH = "/tmp/nid_train_state.jsonl"
@@ -106,6 +107,7 @@ class InstanceManager:
         self.needs_reset = False
         self.gate_px = 0.0
         self.gate_dir = {}
+        self.bound_inst = None
         self.gate_ts = 0.0
         self._last_them_x = 0.0
 
@@ -737,6 +739,61 @@ class InstanceManager:
                     return True
                 time.sleep(0.15)
         return False
+
+    def bind_by_response(self, hold=0.9, min_px=8.0):
+        """Find the instance WE control by stimulus and response, not by name.
+
+        Three cheaper identifications are all wrong on this build (measured):
+          * fighters present  -> the title screen runs a live attract match
+          * input moves us    -> the attract demo drifts right under D and not left under A
+          * named YellowPlayer-> screens with two fighters often match no such instance
+        So: hold D and require a candidate to move RIGHT, then hold A and require it to move LEFT.
+        A demo AI cannot satisfy both signs on demand. Returns the instance id or None.
+        """
+        def snapshot():
+            out = {}
+            try:
+                with open(INSTS.format(self.iid)) as f:
+                    for line in f:
+                        p = line.split()
+                        if len(p) == 4:
+                            out[int(p[0])] = (int(p[1]), float(p[2]), float(p[3]))
+            except (OSError, ValueError):
+                return None
+            return out or None
+
+        def hold_key(code):
+            t0 = time.time()
+            while time.time() - t0 < hold:
+                self.press(code)
+                time.sleep(0.05)
+            time.sleep(0.2)
+
+        before = snapshot()
+        if not before:
+            log(f"instance {self.iid}: bind - no instance dump")
+            return None
+        hold_key(68)                      # D -> expect +dx
+        mid = snapshot() or {}
+        hold_key(65)                      # A -> expect -dx
+        after = snapshot() or {}
+
+        best, winners = None, []
+        for inst in set(before) & set(before) & set(mid) & set(after):
+            dx_d = mid[inst][1] - before[inst][1]
+            dx_a = after[inst][1] - mid[inst][1]
+            if dx_d >= min_px and dx_a <= -min_px:
+                winners.append((inst, dx_d, dx_a))
+        if winners:
+            winners.sort(key=lambda w: -(w[1] - w[2]))
+            best = winners[0]
+            self.bound_inst = best[0]
+            log(f"instance {self.iid}: BOUND to instance {best[0]} (dx_D={best[1]:+.1f} "
+                f"dx_A={best[2]:+.1f})")
+            return best[0]
+        log(f"instance {self.iid}: bind found no responder among {len(before)} candidates "
+            f"- not a controllable match")
+        return None
 
     def _opponent_moves(self, seconds=5.0, min_px=15.0):
         """True if the CPU actually plays during this window.
