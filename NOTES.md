@@ -3662,3 +3662,24 @@ Consequence to expect: with GOAL_X=500 the detector has never fired, so `rounds_
 and the 60-point term will earn nothing. That is the honest outcome - better a term that cannot
 pay than one that pays for artifacts - and it means the fitness now rests on the two channels that
 are actually measured: net kills and territory.
+
+## Session 177 (cont.) — verified end to end
+
+First episode after the change:
+
+```
+g0i0r0: loss NOT counted (no round transition observed)
+g0i0r0: fit=13.1 rounds 0-0
+recorded: REAL, kills=3 deaths=2, rounds claimed 0W/0L, UNVERIFIED 0W/1L
+```
+
+Three things line up, which is the point:
+
+  * the unverified loss was detected, refused, and printed - not silently swallowed;
+  * the episode's fitness (13.1) was computed WITHOUT the 60-point round term it would
+    previously have collected;
+  * the durable record still carries the refused claim as `UNVERIFIED 0W/1L`, so a later reader
+    sees the artifact was noticed rather than never happening.
+
+Incidental observation, n=1 and not a claim: this is the first verified episode in hours where
+kills (3) exceeded deaths (2).
