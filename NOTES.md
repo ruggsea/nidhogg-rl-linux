@@ -4098,3 +4098,21 @@ editing.
 
 Reward weighting is unchanged and rests on the two measured channels: `6*(kills-deaths)` plus
 territory shaping; the 60/150 round terms cannot fire until a round transition is ever observed.
+
+## Session 192 — two complete blocks, ordering still not established
+
+```
+g0i0 "always right"  n=6  mean -0.93  sd 12.38  se 5.05
+g0i2 "always attack" n=6  mean  2.58  sd  9.02  se 3.68
+```
+
+Difference **+3.51 with se 6.25 - 0.56 sigma.** Not established. This is the same comparison that
+looked decisive three hours ago (attack 25.6 vs right -1.6) and reversed on the next run; with
+repeated measures and the filters in place, the honest answer is that the two policies are
+indistinguishable at this sample size.
+
+Run health: 19 episodes recorded, 6 discarded (32% still rejected by the statue/frozen filters - the
+filters are doing work, not idling), mean 1.6 kills and 2.4 deaths per episode.
+
+Nothing changed in the code this tick, by design. The only way these two numbers become a decision
+is more reps, and more reps require the run to be left alone.
