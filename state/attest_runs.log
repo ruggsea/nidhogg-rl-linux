@@ -178,3 +178,7 @@ VERDICT: NOT ATTESTED - bind, gate failed
 
 VERDICT: NOT ATTESTED - gate failed
   room=ok  bind=ok  gate=FAIL  opponent=ok
+{"ts": 1794179089.501718, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "opponent": true}, "room": 29, "gate": {"D": 139.0, "A": 40.99000000000001}, "bound": 103849}
+{"ts": 1794179199.654679, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "opponent": true}, "room": 29, "gate": {"D": 143.0, "A": 128.84}, "bound": 103361}
+{"ts": 1794179446.959585, "verdict": "NOT ATTESTED - bind, gate, opponent failed", "ok": {"room": true, "bind": false, "gate": false, "opponent": false}, "room": 4, "gate": {}, "bound": null}
+{"ts": 1794179475.9802449, "verdict": "NOT ATTESTED - bind, gate, dose_response, opponent failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": false}, "room": 4, "gate": {}, "bound": null}

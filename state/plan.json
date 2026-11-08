@@ -1,15 +1,66 @@
 {
  "created": 1794169000,
  "steps": [
-  {"id": "01", "title": "Attestation passes consistently (3 consecutive runs)", "accept": "tools/attest.py prints VERDICT: ATTESTED three times in a row, saved to state/attest_runs.log", "status": "active"},
-  {"id": "02", "title": "Observe a real round transition in memory", "accept": "game.rounds() reports the same transition kind twice, with the room change or teleport logged in state/rounds.jsonl", "status": "open"},
-  {"id": "03", "title": "Wire the verified round signal into the reward", "accept": "train_win.py pays a round term only when the observed transition fires; a claim.py entry proves the term changed a fitness value", "status": "open"},
-  {"id": "04", "title": "Run 3 full generations without restarting the trainer", "accept": "three '== gen N best' lines in one run log, with per-generation claim rows", "status": "open"},
-  {"id": "05", "title": "Establish whether any policy beats another at >=2 sigma", "accept": "summarize.py output showing a >=2 sigma gap, recorded as a claim with its command", "status": "open"},
-  {"id": "06", "title": "Win a round against the CPU, verified", "accept": "a round transition with us as the winner, corroborated by two independent signals", "status": "open"},
-  {"id": "07", "title": "Measure a win rate over >=10 verified rounds", "accept": "evaluate.py over >=10 rounds, recorded as a claim", "status": "open"},
-  {"id": "08", "title": "WSP-style weight analysis + hand-edited policy comparison", "accept": "layer dump, reasoning, hand-edited variant scored head-to-head", "status": "open"},
-  {"id": "09", "title": "Human-vs-agent demo", "accept": "play_vs_agent.sh run with the trained policy, outcome recorded", "status": "open"},
-  {"id": "10", "title": "Full-arc video", "accept": "video built, covering failures→fixes→training→result", "status": "open"}
+  {
+   "id": "01",
+   "title": "Attestation passes consistently (3 consecutive runs)",
+   "accept": "tools/attest.py prints VERDICT: ATTESTED three times in a row - and each run must include the DOSE-RESPONSE check (holding D 3x longer must move the fighter ~3x further). The direction gate alone can be satisfied by the title screen's attract demo by coincidence; proportionality cannot. All runs appended to state/attest_runs.log.",
+   "status": "active",
+   "started": 1794178927.390194
+  },
+  {
+   "id": "02",
+   "title": "Observe a real round transition in memory",
+   "accept": "game.rounds() reports the same transition kind twice, with the room change or teleport logged in state/rounds.jsonl",
+   "status": "open"
+  },
+  {
+   "id": "03",
+   "title": "Wire the verified round signal into the reward",
+   "accept": "train_win.py pays a round term only when the observed transition fires; a claim.py entry proves the term changed a fitness value",
+   "status": "open"
+  },
+  {
+   "id": "04",
+   "title": "Run 3 full generations without restarting the trainer",
+   "accept": "three '== gen N best' lines in one run log, with per-generation claim rows",
+   "status": "open"
+  },
+  {
+   "id": "05",
+   "title": "Establish whether any policy beats another at >=2 sigma",
+   "accept": "summarize.py output showing a >=2 sigma gap, recorded as a claim with its command",
+   "status": "open"
+  },
+  {
+   "id": "06",
+   "title": "Win a round against the CPU, verified",
+   "accept": "a round transition with us as the winner, corroborated by two independent signals",
+   "status": "open"
+  },
+  {
+   "id": "07",
+   "title": "Measure a win rate over >=10 verified rounds",
+   "accept": "evaluate.py over >=10 rounds, recorded as a claim",
+   "status": "open"
+  },
+  {
+   "id": "08",
+   "title": "WSP-style weight analysis + hand-edited policy comparison",
+   "accept": "layer dump, reasoning, hand-edited variant scored head-to-head",
+   "status": "open"
+  },
+  {
+   "id": "09",
+   "title": "Human-vs-agent demo",
+   "accept": "play_vs_agent.sh run with the trained policy, outcome recorded",
+   "status": "open"
+  },
+  {
+   "id": "10",
+   "title": "Full-arc video",
+   "accept": "video built, covering failures\u2192fixes\u2192training\u2192result",
+   "status": "open"
+  }
  ]
 }

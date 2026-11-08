@@ -1031,6 +1031,43 @@ class InstanceManager:
             f"(D +{rights[best]:.0f} A -{lefts[best]:.0f})")
         return best
 
+    def dose_response(self, short=0.45, long=1.35, ratio=1.6, min_px=8.0):
+        """Is the movement CAUSED by our key, or just happening while we hold it?
+
+        The direction gate says "D moved us right and A moved us left". A self-driving attract demo can
+        satisfy that by coincidence: it moves on its own, and over a 1.2 s hold it can easily drift right
+        and later left. The discriminator is PROPORTIONALITY: if we are controlling the fighter, holding
+        the key three times longer moves it roughly three times further. A demo AI has no such relation.
+
+        Returns (ok, short_px, long_px, ratio_observed).
+        """
+        if not self.in_arena():
+            return False, 0.0, 0.0, 0.0
+        if self.bound_inst is None and self.bind_by_response() is None:
+            return False, 0.0, 0.0, 0.0
+
+        def measure(seconds):
+            b0 = self.read_bound()
+            if not b0:
+                return 0.0
+            t0 = time.time()
+            while time.time() - t0 < seconds:
+                self.press(68)                 # D
+                time.sleep(0.03)
+            time.sleep(0.15)
+            b1 = self.read_bound()
+            return 0.0 if not b1 else (b1["me_x"] - b0["me_x"])
+
+        d_short = measure(short)
+        time.sleep(0.3)
+        d_long = measure(long)
+        observed = (d_long / d_short) if d_short > 1.0 else 0.0
+        ok = d_short >= min_px and d_long >= min_px * ratio and observed >= ratio
+        log(f"instance {self.iid}: dose-response {short:.2f}s -> {d_short:+.1f}px, "
+            f"{long:.2f}s -> {d_long:+.1f}px, ratio {observed:.2f} (need >= {ratio}) "
+            f"{'PASS' if ok else 'FAIL'}")
+        return ok, d_short, d_long, observed
+
     def _opponent_moves(self, seconds=5.0, min_px=15.0):
         """True if the CPU actually plays during this window.
 

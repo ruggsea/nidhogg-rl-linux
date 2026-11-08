@@ -170,6 +170,19 @@ def main():
     ok["bind"] = bound is not None
     ok["gate"] = passed
 
+    print("5b. DOSE-RESPONSE (is the movement CAUSED by our key?)")
+    # A self-driving attract demo can satisfy the direction gate by coincidence - it moves on its own
+    # and over a 1.2 s hold can drift right, then left later. Proportionality cannot be faked: hold the
+    # key 3x longer and a fighter we control travels ~3x further.
+    dr_ok = False
+    try:
+        dr_ok, d_s, d_l, ratio = mgr.dose_response()
+        print(f"   short hold -> {d_s:+.1f}px, long hold -> {d_l:+.1f}px, "
+              f"ratio {ratio:.2f} -> {'PASS' if dr_ok else 'FAIL'}")
+    except Exception as e:
+        print(f"   dose-response error: {e}")
+    ok["dose_response"] = dr_ok
+
     print("6. OPPONENT IS NOT A STATUE")
     # The CPU idles briefly between behaviours (and right after a round transition), so one
     # 6 s window can read 0 px. Retry a few windows: the point is that the CPU moves on its own

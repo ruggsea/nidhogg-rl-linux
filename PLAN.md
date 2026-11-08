@@ -6,7 +6,7 @@
 Rendered from `state/plan.json` by `tools/plan.py`. Do not edit by hand.
 
 - [>] **01** Attestation passes consistently (3 consecutive runs)
-      accept: tools/attest.py prints VERDICT: ATTESTED three times in a row, saved to state/attest_runs.log
+      accept: tools/attest.py prints VERDICT: ATTESTED three times in a row - and each run must include the DOSE-RESPONSE check (holding D 3x longer must move the fighter ~3x further). The direction gate alone can be satisfied by the title screen's attract demo by coincidence; proportionality cannot. All runs appended to state/attest_runs.log.
 - [ ] **02** Observe a real round transition in memory
       accept: game.rounds() reports the same transition kind twice, with the room change or teleport logged in state/rounds.jsonl
 - [ ] **03** Wire the verified round signal into the reward
