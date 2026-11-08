@@ -3241,3 +3241,35 @@ direction cannot answer that for a fighter at an edge.
 Restarted once, for two reasons: to load this fix, and to load the hook with the `x`/`y` control
 variables so Phase 4's question ("is the Match-variable query real data or self-created slots")
 finally gets an answer. Cost: the half-finished gen 1 (2 of 6 policies).
+
+## Session 165 — the control failed, so the Phase 4 variable data is discarded
+
+The `x`/`y` control variables were added for exactly this purpose. Result:
+
+```
+[vars] obj=106 x -> u0=0 f4=0.000 d1=0.000      <- Match is at x=309.75
+[vars] obj=106 y -> u0=0 f4=0.000 d1=0.000      <- Match is at y=100.00
+[vars] obj=106 score -> u0=0 ...
+```
+
+`x` and `y` certainly have real values on that instance (the object dump prints them), so a query
+that reports 0 for them is not reading anything. The explanation is that `x`/`y` are BUILTINS
+stored in the instance struct at +0xEC/+0xF0, not GML user variables, so `FindOrAlloc` simply
+CREATED user-variable slots with those names and returned their zeros.
+
+Therefore **every** `score`/`round`/`wins` reading from this path is an artefact of the query,
+not data, and is discarded. `analyze_vars.py` output from this method is worthless until the
+lookup changes from `variable_instance_find_or_alloc` to a non-allocating get
+(`F_Variable_Instance_Get`, already resolved in the hook) - with allocation, "does not exist" and
+"equals zero" are indistinguishable, which is precisely the false-positive shape this project
+keeps producing.
+
+Cost of not having had this control: I would have reported "Match.score = 0, Match.round = 0" as
+a finding, and it would have been fiction.
+
+Gate fix verified in the same log:
+
+```
+[06:28:52] control gate A_px=8.0 (FAIL)     <- pressed D only, fighter at the wall
+[06:28:53] control gate A_px=26.0 (PASS)    <- immediately after trying A
+```

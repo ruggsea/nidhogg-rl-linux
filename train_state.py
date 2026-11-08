@@ -55,6 +55,7 @@ SPEED = "/tmp/nid_speed_{}.txt"
 BRAIN = "/tmp/nid_brain_{}.txt"
 INJECT_LOG = "/tmp/nid_inject_{}.log"
 VARS = "/tmp/nid_vars_{}.txt"
+OBJS = "/tmp/nid_objs_{}.txt"
 OUT_LOG = "/tmp/nid_out_i{}.log"
 LOG_PATH = "/tmp/nid_train_state.jsonl"
 SUMMARY_PATH = "/tmp/nid_train_state_summary.json"
@@ -740,6 +741,12 @@ class InstanceManager:
             return
         self._vars_probed = True
         try:
+            # ORDER MATTERS: the object walk is what caches the Match instance pointer, and
+            # the variable query needs it (get_inst_list returns 0 for object 106). Firing
+            # only `vars` produced "no instance" twice, which is why this is two steps.
+            with open(OBJS.format(self.iid), "w") as f:
+                f.write("Match\n")
+            time.sleep(1.5)
             with open(VARS.format(self.iid), "w") as f:
                 f.write("vars\n")
             time.sleep(2.5)
