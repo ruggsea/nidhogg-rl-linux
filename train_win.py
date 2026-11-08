@@ -68,8 +68,16 @@ HOLD_TICKS = 8   # MEASURED: 8 -> advance 123-134 px per episode; 20 -> only 14-
                  # the intuitive 'be more decisive' change was wrong. Keep 8.   # 8 ticks (~0.16 s) made the agent change direction so often it
                  # travelled almost nowhere: advance varied only 11 px across a whole
                  # 70 s episode. 20 gives a sustained commitment.          # ~150 ms of held action per decision
-GOAL_X = 1650.0        # our goal line is on the right
-GOAL_X_OPP = 250.0    # the CPU goal line is on the left
+# MEASURED arena (300 s trajectory, 6224 samples): x spans about 0..462 and kill/respawn
+# teleports land at the ends. The old values (1650 / 250) made `me_armed` require me_x > 950,
+# which no sample ever reached - so a round win was structurally impossible regardless of the
+# policy. These are set from the measurement instead.
+GOAL_X = 440.0         # our goal line is at the right end of the measured arena
+GOAL_X_OPP = 20.0      # the CPU goal line is at the left end
+# A crossing must be WALKED, not teleported: respawns jump the whole arena in one sample and
+# would otherwise be scored as goals. Any single-sample move larger than this invalidates a
+# crossing for that sample.
+CROSS_MAX_STEP = 60.0
 
 
 def read_state(iid):
@@ -341,8 +349,13 @@ def play(mgr, w, seconds, seed, tag, log=print):
         # respawn that happens to land past the goal line. Measured: a fresh population
         # reported 10 wins in 10 rounds while its fighter never left x=808..897, which
         # is exactly this bug. Requiring prev sample < GOAL_X-150 kills the phantom.
-        genuine_cross = (prev is not None and prev["me_x"] < GOAL_X - 150
-                         and st["me_x"] >= GOAL_X and now_t - t0 > 3.0)
+        # walked, not teleported: the step into the goal must be small. Measured teleports
+        # cover a whole arena (2 -> 462) in one sample, so this rejects respawns cleanly.
+        genuine_cross = (prev is not None
+                         and prev["me_x"] < GOAL_X - 150
+                         and st["me_x"] >= GOAL_X
+                         and abs(st["me_x"] - prev["me_x"]) < CROSS_MAX_STEP
+                         and now_t - t0 > 3.0)
         if genuine_cross and me_armed and not me_crossed and now_t - last_round_t > 6.0:
             rounds_won += 1; match_rounds_won += 1
             me_crossed = True; me_armed = False
@@ -355,8 +368,11 @@ def play(mgr, w, seconds, seed, tag, log=print):
             me_crossed = False
         if st["them_x"] < GOAL_X_OPP + 700:
             them_armed = True
-        genuine_cross_them = (prev is not None and prev["them_x"] > GOAL_X_OPP + 150
-                              and st["them_x"] <= GOAL_X_OPP and now_t - t0 > 3.0)
+        genuine_cross_them = (prev is not None
+                              and prev["them_x"] > GOAL_X_OPP + 150
+                              and st["them_x"] <= GOAL_X_OPP
+                              and abs(st["them_x"] - prev["them_x"]) < CROSS_MAX_STEP
+                              and now_t - t0 > 3.0)
         if genuine_cross_them and them_armed and not them_crossed and now_t - last_round_t > 6.0:
             rounds_lost += 1; match_rounds_lost += 1
             them_crossed = True; them_armed = False

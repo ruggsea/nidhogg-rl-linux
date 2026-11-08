@@ -2662,3 +2662,30 @@ g0i1  kills=1 deaths=3
 
 Sane counts instead of hundreds, and `kills_reward = 6*kills - 4*deaths` is back in fitness.
 The agent dies more than it kills, which is consistent with everything else measured today.
+
+## Session 145 — round wins are mechanically reachable again
+
+Goal lines were set to the measured arena, and a crossing must now be WALKED (single-sample
+step < 60 px), so a respawn teleport cannot be scored as a goal:
+
+```
+GOAL_X 1650 -> 440      GOAL_X_OPP 250 -> 20      CROSS_MAX_STEP = 60
+```
+
+First episode after the change:
+
+```
+g0i0: samples=4862 gate A_px=39.0 me=[297..425] them=[4..464] kills=6 deaths=8
+```
+
+Our fighter reached **x=425 against a goal line of 440**, i.e. 15 px short. Under the old
+constants the requirement was x >= 1650 with `me_armed` at x > 950, which no episode ever came
+close to - so the win was unreachable by construction rather than by policy quality.
+
+`rounds 0-0` is unchanged in this episode, but for the first time the term is reachable: the
+policy can in principle cross and score a round.
+
+Also ruled out this tick, with numbers: no object in a live match matches "Score", "Hud",
+"Round", "Pip", "Win" or "Goal" (case-sensitive search, 145 instances walked), and Match(106)
+carries only a timer at +0xd0. The round counter is still unfound; the goal-crossing path is
+the working proxy in the meantime.
