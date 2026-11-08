@@ -4075,3 +4075,26 @@ noise, exactly as it argued.
 What the instrument can actually resolve: about 11 points at n=6 (2*se), not 4. Given fitness is
 quantized in 6-point steps by `6*(kills-deaths)`, that means roughly two net kills must separate
 two policies before this run can tell them apart.
+
+## Session 191 — throughput reality check
+
+```
+episodes in current run: 16   kills 22   deaths 32   kills>deaths in 3 of 16
+complete policy blocks : 1 of 6 (g0i0: mean -0.93, sd 12.38, se 5.05)
+```
+
+At ~2 episodes per minute-of-play plus entry overhead, a full generation (6 policies x 6 reps = 36
+episodes) takes roughly 2.5-3 hours on this Mac with one instance. That is the arithmetic behind
+"nothing has improved in hours": a single generation is most of an afternoon, and I have restarted
+the run ~20 times today to load fixes. Every restart threw away the generation in progress.
+
+That is the honest summary of the day's productivity: the fixes were real (entry-gate
+disqualification, statue filter, frozen-agent filter, verified-round gating, durable records), but
+they were paid for by repeatedly resetting the thing they were meant to enable.
+
+What the next block of hours should be: leave the run alone. No more code changes unless a
+measurement says something is broken. The loop's remaining value is monitoring and reporting, not
+editing.
+
+Reward weighting is unchanged and rests on the two measured channels: `6*(kills-deaths)` plus
+territory shaping; the 60/150 round terms cannot fire until a round transition is ever observed.
