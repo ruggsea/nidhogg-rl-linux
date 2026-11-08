@@ -2834,3 +2834,32 @@ while the same helper works for the player objects (that is how P1/P2 are read).
 
 This remains the highest-value open thread: a round outcome is a near-binary, low-variance
 signal, and per-episode fitness noise (sd 12.5) is what currently makes selection impossible.
+
+## Session 151 — four reps of one policy: sd 11.76, and every draw negative
+
+```
+g0i0: reps=4 fits=[-7.24, -10.54, -30.63, -27.37]  mean -18.95  sd 11.76
+```
+
+Consistent with the earlier blocks (sd 12.45 with 3 reps, 21.21 with 2). The spread is a
+property of the environment, not of the sample size: **sd ~12 is the floor with this fitness.**
+
+With n=4 the standard error is ~5.9. For the GA to prefer one policy over another with any
+confidence, their true difference would have to exceed ~12 points - which is larger than the
+entire useful range the shaping terms produce. That is a structural statement about the current
+reward, and it explains why generations have not produced a stable winner in this whole project.
+
+Two ways forward, and they are not equivalent:
+
+  1. **More draws per policy.** n=16 would give se ~3. Cost: 16 x 75 s = 20 min per policy, so a
+     generation of 6 would take two hours. Feasible overnight but it buys precision, not a
+     better question.
+  2. **A lower-variance objective.** A round outcome is near-binary; a kill/death count is an
+     integer; both are far less noisy than the continuous territory score. This requires the
+     round counter (still unfound) or trusting the edge-teleport kill counter (now measured:
+     6 kills / 9 deaths in an episode, sanity-checked against the 485-false-positive failure).
+
+Also noted: all four draws are NEGATIVE under a 45 s window. Shorter episodes truncate the
+territory terms before any ground is gained, so the reward is dominated by `conceded`. The 45 s
+window chosen last hour buys statistics at the cost of a signal that never turns positive - that
+trade needs revisiting, not repeating.
