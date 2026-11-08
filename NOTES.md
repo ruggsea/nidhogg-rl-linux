@@ -4200,3 +4200,28 @@ though the score has not moved enough to prove it.
 
 This is what the remaining hours should be used for: accumulate reps on these five seeds until the
 gaps either clear 2 sigma or collapse.
+
+## Session 196 — first complete generation on verified data, and gen 1 is running
+
+```
+== gen 0: 1 individuals had no match, resetting
+== gen 0: selection excludes 1 invalid episode(s)
+== gen 0 best 3.43 mean -1.78 roundsW 0 roundsL 0 matchW 0
+```
+
+Three things make this different from the generations earlier today:
+
+  * the run completed all six policies with repeated measures, so "best 3.43" is a mean of up to six
+    draws rather than a single episode;
+  * `selection excludes 1 invalid episode(s)` is the goldfish's leak fix reporting itself - an
+    invalid episode reached the generation boundary and was replaced by -100 instead of quietly
+    becoming elite;
+  * `best 3.43` is the reach70 seed, the policy whose behaviour the death histogram predicted would
+    be better, and it is now the top of a real (if noisy) ranking rather than the top of a fluke.
+
+Generation 1 started at 14:0x with the best weights saved. `roundsW 0 roundsL 0` still - no round
+transition has ever been observed, so the round terms remain unpayable and the fitness rests
+entirely on net kills and territory.
+
+This is the first point all day where the search is running on data that survives every check I
+know how to apply. Whether it climbs is now a real question rather than a measurement artefact.
