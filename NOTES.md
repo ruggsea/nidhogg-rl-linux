@@ -4358,3 +4358,36 @@ Three corrections this implies:
 
 Also: 1, 2, 3 - the round detector has now logged 18 refused losses and 1 refused win, and **zero**
 verified rounds of either kind. The round terms in the fitness remain unpayable.
+
+## Session 202 — the same seed scored -0.93 and +14.42, and both numbers are real
+
+The `always_right` seed, six reps, after the y-filter removal:
+
+```
+g0i0r0 fit=15.91 kills=4 deaths=3 opp=485
+g0i0r1 fit=23.75 kills=3 deaths=1 opp=268
+g0i0r2 fit=17.78 kills=4 deaths=3 opp=366
+g0i0r3 fit= 3.02 kills=2 deaths=3 opp=121
+g0i0r4 fit= 9.54 kills=1 deaths=1 opp=458
+g0i0r5 fit=16.50 kills=3 deaths=2 opp=459
+mean +14.42      (five of six episodes: kills >= deaths)
+```
+
+Four hours ago the SAME seed measured **mean -0.93** across six reps. Same code path, same window,
+same reward. A **15-point swing**.
+
+Two causes, and I cannot separate their contributions:
+
+  * **censoring.** The y-filter discarded episodes at heights where fights demonstrably happen. The
+    discarded ones were not random - they included exactly the episodes with high kill counts
+    (g0i0r4/r5 had kills 1-2 against deaths 3, but other discarded episodes had kills >= deaths).
+  * **genuine run-to-run variance.** Across all strictly-usable episodes the ratio is 0.78 (kills
+    176 deaths), while this run alone is 17 kills to 13 deaths (1.31). The environment varies that
+    much between runs.
+
+Which means: **neither -0.93 nor +14.42 is "the" performance of this policy.** What can be said is
+that earlier today I reported "the agent loses exchanges 3:2" as a stable fact, and it was an
+average over a censored set with a variance wide enough to invert it.
+
+Practical consequence: no single generation can rank these policies, and the loop should stop
+treating one generation's `best` line as news.
