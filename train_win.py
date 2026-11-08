@@ -259,6 +259,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
     accept_tries = [0]
     death_actions = []
     cross_verdicts = []
+    loss_verified = []
     real_samples = 0
     exit_reason = "window-complete"
     sum_me = 0.0
@@ -432,6 +433,25 @@ def play(mgr, w, seconds, seed, tag, log=print):
                               and abs(st["them_x"] - prev["them_x"]) < CROSS_MAX_STEP
                               and them_armed and now_t - t0 > 3.0)
         if genuine_cross_them and them_armed and not them_crossed and now_t - last_round_t > 6.0:
+            # LOSSES GET THE SAME SCRUTINY. Only wins were verified, which is asymmetric:
+            # a "loss" fires when the CPU reaches x <= 20, and that could equally be a
+            # respawn after we killed it. Symmetric evidence, or neither claim stands.
+            try:
+                _watch = []
+                _tw = time.time()
+                while time.time() - _tw < 1.5:
+                    _s = read_state(mgr.iid)
+                    if _s:
+                        _watch.append(_s)
+                    time.sleep(0.05)
+                if _watch:
+                    _me_span = max(w["me_x"] for w in _watch) - min(w["me_x"] for w in _watch)
+                    _th_span = max(w["them_x"] for w in _watch) - min(w["them_x"] for w in _watch)
+                    loss_verified.append(bool(_me_span > 200 and _th_span > 200))
+                    print(f"  {tag}: LOSS VERIFY me_span={_me_span:.0f} "
+                          f"them_span={_th_span:.0f}", flush=True)
+            except Exception:
+                pass
             rounds_lost += 1; match_rounds_lost += 1
             them_crossed = True; them_armed = False
             last_round_t = now_t

@@ -3550,3 +3550,25 @@ The night's actual result, stated plainly:
 
 Every number quoted before Session 166 in this log should be treated as suspect, because the
 episodes behind them were not checked for a live opponent.
+
+## Session 174 — symmetric scrutiny, and the tally so far
+
+Ten episodes with the corrected goal line (500) and strict verifier:
+
+```
+rounds 0-0 : 7
+rounds 0-1 : 3      <- three "losses", zero "wins", zero crossings at 500
+```
+
+Only WINS were being verified, which is asymmetric: a loss fires when the CPU reaches x <= 20, and
+that could equally be a RESPAWN after we killed it - the same artefact shape that made the win
+proxy dishonest. Losses now get the identical 1.5 s watch, and an episode line carries both
+`cross_verified=[...]` and `loss_verified=[...]`.
+
+Repeated measures in flight: `g0i0 reps=2 fits=[-20.69, -30.36] mean -25.52`.
+
+Running tally of what the agent can demonstrate after tonight:
+  * kills > deaths: never, in any verified episode;
+  * a won round: never verified;
+  * a lost round: claimed 3 times, not yet verified;
+  * an opponent that actually played: yes, now confirmed per episode via `opp_span`.
