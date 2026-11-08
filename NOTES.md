@@ -2814,3 +2814,23 @@ Consequences recorded rather than papered over:
     variance (measured sd 12.5) cannot be reduced that way;
   * the alternative is more independent draws per unit time, i.e. shorter windows with more
     reps, trading per-episode richness for statistical power.
+
+## Session 150 — round counter: two more routes tried, both empty (with evidence)
+
+1. **Deeper struct window.** The object dump was capped at +0x200; extended to +0x600 and
+   re-inspected `MatchStats`. Result: still nothing plausible - a histogram of every non-zero
+   slot across the dump is dominated by 0.000 (342 slots), 1.000 (20), and single occurrences of
+   timers/positions (270.0, 862.0, 77.0). No small counter that increments once per round.
+
+2. **Named-variable query.** GameMaker keeps GML variables in a separate array reachable by name,
+   and the hook already wraps `variable_instance_get`. Added `pump_vars`, which asks the `Match`
+   (106) and `MatchStats` (107) instances for score/round/winner/state/timer-style names.
+   The trigger was consumed and the query ran, but produced no output at all: the instance
+   lookup returned nothing to query (`safe_instlist(106)` -> n=0 in that room).
+
+So the round counter is still unfound, and the failure is now precise: we can name the objects
+but cannot yet read their GML variables, because the instance-list helper returns 0 for them
+while the same helper works for the player objects (that is how P1/P2 are read).
+
+This remains the highest-value open thread: a round outcome is a near-binary, low-variance
+signal, and per-episode fitness noise (sd 12.5) is what currently makes selection impossible.

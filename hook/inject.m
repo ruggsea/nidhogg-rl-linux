@@ -466,6 +466,39 @@ static void probe_byname(void) {
     }
 }
 
+// Query NAMED GML variables on the Match object. The builtin struct window (0x80..0x600)
+// contains no plausible round counter, because GameMaker keeps GML variables in a separate
+// array reachable only by name lookup - which the runner already exposes and this hook
+// already wraps. Trigger: echo "vars" > /tmp/nid_vars_<id>.txt
+static void pump_vars(void) {
+    FILE *f = fopen(ctl_path("nid_vars"), "r");
+    if (!f) return;
+    fclose(f);
+    { FILE *w = fopen(ctl_path("nid_vars"), "w"); if (w) fclose(w); }
+    if (!pFindOrAlloc || !pCInstanceFind) return;
+    int *ids = NULL, n = 0;
+    int objs[2] = {106, 107};                  // Match, MatchStats
+    const char *names[] = {"score", "score1", "score2", "p1score", "p2score",
+                           "round", "rounds", "roundsWon", "roundsLost", "wins", "losses",
+                           "winner", "match_score", "points", "state", "phase", "mode",
+                           "timer", "time", "timeLeft", "started", "over", "finished"};
+    for (int o = 0; o < 2; o++) {
+        ids = NULL; n = 0;
+        if (!safe_instlist(objs[o], &ids, &n) || n <= 0 || !ids) continue;
+        void *p = pCInstanceFind(ids[0]);
+        if (!p) continue;
+        for (unsigned i = 0; i < sizeof names / sizeof names[0]; i++) {
+            void *slot = pFindOrAlloc(p, names[i]);
+            if (!slot) continue;
+            const unsigned char *b = (const unsigned char *)slot;
+            unsigned u0 = *(const unsigned *)b;
+            double d1 = *(const double *)(b + 8);
+            float f4 = *(const float *)(b + 4);
+            LOG("[vars] obj=%d %s -> u0=%u f4=%.3f d1=%.3f\n", objs[o], names[i], u0, f4, d1);
+        }
+    }
+}
+
 static void probe_fighters(void) {
     int objs[6] = {105, 154, 242, 153, 241, 106};  // Man, Orange/Yellow players+weapons, Match
     for (int i = 0; i < 6; i++) {
@@ -951,7 +984,10 @@ static void pump_objs(void) {
                     float fx = *(const float *)(inst + 0xec);
                     float fy = *(const float *)(inst + 0xf0);
                     LOG("[objs] name=\"%s\" obj=%d x=%.2f y=%.2f inst=%p\n", nm, obj, fx, fy, inst);
-                    for (unsigned off = 0x80; off < 0x200; off += 4) {
+                    // 0x200 was too shallow: GameMaker keeps instance variables well above
+                    // the builtin block, and a round/score field was never going to show up
+                    // in a window where every slot read 0 or a timer.
+                    for (unsigned off = 0x80; off < 0x600; off += 4) {
                         float v = *(const float *)(inst + off);
                         if (v != v) continue;              // skip NaN
                         if (v == 0.0f) continue;           // keep the log readable
@@ -1150,6 +1186,7 @@ static void *thread_probe(void *arg) {
         pump_startmatch();
         pump_localtest();
         pump_objs();          // on-demand object inspector (Phase 4)
+        pump_vars();          // on-demand named-variable query
         if (!pInstNumber) continue;
         tick++;
         if (getenv("NID_VARGATE") && tick % 60 == 0) probe_byname();
