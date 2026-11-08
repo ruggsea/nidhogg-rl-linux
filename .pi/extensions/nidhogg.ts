@@ -305,14 +305,20 @@ export default function (pi: ExtensionAPI) {
     } catch {
       return;
     }
-    if (holder.startsWith("FREE") || holder.includes(String(process.pid))) return;
+    if (holder.startsWith("FREE")) return;
 
-    const ok = await ctx.ui.confirm(
-      "Game slot is held by someone else",
-      `This command writes the game's control files, but the slot says:\n\n${holder}\n\nRun it anyway?`,
-    );
-    if (!ok) {
-      return { block: true, reason: `game slot not held by us (${holder})` };
-    }
+    // A blocking confirm() is FATAL for an autonomous agent: the operator session sat on a Yes/No
+    // prompt and stopped working. Decide from the slot contents instead, and fail closed with a
+    // reason the agent can act on.
+    const role = process.env.NID_ROLE || "operator";
+    if (holder.toLowerCase().includes(role.toLowerCase())) return;   // it is our own lease
+
+    return {
+      block: true,
+      reason:
+        `game slot is held by another owner (${holder}). ` +
+        `If that holder is dead, run 'python3 tools/gameslot.py force' or 'acquire' to take over; ` +
+        `otherwise wait for it to release. Do not write the game's control files while it holds the slot.`,
+    };
   });
 }
