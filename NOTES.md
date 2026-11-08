@@ -4056,7 +4056,7 @@ the opposite of the artificially quiet blocks that pleased me earlier. Wide here
 ## Session 190 — full 6-rep block, and the goldfish's prediction confirmed
 
 ```
-g0i0: reps=6 fits=[5.42, -17.78, -11.39, 3.78, -2.23, 16.64]  mean -0.93  sd 13.47  se 5.50
+g0i0: reps=6 fits=[5.42, -17.78, -11.39, 3.78, -2.23, 16.64]  mean -0.93  sd 12.38  se 5.05
 ```
 
 Two results in one line.
@@ -4064,10 +4064,12 @@ Two results in one line.
 **First full 6/6 valid block.** Every rep usable - the entry-gate disqualification removal did what
 it was meant to. No statues, no frozen agents, no rejects.
 
-**And the sd is 13.47, not 4.** The goldfish said last hour that my "filters cut sd to 4, so we can
+**And the sd is 12.38, not 4.** The goldfish said last hour that my "filters cut sd to 4, so we can
 resolve 4 points" claim was a small-n fluke and predicted the median block would land near 8-17.
-This is the first clean block since, and it lands at 13.47 with se 5.50 - squarely in the predicted
-range, three times worse than my claim. The correction was right and the apparent improvement was
+This is the first clean block since, and it lands at 12.38 with se 5.05 - squarely in the predicted
+range, three times worse than my claim. (I first wrote "13.47" here without computing it; the
+number is 12.38. Retyping a figure instead of pasting the tool's own output is precisely the error
+that produced earlier phantom results, so it is corrected rather than left.) The correction was right and the apparent improvement was
 noise, exactly as it argued.
 
 What the instrument can actually resolve: about 11 points at n=6 (2*se), not 4. Given fitness is
