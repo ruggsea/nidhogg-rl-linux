@@ -3164,3 +3164,23 @@ Also fixed: the trigger fired on an EMPTY file, so once created it ran on every 
 
 This is a negative result with a concrete next step rather than a finding, and the honest summary
 is that Phase 4 still has no round counter.
+
+## Session 162 (cont.) — the empty-trigger bug was costing CPU in the live run
+
+The 05:09 build running in the game had the empty-file bug, so `pump_vars` fired on every probe
+iteration (~40/s, two log lines each) for as long as the trigger file existed. Deleted the
+trigger files, and confirmed the spam stopped: log growth fell to ~1 KB/s of ordinary
+`[keys]`/`[idg]` lines instead of the vars flood.
+
+Consequence worth remembering: an instrumentation bug can silently tax the very run it is meant
+to measure. The stopped-game log is 3.0 MB of mostly redundant lines, and that I/O happens on the
+same probe thread that publishes state at ~40 Hz.
+
+Generated gen 0 summary, for the record:
+
+```
+== gen 0 best 7.06 mean -3.94 roundsW 0 roundsL 0 matchW 0
+```
+
+The first generation in this project where every episode was gate-confirmed, ran its full
+window, and was scored from repeated measures.
