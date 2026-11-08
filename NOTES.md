@@ -2605,3 +2605,36 @@ me_x=450 -> obs[2]=0.04
 
 That is the second observation slot found to be dead weight (an earlier one was a hardcoded
 1.0), so the effective input width has been smaller than the declared 8 for a while.
+
+## Session 143 — Phase 4 started: the object inspector works, and what it found
+
+Added `pump_objs` to the hook: given a name substring on `/tmp/nid_objs_<id>.txt`, it walks the
+instance table and dumps every matching object's name, object_index, position and its non-zero
+fields from +0x80 to +0x200. That is the tool Phase 4 needs - we can now name the objects
+instead of guessing offsets inside the player struct.
+
+First use, in a live match:
+
+```
+[objs] name="Match"                          obj=106  x=282 y=500  inst=0x12846e200
+[objs] name="MatchStats"                     obj=107  x=0   y=0    inst=0x12846dc00
+[objs] name="YellowPlayerMatchEntryPoint"    obj=245  x=64  y=224
+[objs] name="OrangePlayerMatchEntryPoint"    obj=156  x=416 y=224
+```
+
+`MatchStats` looked like the round-score candidate. Nine snapshots over ~2.5 minutes:
+
+```
++0xcc: 2000, 1121, 1314, 1501, 1852, 2228, 2610, 2834, 3041
+```
+
+Only one field varied and it rises monotonically - that is a TIMER (frame/time counter), not a
+score. No field in MatchStats increments rarely and stays small, which is what a round count
+looks like.
+
+So the round score is NOT in MatchStats. Next candidates: `Match` (obj=106), the
+`*PlayerMatchEntryPoint` objects, or a HUD object. The method is now cheap - write a name to the
+trigger file and diff the dumps across a round transition (a transition is observable as the
+full-arena teleport measured in Session 142).
+
+Recording this as a negative with numbers, per Pau's rule that a negative is a deliverable.

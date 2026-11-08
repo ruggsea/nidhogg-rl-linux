@@ -914,6 +914,57 @@ static void pump_localtest(void) {
     }
 }
 
+// OBJECT INSPECTOR (Pau's Phase 4). To prove a round/score field we must watch the right
+// object across a round transition, not guess offsets in the player struct. Given a name
+// substring, walk the instance table and dump every match's name, object_index, position
+// and a window of its fields. Trigger: echo "Match" > /tmp/nid_objs_<id>.txt
+static void pump_objs(void) {
+    FILE *f = fopen(ctl_path("nid_objs"), "r");
+    if (!f) return;
+    char want[64] = {0};
+    size_t n = fread(want, 1, sizeof want - 1, f);
+    fclose(f);
+    { FILE *w = fopen(ctl_path("nid_objs"), "w"); if (w) fclose(w); }
+    if (!n) return;
+    want[strcspn(want, "\n")] = 0;
+    intptr_t slide = _dyld_get_image_vmaddr_slide((uint32_t)game_index);
+    const char *base = (const char *)(0x1015173f8ULL + (uint64_t)slide);
+    const char *table = *(const char *const *)base;
+    uint32_t mask = *(const uint32_t *)(base + 8);
+    if (!table || mask == 0 || mask > (1u << 20)) { LOG("[objs] no table\n"); return; }
+    int seen = 0, matched = 0;
+    for (uint32_t b = 0; b <= mask && matched < 8 && seen < 4000; b++) {
+        const char *node = *(const char *const *)(table + (size_t)b * 16);
+        while (node && matched < 8 && seen < 4000) {
+            const char *inst = *(const char *const *)(node + 0x18);
+            if (inst) {
+                seen++;
+                const char *cobj = *(const char *const *)(inst + 0x88);
+                const char *nm = "";
+                if (cobj) {
+                    const char *nmp = *(const char *const *)cobj;
+                    if (nmp && (uintptr_t)nmp > 0x1000) nm = nmp;
+                }
+                if (nm[0] && strstr(nm, want)) {
+                    matched++;
+                    int obj = *(const int *)(inst + 0xb8);
+                    float fx = *(const float *)(inst + 0xec);
+                    float fy = *(const float *)(inst + 0xf0);
+                    LOG("[objs] name=\"%s\" obj=%d x=%.2f y=%.2f inst=%p\n", nm, obj, fx, fy, inst);
+                    for (unsigned off = 0x80; off < 0x200; off += 4) {
+                        float v = *(const float *)(inst + off);
+                        if (v != v) continue;              // skip NaN
+                        if (v == 0.0f) continue;           // keep the log readable
+                        LOG("[objs]   +0x%x = %.3f\n", off, v);
+                    }
+                }
+            }
+            node = *(const char *const *)(node + 0x08);
+        }
+    }
+    LOG("[objs] want=\"%s\" seen=%d matched=%d\n", want, seen, matched);
+}
+
 static void pump_brain(void) {
     FILE *f = fopen(ctl_path("nid_brain"), "r");
     if (!f) return;
@@ -1098,6 +1149,7 @@ static void *thread_probe(void *arg) {
         pump_brain();
         pump_startmatch();
         pump_localtest();
+        pump_objs();          // on-demand object inspector (Phase 4)
         if (!pInstNumber) continue;
         tick++;
         if (getenv("NID_VARGATE") && tick % 60 == 0) probe_byname();
