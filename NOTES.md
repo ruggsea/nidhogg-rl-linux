@@ -4116,3 +4116,29 @@ filters are doing work, not idling), mean 1.6 kills and 2.4 deaths per episode.
 
 Nothing changed in the code this tick, by design. The only way these two numbers become a decision
 is more reps, and more reps require the run to be left alone.
+
+## Session 193 — three blocks, still nothing at 2 sigma
+
+```
+g0i0 always_right   n=6  mean  -0.93  sd 12.38  se  5.05
+g0i2 always_attack  n=6  mean  +2.58  sd  9.02  se  3.68
+g0i3 reach22        n=6  mean -12.26  sd 24.06  se  9.82
+
+always_attack vs always_right : diff  -3.51  se 6.25  0.56 sigma
+always_attack vs reach22      : diff -14.84  se 10.49 1.41 sigma
+```
+
+The ordering that keeps appearing - always-attack best, reach22 worst - is consistent across
+runs, but it still does not clear 2 sigma at n=6. That is worth stating precisely because it is the
+one place tonight where the *direction* has been stable while my confidence in it kept being
+punished.
+
+Note also `reach22` carries sd 24.06, the widest of the three: a policy that attacks only at the
+exact sword range is highly variable in outcome. If that holds up it is a more useful finding than
+the mean, because it says the behaviour is unstable rather than simply weak.
+
+26 episodes recorded in this run. Nothing changed in code this tick.
+
+The general shape of the evidence after ~200 recorded episodes today: the agent loses exchanges
+about 3:2, no round transition has ever been observed, and the honest ordering of the six hand-
+written seeds, if any, needs more reps than a 3-hour generation currently provides.
