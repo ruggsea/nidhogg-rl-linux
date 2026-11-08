@@ -1,0 +1,17 @@
+{
+ "argv": [
+  "train_win.py",
+  "--instances",
+  "1",
+  "--gens",
+  "40",
+  "--pop",
+  "6",
+  "--window",
+  "60",
+  "--reps",
+  "6"
+ ],
+ "started": 1794145164.14292,
+ "cwd": "/Users/ruggsea/Projects/nidhogg-pau"
+}

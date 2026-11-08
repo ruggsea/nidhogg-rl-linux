@@ -4244,3 +4244,27 @@ episode with enough samples, the episode is discarded and the reason printed. Th
 That is now four distinct ways an episode can be real-looking and worthless: statue opponent, frozen
 agent, unverified round claims, and platform-only episodes. Each was found by looking at raw samples
 rather than at scores, and each was invisible to the check written for the previous one.
+
+## Session 198 — y is not a clean platform/live discriminator (learned the hard way)
+
+I added a "platform episode" discard on the theory that READY sits at y~128 and live rounds at
+y~560. Working through it produced counter-evidence in one hour:
+
+```
+observed y values across entries: 96, 128, 160, 278, 294, 560
+```
+
+The 96-160 group is unambiguous - fighters there never move (measured: 0.0-3.0 px over 2000+
+samples). But 278 and 294 appear in entries where play does happen, so a cut at 250 would have
+discarded real fights, and my first cut at 300 certainly would have. The threshold is now 200: only
+the band where immobility is demonstrated.
+
+This is the second time today a threshold I picked from two data points was too broad for the real
+distribution (the other was the "sd ~4" noise claim). The pattern in my own errors is consistent: I
+generalise from the first pair of values I see, then a later sample breaks it.
+
+Also changed: entry now tries `S=1` before `S=2`, on the hypothesis that S=2 selects ARCADE (the
+platform screen that waits for a second human) while S=1 selects TRAINING. Unconfirmed - it is a
+hypothesis with a mechanism, not a result.
+
+Current run: 2 episodes, 1 discarded, entry still frequently landing on non-playing screens.

@@ -273,7 +273,20 @@ def play(mgr, w, seconds, seed, tag, log=print):
     exit_reason = "window-complete"
     sum_me = 0.0
     min_abs_dx = None
+    _stuck_since = None
     while time.time() - t0 < seconds:
+        # EARLY ABORT ON A STUCK GAME. Measured: states occur where both fighters sit at a live
+        # height but the flags are 0 and no key (P, Esc, Enter) changes anything - the episode then
+        # burns the full 60 s window to produce nothing. If we have seen no usable sample for 15 s,
+        # give up and let the caller re-enter: a stuck episode then costs 15 s instead of 60.
+        if real_samples == 0:
+            _stuck_since = _stuck_since or time.time()
+            if time.time() - _stuck_since > 15.0:
+                exit_reason = "stuck-no-samples"
+                print(f"  {tag}: aborting - no usable samples in 15 s", flush=True)
+                break
+        else:
+            _stuck_since = None
         # DEATH = the fighter's existence flag drops. read_state() deliberately
         # returns None when a flag is 0, so this check MUST run before that gate -
         # otherwise the death is never observed (measured: 0 deaths in 10 episodes).
@@ -624,7 +637,15 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # and menu-platform states sit at y~128-160. An episode that never leaves the platform band
     # cannot contain a round, but the fighter can still shuffle sideways enough to defeat the
     # frozen-agent check - seen in this run as g1i1r2 sampling y=128 throughout.
-    platform_episode = (max_y_me is not None and max_y_me < 300.0 and real_samples > 20)
+    # Threshold tightened to 250: measured platforms sit at y=96/128/160 and live rounds at y~560,
+    # but one entry reported y=278 which is not clearly either. Discarding a real fight is more
+    # expensive than keeping a mediocre one, so the cut is where the evidence is unambiguous.
+    # ONLY THE UNAMBIGUOUS PLATFORM RANGE. Observed y values across entries: 96, 128, 160 (the
+    # READY/menu band, fighters never move), and 278, 294, 560 (real play at various heights).
+    # A 250 cut would have discarded the 278/294 episodes, which look like genuine fights in a
+    # room with a different vertical baseline. Discarding a real fight costs more than keeping a
+    # mediocre one, so the cut is 200 - inside the band where fighters demonstrably never move.
+    platform_episode = (max_y_me is not None and max_y_me < 200.0 and real_samples > 20)
     if platform_episode:
         log(f"  {tag}: DISCARDED - fighters never left the platform band "
             f"(max y={max_y_me:.0f}, live rounds are ~560)")
@@ -669,6 +690,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
                     "kills": them_deaths, "deaths": me_deaths,
                     "frozen_agent": bool(frozen_agent),
                     "platform_episode": bool(platform_episode),
+                    "max_y": (round(max_y_me, 1) if max_y_me is not None else None),
                     "rounds_won": rounds_won, "rounds_lost": rounds_lost,
                     "cross_verified": cross_verdicts, "loss_verified": loss_verified,
                     "death_acts": death_actions, "gate_px": mgr.gate_px,

@@ -919,7 +919,12 @@ class InstanceManager:
         # S=2 options, so the S=1 route was never tried again - and the observed READY
         # dead-ends (y=155/160 static, Enter does not start the round) are exactly what a wrong
         # route looks like. Two attempts, but they now differ in the dimension that matters.
-        for n_lead, s_count in ((1, 2), (1, 1)):
+        # S=1 FIRST. Measured symptom: three quarters of episodes are being discarded because the
+        # fighters sit on platforms at y=96-160 and never leave - which is the ARCADE screen
+        # waiting for a second human (Pau's notes describe exactly that: "the 2-player route ...
+        # stand on the READY platforms and no input starts them"). If so, S=2 selects ARCADE on
+        # this build and S=1 selects TRAINING, and the preference has been backwards all day.
+        for n_lead, s_count in ((1, 1), (1, 2)):
             log(f"instance {self.iid}: trying entry n_lead={n_lead} S={s_count}")
             # (the duplicate `or self._try_entry(...)` here ran entry TWICE on the first
             # variant, doubling entry cost for nothing)
