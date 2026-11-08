@@ -384,9 +384,15 @@ class InstanceManager:
             if len(vals) < 6:
                 return None, stale
             o154x, o154y, p242x, p242y, h154, h242 = (float(v) for v in vals[:6])
+            # THE LABELS ARE SWAPPED. MEASURED in a live arena (room 29): the instance at object
+            # 154 moved RIGHT under D (+64 px) and LEFT under A (-25 px) - that is the fighter we
+            # control. The instance at object 244/242 did not move at all under either key. So the
+            # first pair in the state file (labelled "them") is US, and the second pair (labelled
+            # "me") is the CPU. Every observation built on the old mapping had the sign of dx
+            # inverted, which is a plausible reason the policies learned to walk into the opponent.
             return {
-                "them_x": o154x, "them_y": o154y,
-                "me_x": p242x, "me_y": p242y,
+                "me_x": o154x, "me_y": o154y,
+                "them_x": p242x, "them_y": p242y,
                 "have154": int(h154), "have242": int(h242),
             }, stale
         except (OSError, ValueError):
@@ -932,9 +938,16 @@ class InstanceManager:
                 time.sleep(0.05)
             time.sleep(0.2)
 
+        # Player-ish object indices, from the decompiled room/object survey. MEASURED in room 29:
+        # instance obj=154 responded to D (+64) and A (-25) while obj=244 never moved at all - so
+        # the object the hook labels "them" (154) is the fighter WE control, and what it calls "me"
+        # (244/242) is the opponent. Restricting candidates to the player set stops the binder
+        # latching onto parallax objects that drift with the camera.
+        PLAYER_OBJS = (154, 242, 244, 245)
+
         def fighter_shaped(t):
-            _obj, x, y = t
-            return 0.0 <= x <= 1400.0 and 120.0 <= y <= 300.0
+            obj, x, y = t
+            return obj in PLAYER_OBJS and 0.0 <= x <= 1600.0 and 100.0 <= y <= 320.0
 
         wins = {}
         for _ in range(attempts):

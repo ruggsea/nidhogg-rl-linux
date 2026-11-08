@@ -4929,3 +4929,44 @@ The missing signal is the CURSOR ROW. Room index cannot provide it - all main-me
       PLAYER should be y~358 - one clean test away, needing the menu confirmed open first.
 
 No attestation, no training, `rounds won` = 0, no win rate. The loop continues.
+
+## Session 220 — TWO breakthroughs: the cursor signal, and a label swap that inverted every observation
+
+### 1. Cursor signal found (this is what unblocked navigation)
+
+The main menu **scrolls under a fixed highlight bar**. Measured: the bar is always at the same screen
+position (image y 836-886), so no coordinate can identify the selected row - only the TEXT under it.
+That is why blind key sequences kept landing in OPTIONS and cycling the language.
+
+`nav3.py` now detects the bar dynamically and compares its crop against a reference crop of the item
+we want, scrolling with `S` until it matches:
+
+```
+try 7: diff vs SINGLE PLAYER = 8.3
+SINGLE PLAYER is under the highlight bar
+```
+
+Navigation then completed the whole path **unattended**:
+
+```
+SINGLE PLAYER (band match) -> Enter -> S -> Enter -> Enter -> S -> Enter -> Enter
+room 2 -> 17 -> 29 (rCastleCenter), fighters published
+```
+
+### 2. The me/them labels are swapped in the state file
+
+Measured in room 29, holding each key for ~2 s and watching every instance:
+
+```
+id=104339 obj=154:  D -> +64.0 px    A -> -25.0 px     <- responds: this is US
+id=104340 obj=244:  D ->   0.0 px    A ->   0.0 px     <- never moves: this is the CPU
+```
+
+The hook writes `them_x them_y me_x me_y` from objects 154 and 242 respectively, so the trainer has
+had **me and them inverted all along**: `dx = them - me` pointed the wrong way, and every policy that
+"walked into the opponent" was actually walking away from it (or vice versa). `read_state()` now maps
+the first pair (obj 154) to us and the second (obj 242/244) to the opponent, with the measurement
+recorded in the code.
+
+This also explains why the direction gate kept failing while the game was clearly controllable: it
+was measuring the CPU's instance.
