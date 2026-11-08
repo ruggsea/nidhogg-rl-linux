@@ -2743,3 +2743,26 @@ episodes instead of single draws.
 
 The seventh seed ("close the gap, then attack inside 60 px") stays in the population - it is a
 reasonable hypothesis, not a proven winner, and the reps change is what would show it.
+
+## Session 147 — the noise level, measured: 30 points between two runs of one policy
+
+First repeated-measures result:
+
+```
+g0i1: reps=2 fits=[-15.11, 14.89] mean=-0.11
+```
+
+The SAME weights, same window, same code: -15.11 in one episode and +14.89 in the next. A
+30-point swing dwarfs any plausible difference between two candidate policies, so:
+
+  * 2 reps cannot rank policies - the mean of two draws that noisy is meaningless;
+  * every single-episode comparison in this project's history, including ones I reported this
+    session, was measuring luck.
+
+Cost arithmetic follows directly: pop 8 x 2 reps x (100 s + entry ~30 s) is >10 min per
+generation, which is too slow to buy the reps actually needed (4-6). So the run is now
+pop 6, window 45 s, reps 4: 24 episodes of ~75 s, ~20-25 min per generation, four independent
+draws per policy.
+
+Longer windows were worth it while rounds_won could fire; with the round counter still unfound
+and kills/territory scaling with time, a shorter window buys statistics instead of noise.
