@@ -4790,3 +4790,39 @@ Changed: normal priority is the default; `NID_NICE=1` opts back into nice19+back
 needs the Mac to stay cool and accepts a 4x slowdown (and the stall-like states that come with it).
 
 Verified after the change: a fresh launch runs at 120 fps.
+
+## Session 216 — speed fixed (120 fps), taming input next
+
+### Fixed: the 4x slowdown (my own doing)
+
+`launch()` was forcing `nice 19` + background QoS on every game start. Measured: `PRI=4 NI=19`,
+**30 fps**. Same binary at normal priority: **120 fps**. Now normal by default; `NID_NICE=1` opts back
+into polite mode. Verified 120 fps after the change.
+
+Side effect worth knowing: the hook holds each key for a fixed number of FRAMES, so at 120 fps a
+6-frame hold is 50 ms where at 30 fps it was 200 ms. Raised to 12 frames (~100 ms at 120 fps).
+
+### New capability: mouse clicks
+
+Keyboard navigation needs the menu cursor position, which is not readable without more decomp work,
+but the menu ITEMS are at fixed positions. `pump_click` posts a real CGEvent click at window-content
+coordinates from `/tmp/nid_click_<id>.txt`. First use works (the click is posted and logged with the
+computed screen point), but a click on the title screen only advances the attract animation.
+
+### Still open: dismissing the title screen reliably, then reaching TRAINING
+
+Measured facts to build on:
+  * the title screen runs the attract demo **inside room 29 (rCastleCenter)** - an arena room - so
+    room index alone cannot distinguish "demo" from "our match". Only the stimulus-response test can;
+  * `S` and `W` both move the cursor (verified with screenshots), and the cursor WRAPS, so counting
+    presses is never deterministic;
+  * Entering OPTIONS and pressing Enter cycles the LANGUAGE row: the game came back in French, then
+    in Chinese, twice. Any blind Enter is a settings hazard;
+  * `MULTIPLAYER` is the only main-menu row with a detectable effect (room 3 = rMultiMenu), which
+    makes it a usable anchor if we can reach it.
+
+The pi agents on deepseek are still working on the menu-cursor signal (docs/MENU_CURSOR.md) and the
+attestation audit (docs/AUDIT_ATTEST.md).
+
+Honest status: no attested control yet, `rounds won` = 0, no win rate. The loop continues until
+out/ATTESTED exists.

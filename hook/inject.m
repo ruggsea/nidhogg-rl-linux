@@ -217,6 +217,53 @@ static void post_ns_event(int code, bool down) {
     [NSApp postEvent:e atStart:NO];
 }
 
+// MOUSE CLICKS. Keyboard navigation needs the menu cursor position, which is not readable without
+// more decomp work; the menu ITEMS however are at fixed positions inside the window. Clicking a row
+// is deterministic and needs no state at all.
+// Control file: /tmp/nid_click_<id>.txt containing "x y" in window CONTENT coordinates
+// (origin top-left of the game view, e.g. 320x200 space scaled to the window).
+static void pump_click(void) {
+    FILE *f = fopen(ctl_path("nid_click"), "r");
+    if (!f) return;
+    char b[64] = {0};
+    size_t n = fread(b, 1, sizeof b - 1, f);
+    fclose(f);
+    { FILE *w = fopen(ctl_path("nid_click"), "w"); if (w) fclose(w); }
+    if (!n) return;
+    double cx = 0, cy = 0;
+    if (sscanf(b, "%lf %lf", &cx, &cy) != 2) return;
+
+    NSWindow *win = nil;
+    for (NSWindow *w in [NSApp windows]) {
+        if (![NSStringFromClass([w class]) containsString:@"GMWindow"]) continue;
+        if ([w frame].size.width < 100) continue;
+        win = w; break;
+    }
+    if (!win) { LOG("[click] no window\n"); return; }
+    NSRect fr = [win frame];
+    // content height for the flip (top-left origin for the caller)
+    CGFloat ch = [win contentRectForFrameRect:fr].size.height;
+    // CGEvent screen coordinates: origin TOP-LEFT of the main display, y downward
+    NSPoint originInScreen = fr.origin;
+    CGFloat screenH = [[[NSScreen screens] firstObject] frame].size.height;
+    double screen_x = originInScreen.x + cx;
+    double screen_y = (screenH - originInScreen.y - ch) + cy;
+    CGPoint pt = CGPointMake(screen_x, screen_y);
+    CGEventRef move = CGEventCreateMouseEvent(NULL, kCGEventMouseMoved, pt, kCGMouseButtonLeft);
+    CGEventRef down = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, pt, kCGMouseButtonLeft);
+    CGEventRef up   = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseUp, pt, kCGMouseButtonLeft);
+    if (move) CGEventPost(kCGHIDEventTap, move);
+    usleep(60000);
+    if (down) CGEventPost(kCGHIDEventTap, down);
+    usleep(60000);
+    if (up)   CGEventPost(kCGHIDEventTap, up);
+    if (move) CFRelease(move);
+    if (down) CFRelease(down);
+    if (up)   CFRelease(up);
+    LOG("[click] posted at %.0f,%.0f (window %.0fx%.0f content h=%.0f)\n",
+        screen_x, screen_y, fr.size.width, fr.size.height, ch);
+}
+
 static void pump_keys(void) {
     for (int i = pending_n - 1; i >= 0; i--) {
         if (--pending_left[i] <= 0) {
@@ -247,7 +294,11 @@ static void pump_keys(void) {
             post_ns_event(code, true);
             LOG("[keys] f=%d down %d\n", frame, code);
             pending_code[pending_n] = code;
-            pending_left[pending_n] = 6;
+            // HOLD LENGTH IS IN FRAMES, so it shrinks as the frame rate rises. At 30 fps (the
+            // old, nice-19-throttled rate) 6 frames was 200 ms; at 120 fps it is 50 ms and menu
+            // presses started getting missed. Use ~12 frames so the hold stays ~100 ms at 120 fps
+            // and ~400 ms at 30 fps - both long enough for the game to see the key.
+            pending_left[pending_n] = 12;
             pending_n++;
         }
     }
@@ -758,6 +809,7 @@ static void tick_main(void) {
         }
     }
     pump_keys();
+    pump_click();
     if (frame == 2) LOG("[tick] running on main thread\n");
     if (!installed_quiet && frame > 240 && frame % 20 == 0) relocate_once();
     // in-process mute (belt and braces with prefs_muted.ini); addresses are
