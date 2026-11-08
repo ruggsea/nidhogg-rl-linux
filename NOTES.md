@@ -4299,3 +4299,34 @@ had already written down.
 
 Practical rule for the loop: if A_px stays single-digit across two entry cycles, restart the
 trainer, not just the game.
+
+## Session 200 — my y-filter was discarding real fights; removing it restored 5 of 6 episodes
+
+The filter I added two ticks ago ("platform episodes never leave the y band") was wrong, and the
+cost was large. The evidence is in the episodes it rejected:
+
+```
+g0i0r4  max_y=128  me=[149..306]  kills=1 deaths=3  opp_span=435  deaths on D_right
+g0i0r5  max_y=160  me=[128..322]  kills=2 deaths=3  opp_span=394  deaths on D_right
+```
+
+Our fighter travelled 150-200 px, there were kills on both sides, and the opponent crossed most of
+the arena. Those are ordinary fights - this game simply places arenas at different vertical
+baselines, so y never carried the meaning I assigned to it. Five of six episodes in one run were
+being thrown away by my own filter.
+
+Removed. First episodes after removal:
+
+```
+kills=4 deaths=3 opp_span=485
+kills=3 deaths=1 opp_span=268
+0 discarded
+```
+
+**Read this correctly:** the fights did not get better, they stopped being deleted. The agent's
+kill/death ratio looks better here because the previous record was censored by a filter that
+happened to reject episodes at those heights. This is exactly why the censoring matters - it can
+make a policy look worse OR better, and I could not have known which without removing it.
+
+The frozen-agent check (our own travel in pixels) remains, because it makes no assumption about
+where the fight happens, only that we did something.

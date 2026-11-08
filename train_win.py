@@ -641,14 +641,14 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # but one entry reported y=278 which is not clearly either. Discarding a real fight is more
     # expensive than keeping a mediocre one, so the cut is where the evidence is unambiguous.
     # ONLY THE UNAMBIGUOUS PLATFORM RANGE. Observed y values across entries: 96, 128, 160 (the
-    # READY/menu band, fighters never move), and 278, 294, 560 (real play at various heights).
-    # A 250 cut would have discarded the 278/294 episodes, which look like genuine fights in a
-    # room with a different vertical baseline. Discarding a real fight costs more than keeping a
-    # mediocre one, so the cut is 200 - inside the band where fighters demonstrably never move.
-    platform_episode = (max_y_me is not None and max_y_me < 200.0 and real_samples > 20)
-    if platform_episode:
-        log(f"  {tag}: DISCARDED - fighters never left the platform band "
-            f"(max y={max_y_me:.0f}, live rounds are ~560)")
+    # Y IS NOT A DISCRIMINATOR - my own filter was wrong and expensive. Measured:
+    #   g0i0r4  max_y=128  me=[149..306]  kills=1 deaths=3  opp_span=435
+    #   g0i0r5  max_y=160  me=[128..322]  kills=2 deaths=3  opp_span=394
+    # Those are REAL FIGHTS at exactly the heights I had labelled "platform band, never moves".
+    # This game puts arenas at different vertical baselines, so the y cut discarded five of six
+    # good episodes in one run. Removed. The frozen-agent check (our fighter's own travel) is the
+    # correct test and makes no assumption about where the fight is taking place.
+    platform_episode = False
     if frozen_agent:
         log(f"  {tag}: DISCARDED - our fighter moved only {_me_span_obs:.1f} px in "
             f"{real_samples} samples (no policy signal)")
