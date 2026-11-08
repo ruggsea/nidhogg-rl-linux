@@ -3184,3 +3184,26 @@ Generated gen 0 summary, for the record:
 
 The first generation in this project where every episode was gate-confirmed, ran its full
 window, and was scored from repeated measures.
+
+## Session 163 — gen 1's first individual is TIGHTER, not higher
+
+```
+g0i1 (seed, gen 0):  n=5  mean  +7.06  sd 19.72  se  8.82
+g1i0 (recombined):   n=5  mean  -2.22  sd  8.62  se  3.86
+```
+
+The gen-1 individual has a LOWER mean than gen 0's nominal best but half the spread. Two readings,
+and the honest position is that both are plausible:
+
+  * optimism: recombination produced a policy whose behaviour is more consistent - the same sd as
+    the well-behaved seed (g0i0, 8.62) rather than the erratic leaders (19.7, 24.7), which is what
+    you want before selection can accumulate anything;
+  * caution: n=5 with se 3.9 cannot separate -2.22 from +7.06 given the seed's own se of 8.8, so
+    "tighter" is not yet "better".
+
+What is established is that the GA is no longer comparing identical scores, and that per-policy
+spread is now a reported quantity rather than a hidden one. Whether variance reduction is a
+reliable consequence of selection here needs two or three more generations.
+
+Note: the running game still has the 05:49 hook, so the x/y control test for Phase 4 has not
+fired yet - it needs the next relaunch.
