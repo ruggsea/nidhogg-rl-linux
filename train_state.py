@@ -896,19 +896,23 @@ class InstanceManager:
                 time.sleep(0.15)
         return False
 
-    def bind_by_response(self, hold=1.5, min_px=6.0, attempts=2):
+    def bind_by_response(self, hold=1.5, min_px=6.0, attempts=3):
+        """Identify OUR fighter by stimulus and response, and require it to LOOK like a fighter.
+
+        Two things went wrong before:
+          * the named instance (object 242) is not the object we control, measured;
+          * a plain "moves under D and A" test accepted a false responder that sat at y=55 - not on
+            the ground where fighters live (y~160) - while the attract demo ran in the same room.
+
+        So a candidate must now satisfy all of:
+          * inside the arena horizontally (0..1400),
+          * on the ground band vertically (120..300; the castle floor reads ~160),
+          * move RIGHT under D and LEFT under A on TWO independent cycles.
+        """
         if not self.in_arena():
             log(f"instance {self.iid}: refusing to bind - not in an arena room")
             return None
-        """Find the instance WE control by stimulus and response, not by name.
 
-        Three cheaper identifications are all wrong on this build (measured):
-          * fighters present  -> the title screen runs a live attract match
-          * input moves us    -> the attract demo drifts right under D and not left under A
-          * named YellowPlayer-> screens with two fighters often match no such instance
-        So: hold D and require a candidate to move RIGHT, then hold A and require it to move LEFT.
-        A demo AI cannot satisfy both signs on demand. Returns the instance id or None.
-        """
         def snapshot():
             out = {}
             try:
@@ -928,35 +932,35 @@ class InstanceManager:
                 time.sleep(0.05)
             time.sleep(0.2)
 
-        best, winners = None, []
+        def fighter_shaped(t):
+            _obj, x, y = t
+            return 0.0 <= x <= 1400.0 and 120.0 <= y <= 300.0
+
+        wins = {}
         for _ in range(attempts):
-            before = snapshot()
-            if not before:
+            a = snapshot()
+            if not a:
                 log(f"instance {self.iid}: bind - no instance dump")
                 return None
-            hold_key(68)                      # D -> expect +dx
-            mid = snapshot() or {}
-            hold_key(65)                      # A -> expect -dx
-            after = snapshot() or {}
-            winners = []
-            for inst in set(before) & set(mid) & set(after):
-                dx_d = mid[inst][1] - before[inst][1]
-                dx_a = after[inst][1] - mid[inst][1]
+            hold_key(68)                       # D -> expect +dx
+            b = snapshot() or {}
+            hold_key(65)                       # A -> expect -dx
+            c = snapshot() or {}
+            for inst in set(a) & set(b) & set(c):
+                if not fighter_shaped(a[inst]):
+                    continue
+                dx_d = b[inst][1] - a[inst][1]
+                dx_a = c[inst][1] - b[inst][1]
                 if dx_d >= min_px and dx_a <= -min_px:
-                    winners.append((inst, dx_d, dx_a))
-            if winners:
-                break
-        if winners:
-            # prefer a candidate whose object index looks like a player body rather than a UI
-            # element: measured player bodies are 244/154; menu cursors were 66/106.
-            winners.sort(key=lambda w: (0 if w[0] and abs(w[1]) >= 20 else 1, -(w[1] - w[2])))
-            best = winners[0]
-            self.bound_inst = best[0]
-            log(f"instance {self.iid}: BOUND to instance {best[0]} (dx_D={best[1]:+.1f} "
-                f"dx_A={best[2]:+.1f})")
-            return best[0]
-        log(f"instance {self.iid}: bind found no responder among {len(before)} candidates "
-            f"- not a controllable match")
+                    wins[inst] = wins.get(inst, 0) + 1
+            best = [i for i, n in wins.items() if n >= 2]
+            if best:
+                self.bound_inst = best[0]
+                log(f"instance {self.iid}: BOUND to instance {best[0]} "
+                    f"(responded on {wins[best[0]]} cycles, on the ground)")
+                return best[0]
+        log(f"instance {self.iid}: bind found no fighter-shaped responder "
+            f"({len(wins)} candidates responded once) - not a controllable match")
         return None
 
     def _opponent_moves(self, seconds=5.0, min_px=15.0):

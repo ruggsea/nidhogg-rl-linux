@@ -4870,3 +4870,30 @@ Needed: a binding criterion that also requires the candidate to look like a figh
 independent press/release cycles rather than one.
 
 Honest status: navigation solved, control attestation still not achieved, `rounds won` = 0.
+
+## Session 218 — what is verified about the menu, and what still isn't
+
+Verified by screenshot, repeatedly:
+
+  * `S` (83) moves the cursor DOWN and WRAPS; `W` (87) does nothing here; ArrowUp (38) is BACK.
+  * The cursor starts on **MULTIPLAYER** on a fresh menu.
+  * From MULTIPLAYER, **S x5 lands exactly on SINGLE PLAYER** (seen twice, screenshots saved).
+  * The rest of the path works when started correctly: SINGLE PLAYER -> S -> TRAINING -> Enter ->
+    partner -> S -> START -> Enter x2 produces **room 17 then 29 (rCastleCenter) with fighters**.
+  * Mouse clicks DO move the highlight when they land on a row (a click at y=414 selected OPTIONS),
+    and dismiss the menu when they land outside it (y=320).
+
+Not solved: making an automated run START from the known cursor position. `tools/attest.py` relaunches
+the game (which restores English and the MULTIPLAYER cursor), but its first Enter sometimes selects
+MULTIPLAYER instead of dismissing a splash, and after the recovery Esc the S x5 wrap still landed on
+OPTIONS rather than SINGLE PLAYER. So the automation is one verified step away from working while the
+hand-run of the same keys works.
+
+The honest conclusion: I do not yet have a menu driver that is closed-loop on the CURSOR. The room
+index tells me which SCREEN I am on, but every main-menu item shares room 2, so it cannot tell me
+which ROW is selected - and that is the missing signal. The pi agent tasked with finding it
+(docs/MENU_CURSOR.md) was stopped before delivering.
+
+Next: either (a) get the cursor signal from memory, or (b) calibrate mouse clicks per row (they work
+when they land: y=414 -> OPTIONS means the row pitch is ~28 px and SINGLE PLAYER is near y=386 for a
+960x628 window). (b) is cheaper and needs no decomp.

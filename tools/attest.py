@@ -49,34 +49,45 @@ def esc_home(mgr, log=print, tries=5):
 
 
 def navigate(mgr, log=print):
-    """The hand-verified path, no searching.
+    """Deterministic path, with a CLOSED-LOOP anchor for the first Enter.
 
-    Why not search: every blind Enter lands on whatever the cursor happens to be on, and if that is
-    OPTIONS then Enter cycles the LANGUAGE row - measured: the game came back in FRENCH, then
-    CHINESE. Blind menu probing corrupts the game's settings, so navigation uses exactly the
-    sequence that was walked by hand with screenshots, and fails loudly if it does not work.
+    Measured key behaviour on this build:
+        S (83)       moves the menu cursor DOWN, and WRAPS
+        W (87)       does NOT move the main menu
+        ArrowUp (38) acts as BACK
+        Enter (13)   selects
 
-        PRESS ENTER
-        W        -> SINGLE PLAYER   (the cursor starts on MULTIPLAYER = online)
-        ENTER    -> ARCADE / TRAINING submenu
-        S        -> TRAINING
-        ENTER    -> partner list
-        ENTER    -> partner submenu (DIFFICULTY / START)
-        S        -> START
-        ENTER    -> start
-        ENTER    -> skip the level-intro card
+    The trap in the first version: at 120 fps the main menu is often already up by the time we press
+    Enter, so that Enter SELECTS MULTIPLAYER instead of dismissing a splash - and every following key
+    is then interpreted inside the multiplayer submenu (measured: ended in rControlsRoom via OPTIONS).
+    So the anchor is verified: if we land in rMultiMenu (room 3), Esc back and apply the S x5 wrap
+    from the known MULTIPLAYER position.
     """
-    seq = [(13, "PRESS ENTER"), (87, "W -> SINGLE PLAYER"), (13, "enter submenu"),
-           (83, "S -> TRAINING"), (13, "enter partner list"), (13, "pick partner"),
-           (83, "S -> START"), (13, "START"), (13, "skip intro card"), (13, "skip intro again")]
-    for code, what in seq:
+    def step(code, what, wait=1.8):
         mgr.press(code)
-        time.sleep(2.5)
-        log(f"   {what:24s} room={room(mgr.iid)}")
+        time.sleep(wait)
+        log(f"   {what:24s} room={room(mgr.iid)} -> {mgr.room_name(room(mgr.iid))}")
+
+    step(13, "first Enter", 2.5)
+    if room(mgr.iid) == 3:
+        step(27, "Esc out of MULTIPLAYER", 1.5)   # cursor stays on MULTIPLAYER
+    # from MULTIPLAYER, five downs wrap to SINGLE PLAYER
+    for i in range(5):
+        mgr.press(83)
+        time.sleep(1.0)
+    log(f"   S x5 -> SINGLE PLAYER     room={room(mgr.iid)}")
+    step(13, "enter SINGLE PLAYER", 2.4)
+    step(83, "S -> TRAINING", 1.4)
+    step(13, "enter TRAINING", 2.0)
+    step(13, "pick partner", 2.0)
+    step(83, "S -> START", 1.4)
+    step(13, "START", 3.0)
+    step(13, "skip intro", 2.5)
+    step(13, "skip intro again", 2.0)
     st, _ = mgr.read_state()
     r = room(mgr.iid)
-    ok = bool(st) and abs(st.get("me_x") or 0) > 0 and r not in (1, 2, 3)
-    log(f"   result: room={r} fighters={bool(st and st.get('me_x'))} -> {'OK' if ok else 'NO MATCH'}")
+    ok = r in mgr.ARENA_ROOMS
+    log(f"   result: room={r} ({mgr.room_name(r)}) fighters={bool(st and st.get('me_x'))}")
     return ok
 
 
@@ -87,8 +98,18 @@ def main():
     ok = {}
 
     if launch:
-        print("1. LAUNCH")
-        mgr.close() if mgr.proc else None
+        # ALWAYS relaunch. Attesting against a game that has been left in some menu state is how
+        # this chain kept landing in OPTIONS/MULTIPLAYER: the menu cursor position is inherited, and
+        # so are in-memory settings (the language was flipped to French and then Chinese by blind
+        # Enters in OPTIONS). A fresh launch restores prefs and puts the cursor on MULTIPLAYER.
+        print("1. LAUNCH (always fresh)")
+        try:
+            mgr.close()
+        except Exception:
+            pass
+        import subprocess
+        subprocess.run(["pkill", "-9", "-f", "MacOS/Nidhogg"], capture_output=True)
+        time.sleep(3)
         mgr.launch()
         time.sleep(TS.BOOT_WAIT)
         print(f"   launched, boot wait {TS.BOOT_WAIT:.0f}s, room={room(iid)}")
