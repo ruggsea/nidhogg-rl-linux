@@ -3432,3 +3432,28 @@ something the game itself produces - a round transition or a HUD/score change.
 What can be said with confidence: the detector is no longer structurally dead, it now fires on
 genuine walks across the line (teleports are excluded by the 60 px step limit), and the fitness
 now contains a term that has actually varied.
+
+## Session 170 — the proxy is instrumented to verify itself; no crossing yet to test it
+
+The standalone watcher saw nothing in 7 minutes ("no crossing happened - the proxy is untested,
+not disproven"), because crossings depend on which policy is playing and the watcher cannot know
+when to look.
+
+So the check moved INSIDE the episode loop: when a crossing fires, the trainer watches the next
+1.5 s and records whether both fighters repositioned (a real round transition) or our fighter
+simply kept walking (proxy is fiction). Every episode line now ends with
+`cross_verified=[True/False...]`.
+
+First episodes with it armed:
+
+```
+rounds 0-1  (CPU reached x<=20 - our goal line - a real loss by the same proxy)
+rounds 0-0
+cross_verified=[]      <- no win-crossing has happened yet to test
+```
+
+Note the loss direction fires the same way, which is a small consistency check: `them=[3..462]`
+means the CPU travelled to the far left end, matching a round loss.
+
+Still outstanding, and I am not reporting a win rate until it is answered: does a crossing
+coincide with a real round transition? One crossing is all it takes.

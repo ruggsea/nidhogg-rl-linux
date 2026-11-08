@@ -254,6 +254,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
     gone_since = None
     accept_tries = [0]
     death_actions = []
+    cross_verdicts = []
     real_samples = 0
     exit_reason = "window-complete"
     sum_me = 0.0
@@ -385,6 +386,27 @@ def play(mgr, w, seconds, seed, tag, log=print):
                          and abs(st["me_x"] - prev["me_x"]) < CROSS_MAX_STEP
                          and me_armed and now_t - t0 > 3.0)
         if genuine_cross and me_armed and not me_crossed and now_t - last_round_t > 6.0:
+            # VERIFY THE PROXY IN PASSING. Our round counter fires when our fighter walks past
+            # x>=GOAL_X, but nothing yet proves the GAME agrees. A real round transition moves
+            # both fighters far (the arena resets); if our fighter simply keeps walking, the
+            # proxy is fiction. Watched once, quietly, right after each crossing.
+            try:
+                _watch = []
+                _tw = time.time()
+                while time.time() - _tw < 1.5:
+                    _s = read_state(mgr.iid)
+                    if _s:
+                        _watch.append(_s)
+                    time.sleep(0.05)
+                if _watch:
+                    _me_span = max(w["me_x"] for w in _watch) - min(w["me_x"] for w in _watch)
+                    _th_span = max(w["them_x"] for w in _watch) - min(w["them_x"] for w in _watch)
+                    _transition = _me_span > 200 or _th_span > 200
+                    cross_verdicts.append(bool(_transition))
+                    print(f"  {tag}: CROSSING VERIFY me_span={_me_span:.0f} "
+                          f"them_span={_th_span:.0f} transition={_transition}", flush=True)
+            except Exception:
+                pass
             rounds_won += 1; match_rounds_won += 1
             me_crossed = True; me_armed = False
             last_round_t = now_t
@@ -552,7 +574,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
     log(f"  {tag}: exit={exit_reason} samples={real_samples} inert={bool(inert)} "
         f"adv={_adv}{_me_rng}{_th_rng} kills={them_deaths} deaths={me_deaths} "
         f"opp_span={(_th_span if _th_span is not None else -1):.0f} "
-        f"death_acts={death_actions} "
+        f"death_acts={death_actions} cross_verified={cross_verdicts} "
         f"reset={_reset_ok}")
     rec = {"no_match": bool(no_match), "adversary": _adv,
            "real_samples": real_samples,
