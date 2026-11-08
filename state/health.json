@@ -1,11 +1,11 @@
 {
- "ts": 1794180451.510637,
- "overall": "PASS",
+ "ts": 1794181745.058711,
+ "overall": "WARN",
  "checks": [
   {
    "check": "game processes",
    "status": "PASS",
-   "detail": "1 running pids=[12277]"
+   "detail": "1 running pids=[26050]"
   },
   {
    "check": "priority",
@@ -14,13 +14,13 @@
   },
   {
    "check": "frame rate",
-   "status": "PASS",
-   "detail": "106.7 fps"
+   "status": "WARN",
+   "detail": "no frame counter in the hook log"
   },
   {
    "check": "room",
    "status": "PASS",
-   "detail": "2 (rMainMenu)"
+   "detail": "28 (arena)"
   },
   {
    "check": "state file",
@@ -35,7 +35,7 @@
   {
    "check": "hook log",
    "status": "PASS",
-   "detail": "age 0.2s (a stale log means the probe thread is not running)"
+   "detail": "age 0.0s (a stale log means the probe thread is not running)"
   },
   {
    "check": "legacy room command",

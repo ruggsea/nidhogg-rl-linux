@@ -1031,6 +1031,39 @@ class InstanceManager:
             f"(D +{rights[best]:.0f} A -{lefts[best]:.0f})")
         return best
 
+    def ensure_live_round(self, tries=3, settle=1.2, min_px=5.0):
+        """Make sure a ROUND IS ACTUALLY RUNNING before measuring control.
+
+        MEASURED failure (attestation run at 00:44:36, room 28): bind succeeded but the gate read
+        D=+0.0 A=+0.0 - nothing moved at all, because the round had already ended. The harness then
+        failed a perfectly good match for the wrong reason.
+
+        A round that is over shows no movement from either fighter. If that is the case, press Enter
+        (the accept key, measured to start the next round in ~7.6 s) and wait for movement.
+        """
+        for i in range(tries):
+            st, _ = self.read_state()
+            if not self.has_players(st):
+                self.press(13)
+                time.sleep(2.0)
+                continue
+            x0_me, x0_th = st["me_x"], st["them_x"]
+            t0 = time.time()
+            moved = 0.0
+            while time.time() - t0 < settle:
+                s2, _ = self.read_state()
+                if s2 is not None:
+                    moved = max(moved, abs(s2["me_x"] - x0_me), abs(s2["them_x"] - x0_th))
+                time.sleep(0.1)
+            if moved >= min_px:
+                if i:
+                    log(f"instance {self.iid}: round is live again after {i + 1} attempts")
+                return True
+            log(f"instance {self.iid}: no movement (round over?) - pressing Enter to start the next round")
+            self.press(13)
+            time.sleep(2.5)
+        return False
+
     def dose_response(self, short=0.45, long=1.35, ratio=1.6, min_px=8.0):
         """Is the movement CAUSED by our key, or merely happening while we hold it?
 

@@ -150,6 +150,16 @@ def main():
     # with a new id, and the gate reads a dead id (FAIL {}). Bind and gate are therefore retried as
     # a PAIR: a gate failure that leaves no bound instance triggers a fresh bind, and prove_control
     # re-runs _make_space each call so a cornered fighter gets a new chance to move.
+    print("3c. IS A ROUND ACTUALLY RUNNING?")
+    # Measured: one run bound successfully but measured D=+0.0 A=+0.0 - the round had ended, so
+    # nothing could move. Restart the round before measuring control.
+    live = False
+    try:
+        live = mgr.ensure_live_round()
+        print(f"   round live: {live}")
+    except Exception as e:
+        print(f"   live-round check error: {e}")
+
     print("4-5. BIND + CONTROL GATE (re-bind on failure; CPU is active)")
     bound = None
     passed = False
