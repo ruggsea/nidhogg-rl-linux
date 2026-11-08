@@ -426,7 +426,41 @@ class InstanceManager:
         return InstanceManager._pos_valid(st.get("me_x")) and \
             InstanceManager._pos_valid(st.get("them_x"))
 
+    # ROOM TABLE from docs/ROOM_NAMES.md (decompiled from game.ios by a pi agent, 82 rooms).
+    MENU_ROOMS = {
+        0: "__Setup", 1: "rLogos", 2: "rMainMenu", 3: "rMultiMenu", 4: "rOnlineLobby",
+        5: "rForceStartLevel", 8: "rCustomColors", 9: "rMacTest", 10: "rChallengeMode",
+        12: "rTrophyRoom", 13: "rArcadeProgress", 14: "rOperatorMenu", 15: "rNewChallenger",
+        16: "rBeatGameStats", 17: "rLevelSelect", 18: "rCredits", 19: "rControlsRoom",
+        20: "rMatchStats", 21: "rTutorial", 22: "rTournamentIntro", 23: "rShowLadder",
+        24: "rShowChampion", 25: "rPreMatch", 78: "rMods", 81: "rDodgeSwords",
+    }
+    # Arena rooms: castle / mines / sky / wilds / cemetery sections.
+    ARENA_ROOMS = set(range(26, 78)) - {69, 78}
+
+    @staticmethod
+    def room_name(idx):
+        return InstanceManager.MENU_ROOMS.get(idx, "arena" if idx in InstanceManager.ARENA_ROOMS else f"room{idx}")
+
+    def in_arena(self):
+        try:
+            r = int(open("/tmp/nid_room_now_%s.txt" % self.iid).read().strip())
+        except (OSError, ValueError):
+            return False
+        return r in self.ARENA_ROOMS
+
+    def room(self):
+        try:
+            return int(open("/tmp/nid_room_now_%s.txt" % self.iid).read().strip())
+        except (OSError, ValueError):
+            return None
+
     def prove_control(self, hold=1.8, min_px=6.0):
+        if not self.in_arena():
+            log(f"instance {self.iid}: refusing to press D/A - not in an arena room "
+                f"(this is how the language got flipped to French)")
+            self.gate_px = 0.0
+            return False
         """ACTIVE, entry-time proof that input reaches the simulation.
 
         This is Pau's gate shape: prove drivability ONCE, when we enter, with an injected
@@ -856,6 +890,9 @@ class InstanceManager:
         return False
 
     def bind_by_response(self, hold=1.5, min_px=6.0, attempts=2):
+        if not self.in_arena():
+            log(f"instance {self.iid}: refusing to bind - not in an arena room")
+            return None
         """Find the instance WE control by stimulus and response, not by name.
 
         Three cheaper identifications are all wrong on this build (measured):

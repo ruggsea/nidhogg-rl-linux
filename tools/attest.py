@@ -35,15 +35,49 @@ def room(iid):
         return None
 
 
+ONLINE_ROOM = 3          # measured: MULTIPLAYER leads here ("SEARCHING FOR PLAYERS")
+
+
+def esc_home(mgr, log=print, tries=5):
+    """Back out to the main menu (room 2) using the room index as feedback."""
+    for _ in range(tries):
+        if room(mgr.iid) == 2:
+            return True
+        mgr.press(27)            # Esc = back
+        time.sleep(1.4)
+    return room(mgr.iid) == 2
+
+
 def navigate(mgr, log=print):
-    """The mapped path. Verified by hand: the cursor starts on MULTIPLAYER (arcade)."""
-    seq = [(13, "PRESS ENTER"), (87, "-> SINGLE PLAYER"), (13, "enter submenu"),
-           (83, "-> TRAINING"), (13, "enter partner list"), (13, "pick partner"),
-           (83, "-> START"), (13, "START"), (13, "skip intro card")]
+    """The hand-verified path, no searching.
+
+    Why not search: every blind Enter lands on whatever the cursor happens to be on, and if that is
+    OPTIONS then Enter cycles the LANGUAGE row - measured: the game came back in FRENCH, then
+    CHINESE. Blind menu probing corrupts the game's settings, so navigation uses exactly the
+    sequence that was walked by hand with screenshots, and fails loudly if it does not work.
+
+        PRESS ENTER
+        W        -> SINGLE PLAYER   (the cursor starts on MULTIPLAYER = online)
+        ENTER    -> ARCADE / TRAINING submenu
+        S        -> TRAINING
+        ENTER    -> partner list
+        ENTER    -> partner submenu (DIFFICULTY / START)
+        S        -> START
+        ENTER    -> start
+        ENTER    -> skip the level-intro card
+    """
+    seq = [(13, "PRESS ENTER"), (87, "W -> SINGLE PLAYER"), (13, "enter submenu"),
+           (83, "S -> TRAINING"), (13, "enter partner list"), (13, "pick partner"),
+           (83, "S -> START"), (13, "START"), (13, "skip intro card"), (13, "skip intro again")]
     for code, what in seq:
         mgr.press(code)
-        time.sleep(2.0)
-        log(f"   {what:20s} room={room(mgr.iid)}")
+        time.sleep(2.5)
+        log(f"   {what:24s} room={room(mgr.iid)}")
+    st, _ = mgr.read_state()
+    r = room(mgr.iid)
+    ok = bool(st) and abs(st.get("me_x") or 0) > 0 and r not in (1, 2, 3)
+    log(f"   result: room={r} fighters={bool(st and st.get('me_x'))} -> {'OK' if ok else 'NO MATCH'}")
+    return ok
 
 
 def main():

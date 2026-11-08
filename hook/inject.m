@@ -968,6 +968,7 @@ static void pump_localtest(void) {
     if (!n) return;
     int arg = atoi(b);
     LOG("[lt] localTestTraining(arg=%d) self=%p\n", arg, g_match_inst);
+    // NULL self ABORTS the game (measured: "Abort trap: 6"), so require a real Match instance.
     if (g_match_inst && pLocalTestTraining) {
         __block int a0 = arg;
         __block void *self = g_match_inst;

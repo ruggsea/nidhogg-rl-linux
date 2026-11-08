@@ -4726,3 +4726,48 @@ verify the submenu by the room/state it produces) rather than open-loop with sle
 
 That is the next fix, and it is a real one: an open-loop menu walk was the reason every earlier
 attempt at "training" could silently end up on a menu.
+
+## Session 214 — real arena reached via room-verified navigation; control still ambiguous
+
+### Verified: the room table (from a pi agent's decomp of game.ios)
+
+```
+ 2 rMainMenu     3 rMultiMenu     4 rOnlineLobby    17 rLevelSelect
+21 rTutorial    25 rPreMatch     26-77 arena rooms (castle/mines/sky/wilds/cemetery)
+```
+
+This settles several confusions at once: the screen every failed navigation landed on
+(room 3) is **rMultiMenu**, the multiplayer submenu - not the title, not the online lobby. And
+`SINGLE PLAYER` opens as an **overlay inside room 2**, which is why "Enter did nothing" looked true.
+
+### Verified: navigation now reaches an arena
+
+`nav2.py` uses the room table as feedback and got here:
+
+```
+up=1 -> 17:rLevelSelect
+  after TRAINING: 17:rLevelSelect
+  after START:    47:arena  fighters=False
+```
+
+Screenshot at that moment: a real mines arena, yellow fighter with sword on the left, orange CPU on
+the right, wrecking ball, blood on the floor. **Room 47 is a genuine match.**
+
+### Not verified: control. And this is the blocker.
+
+At that moment:
+
+  * the named-state file reads `0 0 0 0 0 0` - the hook's `YellowPlayer`/`OrangePlayer` matching
+    finds nothing, even though two fighters are plainly on screen;
+  * holding **A** for 2 s scrolls the world right by ~39 px (i.e. we moved LEFT: camera follows);
+  * holding **D** for 2 s moves **nothing** - 0 instances, 0 px;
+  * so the direction gate cannot pass: it needs D right AND A left, and D produces no motion at all.
+
+Screenshot after a 2 s D hold: the yellow fighter is further LEFT than before and a "GO" arrow is
+pointing left. So D is either not registering or is not the "right" key in this context.
+
+Next: determine empirically whether D reaches the game at all (compare with a key we know works, and
+check the hook's `[keys] down 68` log against the game's response), and find the instance that
+carries the fighter on this screen - the dump has 268 candidates and the named read sees none.
+
+Honest status: real match reached, control NOT established, `rounds won` = 0, no win rate.
