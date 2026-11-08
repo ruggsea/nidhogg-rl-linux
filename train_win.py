@@ -845,13 +845,30 @@ def main():
             for i in missing:
                 w = pop.W[i]
                 tag = f"g{gen}i{i}"
-                results[i] = play(mgrs[i % len(mgrs)], w, args.window,
-                                  gen * 997 + i, tag)
+                r2 = play(mgrs[i % len(mgrs)], w, args.window, gen * 997 + i, tag)
+                # re-check the retry as well; a policy that does not move stays frozen after a
+                # reset, so the retry frequently returns no_match too
+                results[i] = r2
+                if r2 and r2.get("no_match"):
+                    print(f"  {tag}: retry also invalid ({r2.get('reason', 'no match')})",
+                          flush=True)
             good = [r for r in results if r and not r.get("no_match")]
         if not good:
             print(f"== gen {gen}: all failed", flush=True)
             continue
-        pop.next_gen([r["fitness"] for r in results])
+        # SELECTION MUST SEE ONLY VALID EPISODES. This line used to pass EVERY record's fitness
+        # to next_gen, including ones marked no_match - which includes frozen-agent episodes and
+        # statues. A goldfish audit found the consequence: a discarded episode carrying fitness
+        # +16.218 (highest in its generation, produced entirely by the CPU's behaviour while our
+        # fighter never moved) would have ranked top-1 and become elite. `good` was computed and
+        # then used only for printing.
+        _selection_fits = [(r["fitness"] if (r and not r.get("no_match")) else -100.0)
+                           for r in results]
+        if any(r and r.get("no_match") and r.get("fitness", -100) > -99 for r in results):
+            print(f"== gen {gen}: selection excludes "
+                  f"{sum(1 for r in results if r and r.get('no_match'))} invalid episode(s)",
+                  flush=True)
+        pop.next_gen(_selection_fits)
         best = max(good, key=lambda r: r["fitness"])
         mean = float(np.mean([r["fitness"] for r in good]))
         print(f"== gen {gen} best {best['fitness']:.2f} mean {mean:.2f} "

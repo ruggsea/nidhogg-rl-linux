@@ -3781,3 +3781,32 @@ g0i0r2 fit=-17.7 rounds 0-0
 
 No `DISCARDED` yet for g0i0 because the "always right" seed genuinely moves - the guard is there
 for the policies that do not, and it will fire the moment selection produces one.
+
+## Session 180 — GOLDFISH FALSIFIED THE FIX: discarded episodes were still reaching selection
+
+I asked a fresh-context auditor to try to falsify "the trainer now discards episodes where our own
+fighter never moved, so they can no longer influence selection". It found the leak precisely:
+
+```
+results[i] = runs[0]                       <- keeps a no_match=True record WITH a real fitness
+results[i] = play(...)      (line 849)     <- retry, and its no_match is never checked
+pop.next_gen([r["fitness"] for r in results])   <- passes EVERY record, including invalid ones
+```
+
+`good` (the filtered list) was computed and then used only for printing. Selection received the
+unfiltered list. And the newest run contained exactly the dangerous case:
+
+```
+g0i1r1  frozen_agent=true  our-fighter span 0.0 px  fitness +16.218
+```
+
++16.2 was the HIGHEST fitness in that generation, produced entirely by the CPU's behaviour while
+our fighter stood still. Under `neuro.next_gen` (argsort of fitness, top quarter become elite) it
+would have been selected as the best policy in the population.
+
+Fixed: selection now receives `-100.0` for any invalid episode, retries are re-checked, and the
+log prints how many were excluded. This is the difference between auditing and enforcing - I had
+written the audit, declared the problem solved, and the trainer was still feeding the bad numbers
+to the GA.
+
+Third falsification from the goldfish tonight. Its record against me is now 3 for 3.
