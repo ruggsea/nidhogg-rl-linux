@@ -84,3 +84,46 @@ auth and later downloads run unattended — which is what the farm needs.
 Xvfb has no vsync and no display link, so the "parked window runs at 24-30 fps" problem found on macOS
 should not exist here in the same form. Measure it rather than assume it: plan step 20 requires a
 recorded fps with the window hidden or absent, as a claim with a falsifier.
+
+## Pau's route (found on artemis, and it supersedes most of the above)
+
+`/home/psoler/` is readable, and it contains the whole Linux setup: `nidhogg-rl-install`,
+`nidhogg-rl-launch`, `nidhogg-rl-fps`, plus **GE-Proton11-12 at
+`~/.local/opt/GE-Proton11-12-x86_64`** (copied to our account, 1.6 GB). His
+`docs/LINUX.md` is a measured recipe, and it removes the need for proot/wine-from-scratch:
+
+| his measurement | how |
+|---|---|
+| no Steam client needed | `proton waitforexitandrun Nidhogg.exe` + `SteamAppId=94400` |
+| nothing on screen | one `Xvfb :N` per instance |
+| **25 fps -> 60 fps** | GEN8 default window size patched `960x600` -> `320x200` in a **copy** of `data.win`, at `0x10 + 60` |
+| CPU **112% -> 41%** per instance | same patch |
+| silent, no audio threads | `[Software\\Wine\\Drivers] "Audio"=""` in the prefix `user.reg` |
+| keyboard in, no window manager | `xdotool windowfocus $win` + `xdotool key` |
+| isolated instances | one reflinked wine prefix each (`cp -a --reflink=always`) |
+| state **without injection** | `/proc/<pid>/mem`; positions are **float32** (a float64 sweep finds only counters) |
+| cost per instance | ~455 MB RSS, 60 steps/s cap |
+| throughput | 8 cores ~ 14 instances ~ 840 steps/s |
+
+Two consequences for this project:
+
+1. **The macOS hook does not port.** `inject.dylib` is arm64 Mach-O; on Linux there is no
+   injection at all. State comes from `/proc/<pid>/mem` scanned for float32 slots that move right
+   when `d` is held and left when `a` is held — the same bind-by-response idea, done by scanning
+   memory instead of by symbol address. His `findstate.py` + `nidlinux.py` already implement this.
+2. **60 steps/s is the game's own cap**, not a rendering limit, so per-instance frame rate tops out
+   there however fast the machine is. Above that the answer is **parallel instances**, and artemis
+   has 384 cores.
+
+### What we brought that he did not have
+
+The **Windows depot** (appid 94400) fetched with `@sSteamCmdForcePlatformType windows`; his docs
+assume a local install. It now sits at `~/nidhogg_win` on artemis
+(`Nidhogg.exe` 25 MB, `data.win` 100 MB, `steam_api64.dll`).
+
+### Attributed, not reproduced
+
+Every number in the table above is **Pau's measurement on his own machine** (8 cores, Intel iGPU +
+MX150), read from his `LINUX.md`. None of it has been reproduced on artemis yet. Reproducing the
+320x200 patch (fps 25 -> 60) is part of plan step 20, and must be recorded as a claim with its own
+command before it is repeated as fact.

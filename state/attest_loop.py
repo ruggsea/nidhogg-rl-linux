@@ -25,8 +25,13 @@ def passing():
                     continue
                 if "verdict" not in d:
                     continue
+                gate = d.get("gate") or {}
+                d_mag = abs(gate.get("D") or 0)
+                a_mag = abs(gate.get("A") or 0)
+                enough = max(d_mag, a_mag) >= 40.0 and min(d_mag, a_mag) >= 30.0
                 passed = (d["verdict"] == "ATTESTED - training run is meaningful"
-                          and d.get("ok", {}).get("dose_response") is True)
+                          and d.get("ok", {}).get("dose_response") is True
+                          and enough)
                 out.append(passed)
     except OSError:
         pass

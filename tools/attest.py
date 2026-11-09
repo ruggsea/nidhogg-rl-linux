@@ -230,7 +230,7 @@ def main():
     # has now fooled this project three times. A control gate must show MOVEMENT, not merely the right
     # sign, so attested runs must clear the displacement floor that real passes reached (147/122,
     # 145/145, 145/151).
-    gate_vals = gate if isinstance(gate, dict) else {}
+    gate_vals = getattr(mgr, "gate_dir", {}) or {}
     try:
         from train_state import MIN_GATE_PX_MAJOR, MIN_GATE_PX_MINOR
     except ImportError:
