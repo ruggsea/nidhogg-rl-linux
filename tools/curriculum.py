@@ -30,6 +30,7 @@ import sys
 import time
 
 STATE = os.path.join("state", "curriculum.json")
+EPOCH = os.path.join("state", "curriculum_epoch")
 LEVELS = ["lowest", "low", "medium", "high", "highest"]   # the TRAINING slider, left to right
 PLATEAU_GENS = 3          # generations without improvement before we consider it mastered
 MIN_IMPROVEMENT = 2.0     # fitness points; below the measured noise floor (~2 sigma) it is not progress
@@ -47,11 +48,29 @@ def save(d):
     json.dump(d, open(STATE, "w"), indent=1)
 
 
+def epoch():
+    """Only generations from AFTER the harness was trusted count.
+
+    MEASURED problem: on first run this module said "advance" with the reason "improved only -3.57 over
+    the last 3 generations". That verdict came from /tmp/pau_train*.log files last written at 18:12-18:29,
+    i.e. hours earlier, under the pre-fix harness (parked-priority launcher, dead observation slots, no
+    live-round check). A curriculum must not promote a policy based on history that predates its own
+    measurement being trustworthy, so generation lines are filtered by the epoch timestamp.
+    """
+    try:
+        return float(open(EPOCH).read().strip())
+    except (OSError, ValueError):
+        return 0.0
+
+
 def generations():
-    """Best fitness per generation, from any run log that recorded a summary line."""
+    """Best fitness per generation, from run logs written after the epoch."""
     out = []
+    ep = epoch()
     for path in sorted(glob.glob("/tmp/pau_train*.log")):
         try:
+            if os.path.getmtime(path) < ep:
+                continue
             txt = open(path, errors="ignore").read()
         except OSError:
             continue
@@ -101,6 +120,11 @@ def main():
         return 0
     if a == "advance":
         return advance(sys.argv[2] if len(sys.argv) > 2 else "manual")
+    if a == "epoch":
+        with open(EPOCH, "w") as f:
+            f.write(str(time.time()))
+        print("curriculum epoch set to now; earlier generations will be ignored")
+        return 0
     if a == "reset":
         save({"level": 0, "history": [], "created": time.time()})
         print("curriculum reset to", LEVELS[0])
