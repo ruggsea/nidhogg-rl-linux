@@ -97,6 +97,12 @@
    "title": "Difficulty sweep: train low, evaluate high",
    "accept": "the TRAINING submenu exposes a DIFFICULTY slider (A/D adjusts). Train at the low end, evaluate at low/medium/high, and record the win rate at each - a policy that only wins at the setting it trained on has not generalized.",
    "status": "open"
+  },
+  {
+   "id": "17",
+   "title": "Prove the SWORD state (in hand / thrown) and add it to the observation",
+   "accept": "sword state established by the distance oracle (sword-to-body small => held, large/absent => thrown), proven in both states with two independent routes where possible (sibling record at body+0x400 and a sword-sized instance near the body). Only then add one input slot and say which existing slot it replaces - the input width is 8 and changing it invalidates weights.",
+   "status": "open"
   }
  ]
 }

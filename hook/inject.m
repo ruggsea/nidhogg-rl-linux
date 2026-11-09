@@ -1286,7 +1286,7 @@ static void read_fighters(const char *tag) {
         snprintf(dpath, sizeof dpath, "/tmp/nid_dump_%s.txt", g_id);
         FILE *df = fopen(dpath, "w");
         if (df) {
-            for (unsigned off = 0x80; off < 0x300; off += 4) {
+            for (unsigned off = 0x80; off < 0x540; off += 4) {
                 float v = *(const float *)(g_p242_inst + off);
                 if (v != v) v = 0.0f;               // NaN -> 0 so parsers stay happy
                 if (v > 1e9f || v < -1e9f) v = 0.0f;

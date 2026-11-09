@@ -102,6 +102,71 @@ def in_arena(r=None):
     return r in TS.InstanceManager.ARENA_ROOMS
 
 
+DUMP = f"/tmp/nid_dump_{IID}.txt"
+
+
+def struct_window():
+    """Floats from the P1 instance, 0x80..0x540, if the dump is switched on."""
+    out = {}
+    try:
+        with open(DUMP) as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) == 2:
+                    out[int(parts[0], 16)] = float(parts[1])
+    except (OSError, ValueError):
+        return None
+    return out or None
+
+
+def sword():
+    """Is our sword IN HAND, thrown, or on the ground?
+
+    Why this matters: in Nidhogg you can throw your sword and pick it up, and being unarmed changes the
+    correct action completely. It is also an open row in the provenance table this project inherited
+    (docs/INTERFACE.md row 1: "sword held / not held - body+0x400 record - unknown").
+
+    Two independent routes, tried in order:
+
+      A. SIBLING RECORD. The inherited notes say the records are 0x200 apart, with the sword as a
+         sibling of the body: sword = body + 0x400. If that layout holds on this build, the sword's
+         x/y are at +0x4EC / +0x4F0 of the body address (same +0xEC/+0xF0 offsets inside the sibling).
+
+      B. INSTANCE DUMP. The sword may also exist as its own instance near the body. Measured earlier
+         in a match: object 243 tracked our body 1:1 (+26 px under the same key hold), which is what a
+         held sword does.
+
+    Both routes answer the same question with the same oracle: the DISTANCE between sword and body.
+    Held => small (a few px); thrown/dropped => large or absent. Returns None when it cannot tell,
+    because a guess here would silently corrupt the observation.
+
+    Requires the struct dump: touch /tmp/nid_dumpswitch_<id>.txt.
+    """
+    st = state()
+    if not st:
+        return None
+    w = struct_window()
+    if w is not None and 0x4EC in w and 0x4F0 in w:
+        sx, sy = w[0x4EC], w[0x4F0]
+        if (sx, sy) != (0.0, 0.0):
+            dx, dy = sx - st["me_x"], sy - st["me_y"]
+            return {"route": "sibling+0x400", "sword_x": sx, "sword_y": sy,
+                    "dx": round(dx, 1), "dy": round(dy, 1),
+                    "armed": abs(dx) < 20 and abs(dy) < 40}
+    cur = instances()
+    if cur and st["bound"] in cur:
+        me = cur[st["bound"]]
+        near = [(i, v) for i, v in cur.items()
+                if i != st["bound"] and v[0] in (243, 244, 245)
+                and abs(v[1] - me[1]) < 20 and abs(v[2] - me[2]) < 40]
+        if near:
+            return {"route": "instance", "sword_id": near[0][0], "obj": near[0][1][0],
+                    "dx": round(near[0][1][1] - me[1], 1), "dy": round(near[0][1][2] - me[2], 1),
+                    "armed": True}
+        return {"route": "instance", "armed": False, "note": "no sword-sized instance near the body"}
+    return None
+
+
 def raw_state():
     try:
         v = open(STATE).read().split()
@@ -371,6 +436,8 @@ def main():
         do(sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 else DEFAULT_HOLD_FRAMES)
     elif a == "rounds":
         rounds(float(sys.argv[2]) if len(sys.argv) > 2 else 60.0)
+    elif a == "sword":
+        print(json.dumps(sword(), indent=1))
     elif a == "shot":
         print("saved" if shot() else "no window")
     else:
