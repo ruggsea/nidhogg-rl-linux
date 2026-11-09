@@ -8,13 +8,13 @@
 #   tmux new -d -s nidhogg-keeper "bash ~/nidhogg-pau/tools/keeper_artemis.sh"
 set -uo pipefail
 REPO="${LOOP_REPO:-$HOME/nidhogg-pau}"
-SESS="${LOOP_SESSION:-nidhogg-loop}"
+SESS="${LOOP_SESSION:-nidhogg-agent}"
 INTERVAL="${KEEPER_INTERVAL:-300}"
 while :; do
   if ! tmux has-session -t "$SESS" 2>/dev/null; then
     [ -f "$REPO/loop/VERDICT.md" ] && { echo "[$(date -Is)] verdict present, not restarting"; sleep 3600; continue; }
     echo "[$(date -Is)] $SESS dead -> restarting"
-    tmux new -d -s "$SESS" "LOOP_TICK_SLEEP=${LOOP_TICK_SLEEP:-600} bash $REPO/tools/loop_artemis.sh >> $REPO/loop/agent_loop.log 2>&1"
+    bash "$REPO/tools/start_agent.sh" "${LOOP_MINUTES:-10}" >> "$REPO/loop/agent_loop.log" 2>&1
   fi
   sleep "$INTERVAL"
 done
