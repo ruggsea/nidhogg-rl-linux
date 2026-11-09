@@ -51,13 +51,28 @@ The Steam password lives in the **macOS Keychain** (`service nidhogg-steam`, `ac
 piped to artemis over ssh **stdin** so it never appears in a process list, a log, or a commit. It must
 never be written into this repo, which is intended to be public.
 
+## Where this got to
+
+Done and verified on artemis: proot rootfs works (`id -u` → 0), `apt-get update` exits 0, and
+`wine` (`/usr/bin/wine`, 9.0), `wine32:i386`, `Xvfb` and `xdotool` are installed inside the rootfs.
+Valve's `steamcmd` runs there and has self-updated (it failed on the host: no i386 loader).
+
+**The Mac install is useless for this.** `~/Library/.../common/Nidhogg/Nidhogg.app` is a *native
+macOS arm64 build* — there is no `.exe` and no `data.win` to copy, which is exactly what we have been
+hooking on the Mac. Running on Linux therefore requires the **Windows depot** from Steam.
+
+**Steam Guard is enabled on the account**, so a first login needs an emailed code; it cannot be fetched
+from here (Gmail auth is not connected). Once one successful login exists, steamcmd caches the machine
+auth and later downloads run unattended — which is what the farm needs.
+
 ## Next steps on this host
 
 1. `dpkg --add-architecture i386` and install `wine64 wine32:i386 xvfb xdotool libc6:i386`
    inside the rootfs (in progress; log at `~/nidroot/apt_install.log`).
-2. Steam login as `rug125` from inside the rootfs, with
-   `+@sSteamCmdForcePlatformType windows` so the **Windows** depot of appid 94400 is fetched —
-   the game is Windows-only, and that is deliberate.
+2. Steam login as `rug125` from inside the rootfs with `+@sSteamCmdForcePlatformType windows`, so the
+   **Windows** depot of appid 94400 is fetched. Script staged at `/root/getgame.sh` inside the rootfs:
+   it takes the password on stdin, reads a Steam Guard code from `/root/sg.txt` if present, and
+   validates the install.
 3. Launch under `Xvfb` with wine and confirm the hook publishes a room index
    (`/tmp/nid_room_now_0.txt`). A room index is the first proof that the game is actually running.
 4. `tools/attest.py` against the headless instance — the same five checks as on the Mac
