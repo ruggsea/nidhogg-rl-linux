@@ -127,3 +127,35 @@ Every number in the table above is **Pau's measurement on his own machine** (8 c
 MX150), read from his `LINUX.md`. None of it has been reproduced on artemis yet. Reproducing the
 320x200 patch (fps 25 -> 60) is part of plan step 20, and must be recorded as a claim with its own
 command before it is repeated as fact.
+
+## Parallel workers (elastic)
+
+`tools/workers.py` runs N self-looping pi workers in their own tmux sessions (`nid-w1..N`), each with a
+role (`loop/roles/*.md`), one shared plan and append-only claims.
+
+```bash
+python3 tools/workers.py scale 3     # grow (exploration: entry, round detection, audit run in parallel)
+python3 tools/workers.py scale 1     # shrink for TRAINING - one stable policy runner, not a crowd
+python3 tools/workers.py status      # alive / context / busy per worker
+python3 tools/workers.py reap        # restart dead workers, compact any over 150k context
+python3 tools/workers.py thinking <level>
+```
+
+Verified: scale 2 → 3 → 1 with correct roles, sessions created and cleaned up, tick messages armed.
+Compaction is a restart, because pi has no CLI compact and a `/compact` typed into tmux arrives as chat.
+
+### Measured dead ends (do not retry these)
+
+* `--thinking <level>` on the CLI does **not** change the level: `~/.pi/agent/settings.json`
+  `defaultThinkingLevel` wins (worker launched with `--thinking low` still displayed `think:high`).
+* A per-role config dir (`PI_CODING_AGENT_DIR=~/.pi/agents/role-<role>` with its own settings) was created
+  and the worker restarted from it, and the pane still displayed `think:high`.
+* The `provider/model:thinking` suffix killed the session outright (empty pane).
+
+Conclusion: for `deepseek-v4-pro` on this build the thinking level is effectively fixed at `high`. The
+`thinking` subcommand sets the global setting and restarts everyone, which is the only lever that takes
+effect; do not assume per-worker variation.
+
+### Current scale
+
+Exploration phase → **3 workers** (engineer, prober, auditor). When training starts, `scale 1`.
