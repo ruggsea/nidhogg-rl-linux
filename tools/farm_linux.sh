@@ -29,7 +29,10 @@ TPL="$ROOT/prefix-template"
 GAME_SRC="$HOME/nidhogg_win"
 GAME="$ROOT/game"                      # patched copy, shared read-only by all instances
 PROTON="$HOME/.local/opt/GE-Proton11-12-x86_64/proton"
-BASE_DISPLAY=80                        # instance i -> display $((BASE_DISPLAY + i))
+# Instance numbering is aligned with tools/nid_linux.py, which addresses instance i as display
+# DISPLAY_BASE+i with DISPLAY_BASE=99. So farm instance 1 runs on :99 == nid_linux instance 0, farm
+# instance 2 on :100 == nid_linux instance 1. Without this the farm would be capacity no tool could see.
+BASE_DISPLAY=${FARM_BASE_DISPLAY:-98}  # instance i -> display $((BASE_DISPLAY + i))
 PROOT="$HOME/nidroot/rootfs"
 WINEPREFIX_XVFB="$PROOT/usr/bin/Xvfb"
 STATE="$REPO/state/farm.json"
