@@ -1,7 +1,7 @@
 # PLAN
 
 
-0/13 steps done.
+0/16 steps done.
 
 Rendered from `state/plan.json` by `tools/plan.py`. Do not edit by hand.
 
@@ -31,3 +31,9 @@ Rendered from `state/plan.json` by `tools/plan.py`. Do not edit by hand.
       accept: the fitness has a measurable gradient: >=2 sigma separation between a scripted pusher and an idle policy at the current reps, recorded as a claim with its command.
 - [ ] **13** Scale to N parallel game instances once 01-04 are green
       accept: N>=2 instances running via InstanceManager(iid=i), aggregate throughput measured and claimed; only start this after attestation, round signal and 3 generations have passed.
+- [ ] **14** Generalize across ARENAS, not one room
+      accept: matches recorded in >=3 distinct arena groups (castle 26-33, mines 43-52, sky 53-60, wilds 61-68, cemetery 70-77), with per-arena-group fitness reported. The room index is already published, so this is bookkeeping plus enough episodes.
+- [ ] **15** Curriculum: vary the TRAINING partner type
+      accept: the partner list is reachable by keys (NO DIVEKICKS / NO THROWS / DIVEKICKER / RUN N LUNGE / BRAWLER / NEVER LUNGES / PARRY MASTER / RANDOM); a policy is trained against a rotating partner and its fitness is reported per partner, so it cannot overfit one opponent.
+- [ ] **16** Difficulty sweep: train low, evaluate high
+      accept: the TRAINING submenu exposes a DIFFICULTY slider (A/D adjusts). Train at the low end, evaluate at low/medium/high, and record the win rate at each - a policy that only wins at the setting it trained on has not generalized.

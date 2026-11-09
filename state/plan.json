@@ -79,6 +79,24 @@
    "title": "Scale to N parallel game instances once 01-04 are green",
    "accept": "N>=2 instances running via InstanceManager(iid=i), aggregate throughput measured and claimed; only start this after attestation, round signal and 3 generations have passed.",
    "status": "open"
+  },
+  {
+   "id": "14",
+   "title": "Generalize across ARENAS, not one room",
+   "accept": "matches recorded in >=3 distinct arena groups (castle 26-33, mines 43-52, sky 53-60, wilds 61-68, cemetery 70-77), with per-arena-group fitness reported. The room index is already published, so this is bookkeeping plus enough episodes.",
+   "status": "open"
+  },
+  {
+   "id": "15",
+   "title": "Curriculum: vary the TRAINING partner type",
+   "accept": "the partner list is reachable by keys (NO DIVEKICKS / NO THROWS / DIVEKICKER / RUN N LUNGE / BRAWLER / NEVER LUNGES / PARRY MASTER / RANDOM); a policy is trained against a rotating partner and its fitness is reported per partner, so it cannot overfit one opponent.",
+   "status": "open"
+  },
+  {
+   "id": "16",
+   "title": "Difficulty sweep: train low, evaluate high",
+   "accept": "the TRAINING submenu exposes a DIFFICULTY slider (A/D adjusts). Train at the low end, evaluate at low/medium/high, and record the win rate at each - a policy that only wins at the setting it trained on has not generalized.",
+   "status": "open"
   }
  ]
 }

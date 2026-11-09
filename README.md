@@ -11,6 +11,13 @@ verified, and `docs/EXPERIMENTS.md` for what was tried and abandoned.
 
 ---
 
+## The policy network
+
+![policy network](docs/nn_diagram.png)
+
+Mermaid version: [`docs/nn_diagram.md`](docs/nn_diagram.md). Generated from `neuro.py` by
+`tools/nn_diagram.py` (PNG/SVG) and `tools/nn_mermaid.py` (Mermaid).
+
 ## How it works
 
 ```
