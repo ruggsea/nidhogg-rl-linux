@@ -1,12 +1,15 @@
 {
- "ts": 1794187793.8381891,
+ "ts": 1794216698.6186628,
  "attest_passing": 5,
  "attest_total": 28,
  "attest_best_streak": 1,
- "plan_done": 0,
+ "plan_done": 2,
  "plan_total": 24,
- "plan_done_rows": [],
- "claims": 2,
+ "plan_done_rows": [
+  "22 Robust headless launcher on artemis (verify, don't assume)",
+  "23 Port the interface to Linux: /proc/<pid>/mem state + xdotool input"
+ ],
+ "claims": 5,
  "generations": 0,
  "rounds_observed": 0
 }

@@ -1,0 +1,78 @@
+{
+ "_comment": "Machine-readable facts for this project. Every entry must carry how it was established. If a fact is listed as 'measured' the measurement exists in NOTES.md or docs/. Anything not here should be re-measured, not remembered. This file exists because the session was compacted twice and the same facts (menu keys, room meaning, mouse calibration) were re-derived several times.",
+ "environment": {
+  "game_binary": "/Users/ruggsea/Library/Application Support/Steam/steamapps/common/Nidhogg/Nidhogg.app/Contents/MacOS/Nidhogg",
+  "hook": "hook/inject.dylib (built from hook/inject.m + hook/hook.s, arm64)",
+  "control_files": {
+   "keys": "/tmp/nid_keys_<id>.txt  (one GML key code per line; 65=A 68=D 87=W 83=S 70=F 71=G 13=Enter 27=Esc 38=ArrowUp 32=Space)",
+   "state": "/tmp/nid_state_<id>.txt  (them_x them_y me_x me_y have154 have242 - NOTE names are unreliable, see player_identity)",
+   "instances": "/tmp/nid_insts_<id>.txt  (id object_index x y, one line per instance)",
+   "room_now": "/tmp/nid_room_now_<id>.txt  (current room index, int32)",
+   "click": "/tmp/nid_click_<id>.txt  (window-content x y, posts a real CGEvent click)",
+   "DANGER_room_cmd": "/tmp/nid_room_<id>.txt is a room_goto COMMAND; a stale value there kills the game ('Game ended before loading first room')"
+  },
+  "launch_env_required": {
+   "NID_THREAD": "1 - without it the hook's probe thread never starts, so there are no state files at all",
+   "NID_MAN": "1 - publishes the state file",
+   "NID_FOCUS": "1",
+   "NID_SHOW": "1 - keeps the window on screen; MEASURED 120-320 fps visible vs ~24-30 fps parked",
+   "NID_VISIBLE": "1 - trainer sets NID_SHOW from this",
+   "NID_NICE": "unset by default; setting it applies nice 19 + background QoS, which MEASURED 4x slower"
+  },
+  "visibility": {
+   "policy": "game MAY be visible; it MUST be muted. Relaxed 2026-11-08 by the user.",
+   "measured": "visible 120-320 fps vs ~24-30 fps parked (macOS throttles an essentially-offscreen window), so visible is 2x-5x faster and now the default",
+   "mute_mechanism": "the game's own prefs only: prefs.ini [audio] unmuted=0 and musicVol=0, restored from prefs_locked.ini at every launch and chmod 444 during a run. NEVER touch the Mac system volume.",
+   "env": "NID_VISIBLE=1 (default in the launcher); NID_HIDDEN=1 parks the window for a 2x slowdown"
+  }
+ },
+ "rooms": {
+  "source": "decompiled from Contents/Resources/game.ios by a pi subagent; table in docs/ROOM_NAMES.md; 82 rooms",
+  "2": "rMainMenu",
+  "3": "rMultiMenu",
+  "4": "rOnlineLobby",
+  "17": "rLevelSelect",
+  "21": "rTutorial",
+  "25": "rPreMatch",
+  "20": "rMatchStats",
+  "19": "rControlsRoom",
+  "arenas": "26-77 excluding 69 and 78 (castle / mines / sky / wilds / cemetery sections)",
+  "note": "the title screen's attract demo runs INSIDE an arena room (29 rCastleCenter), so room index alone cannot distinguish demo from match"
+ },
+ "menu": {
+  "source": "screenshot-verified, session 217-220",
+  "keys": {
+   "S": "moves cursor DOWN and WRAPS",
+   "W": "does NOT move the main menu",
+   "ArrowUp": "acts as BACK",
+   "Enter": "select",
+   "Esc": "back one level"
+  },
+  "structure": "the list SCROLLS under a FIXED highlight bar; the bar sits at the same screen position regardless of selected row",
+  "highlight_bar_capture": "in a 1920x1256 capture of a 960x628 window the bar spans image y 836-886; grey value 30 at x=0.33W",
+  "consequence": "the selected row can only be identified by the TEXT under the bar (band template matching, see nav3.py), never by a coordinate",
+  "danger": "pressing Enter inside OPTIONS cycles the LANGUAGE row: measured flips to French and then Chinese",
+  "verified_path": "fresh launch -> Enter -> (S x5 from MULTIPLAYER) -> Enter -> S -> Enter -> Enter -> S -> Enter -> Enter => room 2 -> 17 -> 29"
+ },
+ "player_identity": {
+  "source": "measured by holding D/A and diffing every instance (session 220)",
+  "finding": "the object index of the player DIFFERS BY ROOM: object 154 answered in one arena (D +64, A -25), object 244 in another; the other object did not move at all",
+  "consequence": "no fixed me/them slot mapping is correct; the authoritative fighter is the one that RESPONDS to D -> right and A -> left (bind_by_response)",
+  "hook_labels": "the state file's first pair (them_*) comes from object 154, the second (me_*) from object 242 - neither is reliably 'us'"
+ },
+ "timing": {
+  "hook_key_hold": "12 frames per press; MEASURED: at 30 fps that was 200 ms, at 120 fps 100 ms - this made menu presses stop registering when fps changed",
+  "boot_wait": "48 s after launch before entry keys",
+  "round_settle": "the round does not accept input immediately after entering the arena; ~4 s settle was needed before binding succeeded"
+ },
+ "verified_pipeline": {
+  "attest": "python tools/attest.py -> 'VERDICT: ATTESTED' (room ok / bind ok / gate ok / opponent ok). Evidence in out/ATTESTED",
+  "gate": "direction gate: hold D and require the bound instance to move right, hold A and require left; both must pass",
+  "doctor": "python tools/doctor.py -> environment health (processes, priority, fps, room, file freshness, stale command file)"
+ },
+ "open": [
+  "no verified round transition has ever been observed, so rounds_won is 0 and no win rate exists",
+  "the round counter in the reward cannot fire; fitness rests on net kills and territory only",
+  "menu navigation works but is slow (band capture + scroll per step)"
+ ]
+}

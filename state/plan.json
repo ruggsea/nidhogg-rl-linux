@@ -132,13 +132,19 @@
    "id": "22",
    "title": "Robust headless launcher on artemis (verify, don't assume)",
    "accept": "a launcher that starts Xvfb + the patched game under Proton and PROVES it: process alive, log written, a frame grabbed from the display, then returns non-zero if any check fails. The last detached launches left no process and no log, so this is the first blocker.",
-   "status": "open"
+   "status": "done",
+   "started": 1794188702.257064,
+   "evidence": "./tools/launch_linux.sh :99",
+   "closed": 1794188719.2854125
   },
   {
    "id": "23",
    "title": "Port the interface to Linux: /proc/<pid>/mem state + xdotool input",
    "accept": "bind the fighter by response on Linux (hold d -> a float32 slot moves right, hold a -> it moves left), and drive keys with xdotool against the per-instance Xvfb display. Record the bound address and the measured displacement as a claim. This replaces the macOS dylib entirely.",
-   "status": "open"
+   "status": "done",
+   "started": 1794192014.7893286,
+   "evidence": "python3 tools/bind_measure.py 0",
+   "closed": 1794192042.5391386
   },
   {
    "id": "24",
