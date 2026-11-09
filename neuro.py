@@ -49,37 +49,42 @@ def forward(w, obs):
 
 
 def obs_vector(st):
+    """The 8 inputs the policy sees. ROOM-AGNOSTIC by construction.
+
+    MEASURED BUG in the previous version: slot 3 was `(ARENA_X - me_x)/ARENA_X` with ARENA_X = 470, a
+    width measured in ONE arena. In a wider room (observed me_x = 606) that input went NEGATIVE
+    (-0.289) and carried no meaning. Slots 2/4/5 normalised absolute coordinates by arbitrary
+    constants (2000, 250) whose plausible ranges differ per room anyway.
+
+    Everything here is now a RELATIVE quantity or a physical unit, so it means the same thing in every
+    arena:
+       0 signed horizontal gap to the opponent, 400 px = 1.0
+       1 |gap|, capped at 1.0                 (distance, always positive, room-independent)
+       2 height difference (me - them), 60 px = 1.0
+       3 my height in the world, 600 px = 1.0  (ground vs platform is physically meaningful)
+       4 their height, 600 px = 1.0
+       5 closing/opening speed of the gap, 400 px/s = 1.0
+       6 IN REACH flag (22 px strike range) - the timing signal for an attack
+       7 opponent above/below me within reach (separate from 2, which fires at any distance)
+
+    NOTE what is deliberately absent: any absolute "distance to the goal" input. The goal position per
+    room is not known (the room table gives names, not geometry), and a wrong normalisation is worse
+    than no input. The DIRECTION toward the goal is carried by the reward's territory terms instead.
+    """
     if not st:
         return np.zeros(8)
     dx = st["them_x"] - st["me_x"]
-    # Inputs 6 and 7 used to be hardcoded 1.0 (dead inputs - the policy could not
-    # see whether it was actually in striking range). They now carry the two
-    # signals that matter for timing a hit: a reach flag and the height gap.
-    REACH = 22.0 / 400.0
+    dy = st["them_y"] - st["me_y"]
+    in_reach = abs(dx) <= 22.0
     v = np.array([
-        dx / 400.0,                     # signed horizontal gap
-        st["me_x"] / 2000.0,
-        # (was them_x/2000 - redundant, since them_x == me_x + dx). This slot now
-        # carries the actual objective: how far we still are from OUR goal line.
-        # MEASURED (300 s trajectory, 6224 samples): the arena in this build spans about
-        # 0..462 in x, and both fighters teleport between the two ends on kills/respawns.
-        # The old scale (1650 - me_x)/1500 was therefore ~0.9 for every possible position -
-        # a constant input the policy could not learn anything from.
-        np.clip((ARENA_X - st["me_x"]) / ARENA_X, -1.0, 1.0),
-        st["me_y"] / 250.0,
-        st["them_y"] / 250.0,
-        # WAS abs(dx)/400 - redundant with inputs 0 and 6 (dx already encodes the gap
-        # and the reach flag marks strike range). MEASURED CEILING: the best hand-written
-        # policy (walk + strike) advanced only 114..232 px in 120 s and pushed 47 px,
-        # because the CPU blocks and it cannot time its swings. This slot now carries the
-        # RELATIVE APPROACH SPEED (px/s of the gap closing, sign = who is closing), which
-        # is what you need to time a strike against an incoming opponent.
+        dx / 400.0,
+        min(abs(dx) / 400.0, 1.0),
+        dy / 60.0,
+        st["me_y"] / 600.0,
+        st["them_y"] / 600.0,
         float(np.clip(st.get("dx_vel", 0.0) / 400.0, -1.0, 1.0)),
-        # MEASURED: striking at dx=22 drove the CPU from 246 to 297 (+51 px); striking at
-        # dx=59 moved it 0 px over 15 s. So the usable reach is ~22 px, not 46 - the
-        # network was being told to attack from nearly double the range and whiffing.
-        1.0 if abs(dx) <= 22.0 else 0.0,       # IN REACH -> time to strike
-        np.clip((st["me_y"] - st["them_y"]) / 60.0, -1.0, 1.0),   # height gap
+        1.0 if in_reach else 0.0,
+        (dy / 60.0) if in_reach else 0.0,
     ], dtype=np.float64)
     return np.clip(v, -3.0, 3.0)
 

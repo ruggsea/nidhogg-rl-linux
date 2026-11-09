@@ -193,3 +193,4 @@ VERDICT: NOT ATTESTED - gate failed
 {"ts": 1794181199.093088, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "dose_response": true, "opponent": true}, "room": 29, "gate": {"D": 128.0, "A": 8.0}, "bound": 104170}
 {"ts": 1794181476.133486, "verdict": "NOT ATTESTED - gate, dose_response failed", "ok": {"room": true, "bind": true, "gate": false, "dose_response": false, "opponent": true}, "room": 28, "gate": {"D": 0.0, "A": 0.0}, "bound": 103522}
 {"ts": 1794181721.084517, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 28, "gate": {}, "bound": null}
+{"ts": 1794182368.4828491, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "dose_response": true, "opponent": true}, "room": 28, "gate": {"D": 11.0, "A": 20.0}, "bound": 103425}

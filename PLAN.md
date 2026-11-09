@@ -1,7 +1,7 @@
 # PLAN
 
 
-0/10 steps done.
+0/13 steps done.
 
 Rendered from `state/plan.json` by `tools/plan.py`. Do not edit by hand.
 
@@ -25,3 +25,9 @@ Rendered from `state/plan.json` by `tools/plan.py`. Do not edit by hand.
       accept: play_vs_agent.sh run with the trained policy, outcome recorded
 - [ ] **10** Full-arc video
       accept: video built, covering failures→fixes→training→result
+- [ ] **11** Verify the observation is physically meaningful in every arena
+      accept: obs_vector recorded from three different rooms; every component inside [-1,1] except y/600 which must stay in [0,1]; no feature may depend on a per-room constant. Recorded via tools/claim.py.
+- [ ] **12** Decide the reward question with numbers, not taste
+      accept: the fitness has a measurable gradient: >=2 sigma separation between a scripted pusher and an idle policy at the current reps, recorded as a claim with its command.
+- [ ] **13** Scale to N parallel game instances once 01-04 are green
+      accept: N>=2 instances running via InstanceManager(iid=i), aggregate throughput measured and claimed; only start this after attestation, round signal and 3 generations have passed.

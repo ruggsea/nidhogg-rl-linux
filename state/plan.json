@@ -61,6 +61,24 @@
    "title": "Full-arc video",
    "accept": "video built, covering failures\u2192fixes\u2192training\u2192result",
    "status": "open"
+  },
+  {
+   "id": "11",
+   "title": "Verify the observation is physically meaningful in every arena",
+   "accept": "obs_vector recorded from three different rooms; every component inside [-1,1] except y/600 which must stay in [0,1]; no feature may depend on a per-room constant. Recorded via tools/claim.py.",
+   "status": "open"
+  },
+  {
+   "id": "12",
+   "title": "Decide the reward question with numbers, not taste",
+   "accept": "the fitness has a measurable gradient: >=2 sigma separation between a scripted pusher and an idle policy at the current reps, recorded as a claim with its command.",
+   "status": "open"
+  },
+  {
+   "id": "13",
+   "title": "Scale to N parallel game instances once 01-04 are green",
+   "accept": "N>=2 instances running via InstanceManager(iid=i), aggregate throughput measured and claimed; only start this after attestation, round signal and 3 generations have passed.",
+   "status": "open"
   }
  ]
 }
