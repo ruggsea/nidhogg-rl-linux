@@ -78,11 +78,26 @@ def count_claims():
     return n
 
 
+def _epoch():
+    """Generations from BEFORE the harness was fixed do not count.
+
+    MEASURED false positive: this module reported "generations: 1" and emailed the user about a newly
+    completed generation while nothing was training. The line came from /tmp/pau_train1.log, last touched
+    Nov 7 20:16 - a day old, written by the pre-fix harness. Same guard as tools/curriculum.py.
+    """
+    try:
+        return float(open(os.path.join("state", "curriculum_epoch")).read().strip())
+    except (OSError, ValueError):
+        return 0.0
+
+
 def count_generations():
     gens = 0
     for path in glob.glob("/tmp/pau_train*.log") + glob.glob("logs/*.log"):
         try:
             with open(path, errors="ignore") as f:
+                if os.path.getmtime(path) < _epoch():
+                    continue
                 gens = max(gens, len(re.findall(r"== gen \d+ best", f.read())))
         except OSError:
             continue

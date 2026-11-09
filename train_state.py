@@ -1,3 +1,5 @@
+MIN_GATE_PX_MAJOR = 40.0
+MIN_GATE_PX_MINOR = 30.0
 """Episode-managed GA on Nidhogg's real published game state (no vision).
 
 One owned game instance publishes:

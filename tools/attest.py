@@ -217,7 +217,23 @@ def main():
     print(f"   opponent moved: {moves}")
     ok["opponent"] = moves
 
-    verdict = ("ATTESTED - training run is meaningful" if all(ok.values())
+    # MEASURED false pass: two runs recorded dose_response=true with gate D=11 A=20 and D=128 A=8.
+    # Those are a fighter pinned against a wall, not a fighter under control - the same wall effect that
+    # has now fooled this project three times. A control gate must show MOVEMENT, not merely the right
+    # sign, so attested runs must clear the displacement floor that real passes reached (147/122,
+    # 145/145, 145/151).
+    gate_vals = (info.get("gate") or {}) if isinstance(info := (g if "g" in dir() else {}), dict) else {}
+    try:
+        from train_state import MIN_GATE_PX_MAJOR, MIN_GATE_PX_MINOR
+    except ImportError:
+        MIN_GATE_PX_MAJOR, MIN_GATE_PX_MINOR = 40.0, 30.0
+    moved = gate_vals.get("D", 0) or 0, gate_vals.get("A", 0) or 0
+    enough_movement = (max(abs(moved[0]), abs(moved[1])) >= MIN_GATE_PX_MAJOR
+                       and min(abs(moved[0]), abs(moved[1])) >= MIN_GATE_PX_MINOR)
+    if all(ok.values()) and not enough_movement:
+        print(f"   REJECTED: right direction but too little movement (D={moved[0]}, A={moved[1]}) - "
+              f"needs >= {MIN_GATE_PX_MAJOR:.0f}/{MIN_GATE_PX_MINOR:.0f} px, likely pinned against a wall")
+    verdict = ("ATTESTED - training run is meaningful" if all(ok.values()) and enough_movement
                else "NOT ATTESTED - " + ", ".join(k for k, v in ok.items() if not v) + " failed")
     print("\nVERDICT:", verdict)
     # append every verdict so progress can be counted rather than remembered
