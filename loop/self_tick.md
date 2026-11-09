@@ -6,3 +6,4 @@ Tick of the nidhogg loop (you are on artemis, next to the game).
 4. Check `loop status`; if the goal is reached or the route is genuinely exhausted, `loop stop` and write loop/VERDICT.md.
 
 Hard rules: never report a win rate (rounds_won is 0, no round transition has ever been observed); control gates need 40/30 px of movement, not just the right sign; never `find /` or `grep -r` on artemis (14 TB, load 100-200); check the game with `pgrep -x Nidhogg.exe`, not `pgrep -f`; state comes from the LD_PRELOAD spy, /proc/<pid>/mem is blocked here.
+End your turn once that step is done or blocked — the loop only fires when you are idle.

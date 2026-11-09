@@ -57,3 +57,11 @@ Append a short entry to `loop/PI_TICKLOG.md`:
 ```
 
 If the goal is reached or the route is genuinely exhausted, write `loop/VERDICT.md` — that stops the loop.
+
+## 6. END YOUR TURN when the step is done
+
+The self-loop only fires when you are **idle**. If you keep working indefinitely in one turn, no tick can
+arrive — measured: a 21-minute single turn got zero ticks even though the loop was armed with a 10-minute
+interval. So: after finishing (or becoming blocked on) ONE step, write the ticklog entry and **stop**.
+The next tick will re-prompt you with the same instruction. Long exploration belongs across ticks, not
+inside one.

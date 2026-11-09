@@ -1,17 +1,16 @@
 {
- "ts": 1794219082.457054,
+ "ts": 1794224482.820277,
  "attest_passing": 13,
  "attest_total": 37,
  "attest_best_streak": 8,
- "plan_done": 4,
+ "plan_done": 3,
  "plan_total": 24,
  "plan_done_rows": [
-  "01 Attestation passes consistently (3 consecutive runs)",
   "22 Robust headless launcher on artemis (verify, don't assume)",
   "23 Port the interface to Linux: /proc/<pid>/mem state + xdotool input",
   "24 Port doctor/game/attest to Linux and pass attestation ON artemis"
  ],
- "claims": 8,
+ "claims": 10,
  "generations": 0,
  "rounds_observed": 0
 }

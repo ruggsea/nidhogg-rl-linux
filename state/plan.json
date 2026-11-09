@@ -5,10 +5,11 @@
    "id": "01",
    "title": "Attestation passes consistently (3 consecutive runs)",
    "accept": "tools/attest.py prints VERDICT: ATTESTED three times in a row - and each run must include the DOSE-RESPONSE check (holding D 3x longer must move the fighter ~3x further). The direction gate alone can be satisfied by the title screen's attract demo by coincidence; proportionality cannot. All runs appended to state/attest_runs.log.",
-   "status": "done",
+   "status": "open",
    "started": 1794178927.390194,
    "evidence": "state/attest_runs.log",
-   "closed": 1794218535.45895
+   "closed": 1794218535.45895,
+   "reopened": "2026-11-09 10:4x UTC: closed on a WEAKER bar than macOS. attest_linux.py checks live/bind/gate/floor/dose_response only - its live() is process+Xvfb socket+spy ping+non-blank frame, and there is NO opponent-liveness check. macOS attest.py required room (left the title) and opponent moved >=8px, which is what caught the attract demo and the statue. So the 8-run streak proved a fighter is controllable and readable, NOT that a real CPU match was running. Measured by the operator: 0 round transitions in 80s while P1 walked into an inert P2 on a READY/local-2P screen."
   },
   {
    "id": "02",

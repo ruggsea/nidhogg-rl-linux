@@ -18,12 +18,13 @@ SESS="${LOOP_SESSION:-nidhogg-agent}"
 MIN="${1:-10}"
 PROVIDER="${LOOP_PROVIDER:-deepseek}"
 MODEL="${LOOP_MODEL:-deepseek-v4-pro}"
+THINKING="${LOOP_THINKING:-high}"   # pi defaults to OFF; measured: without it the agent rambles in long turns
 export PATH="$HOME/.local/bin:$HOME/nodejs/bin:/usr/bin:/bin:$PATH"
 cd "$REPO" || exit 1
 
 tmux kill-session -t "$SESS" 2>/dev/null
 tmux new -d -s "$SESS" -c "$REPO" \
-  "pi --provider $PROVIDER --model $MODEL --append-system-prompt loop/driver_prompt.md"
+  "pi --provider $PROVIDER --model $MODEL --thinking $THINKING --append-system-prompt loop/driver_prompt.md"
 sleep 12
 
 # Arm the self-loop and start tick 1. Sent as a message so the agent owns the loop, not a wrapper script.
