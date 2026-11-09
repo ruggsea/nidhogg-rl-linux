@@ -217,12 +217,20 @@ def main():
     print(f"   opponent moved: {moves}")
     ok["opponent"] = moves
 
+    try:
+        ext = mgr.arena_extent()
+        if ext:
+            print(f"   arena extent: left={ext['left']:.0f} right={ext['right']:.0f} "
+                  f"width={ext['width']:.0f} (measured by walking into both walls)")
+    except Exception as e:
+        print(f"   extent error: {e}")
+
     # MEASURED false pass: two runs recorded dose_response=true with gate D=11 A=20 and D=128 A=8.
     # Those are a fighter pinned against a wall, not a fighter under control - the same wall effect that
     # has now fooled this project three times. A control gate must show MOVEMENT, not merely the right
     # sign, so attested runs must clear the displacement floor that real passes reached (147/122,
     # 145/145, 145/151).
-    gate_vals = (info.get("gate") or {}) if isinstance(info := (g if "g" in dir() else {}), dict) else {}
+    gate_vals = gate if isinstance(gate, dict) else {}
     try:
         from train_state import MIN_GATE_PX_MAJOR, MIN_GATE_PX_MINOR
     except ImportError:

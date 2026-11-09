@@ -198,3 +198,6 @@ VERDICT: NOT ATTESTED - gate failed
 {"ts": 1794182934.711732, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 29, "gate": {}, "bound": null}
 {"ts": 1794183177.9827042, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 29, "gate": {}, "bound": null}
 {"ts": 1794183419.4514308, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 28, "gate": {}, "bound": null}
+{"ts": 1794183576.177685, "verdict": "NOT ATTESTED - dose_response failed", "ok": {"room": true, "bind": true, "gate": true, "dose_response": false, "opponent": true}, "room": 28, "gate": {"D": 93.0, "A": 9.0}, "bound": 103533}
+{"ts": 1794183802.545799, "verdict": "NOT ATTESTED - dose_response failed", "ok": {"room": true, "bind": true, "gate": true, "dose_response": false, "opponent": true}, "room": 28, "gate": {"D": 21.0, "A": 9.0}, "bound": 103551}
+{"ts": 1794184040.076504, "verdict": "NOT ATTESTED - bind, gate failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": true, "opponent": true}, "room": 28, "gate": {}, "bound": null}

@@ -1066,6 +1066,83 @@ class InstanceManager:
             time.sleep(2.5)
         return False
 
+    def walk_until_wall(self, code, max_seconds=4.0, stall_px=6.0, window=0.35):
+        """Hold a direction until the fighter stops moving; return where it stopped.
+
+        MEASURED problem this solves: attestation kept failing with gate D=93 A=9 and dose D=93/A=9 -
+        the fighter had spawned hard against the LEFT wall, so pushing left could not move it. Re-centring
+        between measurements (the previous fix) cannot help when the measurement STARTS at a wall.
+        The cure is to find where the walls are before measuring anything.
+        """
+        st = self.read_bound() or self.read_state()[0]
+        if not st:
+            return None
+        self.press(code)
+        time.sleep(window)
+        prev = self.read_bound()
+        if prev is None:
+            return None
+        x = prev["me_x"]
+        t0 = time.time()
+        while time.time() - t0 < max_seconds:
+            self.press(code)
+            time.sleep(0.08)
+            cur = self.read_bound()
+            if cur is None:
+                continue
+            if abs(cur["me_x"] - x) < stall_px / window * 0.4:
+                # not moving much: confirm over a short window before declaring a wall
+                time.sleep(window)
+                self.press(code)
+                again = self.read_bound()
+                if again is not None and abs(again["me_x"] - x) < stall_px:
+                    return again["me_x"]
+            x = cur["me_x"]
+        return x
+
+    def arena_extent(self, force=False, ttl=90.0):
+        """Left wall, right wall and width of the current arena, measured by walking into both.
+
+        Cached per room for `ttl` seconds: the geometry does not change inside a room, and re-walking the
+        arena before every measurement would triple the cost of every episode.
+
+        Bonus: this is the honest answer to "how wide is this arena", which the observation used to guess
+        with a constant 470 measured in ONE room - the guess that made a normalised distance negative in
+        wider rooms.
+        """
+        room = self.room()
+        now = time.time()
+        c = getattr(self, "_extent", None)
+        if c and not force and c.get("room") == room and now - c["ts"] < ttl:
+            return c
+        left = self.walk_until_wall(65)          # A = left
+        right = self.walk_until_wall(68)         # D = right
+        if left is None or right is None:
+            return None
+        ext = {"room": room, "left": min(left, right), "right": max(left, right),
+               "width": abs(right - left), "ts": now}
+        self._extent = ext
+        log(f"instance {self.iid}: arena extent room {room} left={ext['left']:.0f} "
+            f"right={ext['right']:.0f} width={ext['width']:.0f}")
+        return ext
+
+    def centre(self, tolerance=0.15):
+        """Move to the middle of the measured arena before measuring control."""
+        ext = self.arena_extent()
+        if not ext or ext["width"] < 120:
+            return False                 # too narrow (or a platform) to trust positional measurements
+        mid = (ext["left"] + ext["right"]) / 2.0
+        for _ in range(12):
+            st = self.read_bound()
+            if st is None:
+                return False
+            err = st["me_x"] - mid
+            if abs(err) <= ext["width"] * tolerance:
+                return True
+            self.press(68 if err < 0 else 65)
+            time.sleep(0.10)
+        return False
+
     def dose_response(self, short=0.45, long=1.35, ratio=1.6, min_px=8.0):
         """Is the movement CAUSED by our key, or merely happening while we hold it?
 
@@ -1082,6 +1159,13 @@ class InstanceManager:
             return False, 0.0, 0.0, 0.0
         if self.bound_inst is None and self.bind_by_response() is None:
             return False, 0.0, 0.0, 0.0
+        # Measure from the MIDDLE, or a hold toward the near wall reads as "no movement" and a good
+        # fighter fails. Measured failures: D=93 A=9, D=21 A=9, D=128 A=8 - all wall starts.
+        try:
+            if not self.centre():
+                log(f"instance {self.iid}: could not centre; running the dose test anyway")
+        except Exception as e:
+            log(f"instance {self.iid}: centring error: {e}")
 
         def hold(code, seconds):
             t0 = time.time()
@@ -1091,6 +1175,7 @@ class InstanceManager:
             time.sleep(0.12)
 
         def measure(code, back, seconds):
+            self.centre()                 # every hold starts from the same place
             b0 = self.read_bound()
             if not b0:
                 return 0.0
