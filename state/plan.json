@@ -127,6 +127,24 @@
    "title": "Farm: >=2 parallel attested instances on artemis",
    "accept": "N>=2 instances (InstanceManager(iid=i)) attested simultaneously with aggregate throughput measured, and per-instance room/arena recorded so generalization data accumulates from the start.",
    "status": "open"
+  },
+  {
+   "id": "22",
+   "title": "Robust headless launcher on artemis (verify, don't assume)",
+   "accept": "a launcher that starts Xvfb + the patched game under Proton and PROVES it: process alive, log written, a frame grabbed from the display, then returns non-zero if any check fails. The last detached launches left no process and no log, so this is the first blocker.",
+   "status": "open"
+  },
+  {
+   "id": "23",
+   "title": "Port the interface to Linux: /proc/<pid>/mem state + xdotool input",
+   "accept": "bind the fighter by response on Linux (hold d -> a float32 slot moves right, hold a -> it moves left), and drive keys with xdotool against the per-instance Xvfb display. Record the bound address and the measured displacement as a claim. This replaces the macOS dylib entirely.",
+   "status": "open"
+  },
+  {
+   "id": "24",
+   "title": "Port doctor/game/attest to Linux and pass attestation ON artemis",
+   "accept": "tools/doctor.py --gate passes on Linux paths, and tools/attest.py reaches VERDICT: ATTESTED there with dose-response and >=40/30 px displacement. Nothing is trained on the farm before this.",
+   "status": "open"
   }
  ]
 }
