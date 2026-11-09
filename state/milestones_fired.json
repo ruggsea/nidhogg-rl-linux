@@ -1,0 +1,22 @@
+{
+ "step_closed:22": {
+  "ts": 1794242297.456768,
+  "text": "plan step 22 closed with evidence: Robust headless launcher on artemis (verify, don't assume)"
+ },
+ "step_closed:23": {
+  "ts": 1794242297.456768,
+  "text": "plan step 23 closed with evidence: Port the interface to Linux: /proc/<pid>/mem state + xdotool input"
+ },
+ "step_closed:24": {
+  "ts": 1794242297.456768,
+  "text": "plan step 24 closed with evidence: Port doctor/game/attest to Linux and pass attestation ON artemis"
+ },
+ "first_generation": {
+  "ts": 1794242297.456768,
+  "text": "3 completed generation(s)"
+ },
+ "pool_down": {
+  "ts": 1794242297.456768,
+  "text": "no workers alive - nothing is progressing"
+ }
+}

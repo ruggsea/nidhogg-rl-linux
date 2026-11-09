@@ -1,7 +1,7 @@
 {
- "ts": 1794225682.625844,
+ "ts": 1794241849.66141,
  "attest_passing": 13,
- "attest_total": 37,
+ "attest_total": 40,
  "attest_best_streak": 8,
  "plan_done": 3,
  "plan_total": 24,
@@ -10,7 +10,7 @@
   "23 Port the interface to Linux: /proc/<pid>/mem state + xdotool input",
   "24 Port doctor/game/attest to Linux and pass attestation ON artemis"
  ],
- "claims": 10,
+ "claims": 27,
  "generations": 0,
  "rounds_observed": 0
 }
