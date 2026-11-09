@@ -94,8 +94,8 @@
   },
   {
    "id": "16",
-   "title": "Difficulty sweep: train low, evaluate high",
-   "accept": "the TRAINING submenu exposes a DIFFICULTY slider (A/D adjusts). Train at the low end, evaluate at low/medium/high, and record the win rate at each - a policy that only wins at the setting it trained on has not generalized.",
+   "title": "Adaptive difficulty curriculum: raise the level when the current one is mastered",
+   "accept": "the level is raised by tools/curriculum.py on evidence, never on a schedule: either a VERIFIED win signal at the current level (needs the round signal, today unavailable), or a fitness plateau over 3 generations that is below the measured noise floor. The level, every change and its reason are recorded in state/curriculum.json, and per-level fitness is reported. A policy that only wins at the level it was raised to has not generalized.",
    "status": "open"
   },
   {
