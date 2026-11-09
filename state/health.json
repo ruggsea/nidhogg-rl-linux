@@ -1,16 +1,16 @@
 {
- "ts": 1794183481.649027,
+ "ts": 1794184109.773956,
  "overall": "PASS",
  "checks": [
   {
    "check": "game processes",
    "status": "PASS",
-   "detail": "1 running pids=[61535]"
+   "detail": "1 running pids=[69873]"
   },
   {
    "check": "priority",
    "status": "PASS",
-   "detail": "nice=0 pri=97 cpu=75.5%"
+   "detail": "nice=0 pri=97 cpu=84.9%"
   },
   {
    "check": "frame rate",
@@ -30,12 +30,12 @@
   {
    "check": "instance dump",
    "status": "PASS",
-   "detail": "age 0.1s"
+   "detail": "age 0.0s"
   },
   {
    "check": "hook log",
    "status": "PASS",
-   "detail": "age 0.1s (a stale log means the probe thread is not running)"
+   "detail": "age 0.2s (a stale log means the probe thread is not running)"
   },
   {
    "check": "legacy room command",
