@@ -5,8 +5,10 @@
    "id": "01",
    "title": "Attestation passes consistently (3 consecutive runs)",
    "accept": "tools/attest.py prints VERDICT: ATTESTED three times in a row - and each run must include the DOSE-RESPONSE check (holding D 3x longer must move the fighter ~3x further). The direction gate alone can be satisfied by the title screen's attract demo by coincidence; proportionality cannot. All runs appended to state/attest_runs.log.",
-   "status": "active",
-   "started": 1794178927.390194
+   "status": "done",
+   "started": 1794178927.390194,
+   "evidence": "state/attest_runs.log",
+   "closed": 1794218535.45895
   },
   {
    "id": "02",
@@ -150,7 +152,10 @@
    "id": "24",
    "title": "Port doctor/game/attest to Linux and pass attestation ON artemis",
    "accept": "tools/doctor.py --gate passes on Linux paths, and tools/attest.py reaches VERDICT: ATTESTED there with dose-response and >=40/30 px displacement. Nothing is trained on the farm before this.",
-   "status": "open"
+   "status": "done",
+   "started": 1794218071.7234247,
+   "evidence": "python3 tools/attest.py",
+   "closed": 1794218129.8840551
   }
  ]
 }
