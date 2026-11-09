@@ -48,9 +48,36 @@ ROLES = ["engineer", "prober", "auditor", "engineer", "prober"]
 # Thinking is per role, not global: judgement work (closing steps, auditing claims) is worth the
 # wall-clock of high; routine probing is not. Measured complaint that motivated the dial: think:off made
 # the agent ramble, think:high on everything made each turn slow.
-THINKING = {"engineer": "high", "prober": "medium", "auditor": "high"}
+THINKING = {"engineer": "high", "prober": "high", "auditor": "high"}
 PROVIDER = "deepseek"
 MODEL = "deepseek-v4-pro"
+
+
+def role_config(role):
+    """A per-role pi config dir, so --thinking can actually differ per worker.
+
+    MEASURED: passing --thinking to the CLI does NOT override ~/.pi/agent/settings.json, whose
+    defaultThinkingLevel wins (a worker launched with `--thinking low` still displayed think:high). So the
+    only way to vary thinking per worker is to give each role its own config dir via PI_CODING_AGENT_DIR.
+    Auth, models and the extensions directory (which provides the `loop` tool) are shared in by copy/link.
+    """
+    cfg = os.path.expanduser(f"~/.pi/agents/role-{role}")
+    src = os.path.expanduser("~/.pi/agent")
+    os.makedirs(cfg, exist_ok=True)
+    for f in ("auth.json", "models.json"):
+        s_f, d_f = os.path.join(src, f), os.path.join(cfg, f)
+        if os.path.exists(s_f) and not os.path.exists(d_f):
+            sh(f"cp {s_f} {d_f}")
+    ext = os.path.join(cfg, "extensions")
+    if not os.path.exists(ext):
+        sh(f"ln -s {src}/extensions {ext}")
+    try:
+        st = json.load(open(os.path.join(src, "settings.json")))
+    except (OSError, ValueError):
+        st = {}
+    st["defaultThinkingLevel"] = THINKING.get(role, "medium")
+    json.dump(st, open(os.path.join(cfg, "settings.json"), "w"), indent=1)
+    return cfg
 
 
 def sh(cmd, timeout=60):
@@ -104,8 +131,8 @@ def spawn(i, role):
     if exists(sess):
         sh(f"tmux kill-session -t {sess}")
         time.sleep(1)
-    thinking = THINKING.get(role, "medium")
-    cmd = (f'pi --provider {PROVIDER} --model {MODEL} --thinking {thinking} '
+    cfg = role_config(role)
+    cmd = (f'PI_CODING_AGENT_DIR={cfg} pi --provider {PROVIDER} --model {MODEL} '
            f'--append-system-prompt loop/driver_prompt.md')
     rc, out = sh(f'cd {REPO} && tmux new -d -s {sess} -c {REPO} "{cmd}"')
     if rc != 0:
@@ -195,6 +222,32 @@ def reap():
     return actions or ["nothing to reap"]
 
 
+def set_thinking(level):
+    """Change the thinking level for ALL workers and restart them.
+
+    MEASURED: pi's --thinking flag does not override ~/.pi/agent/settings.json, whose
+    defaultThinkingLevel wins (a worker launched with `--thinking low` still showed think:high), and a
+    per-role PI_CODING_AGENT_DIR did not change the displayed level either. The model ":thinking" suffix
+    killed the session outright. So the level is a GLOBAL setting plus a restart - one dial, honestly
+    labelled, instead of three mechanisms that do not work.
+    """
+    import glob
+    paths = [os.path.expanduser("~/.pi/agent/settings.json")] + glob.glob(os.path.expanduser("~/.pi/agents/role-*/settings.json"))
+    for path in paths:
+        try:
+            d = json.load(open(path))
+        except (OSError, ValueError):
+            continue
+        d["defaultThinkingLevel"] = level
+        json.dump(d, open(path, "w"), indent=1)
+    d = load()
+    for i in list(d.get("workers", {})):
+        role = d["workers"][i].get("role", "engineer")
+        stop(int(i))
+        spawn(int(i), role)
+    return f"thinking={level} applied; {len(d.get('workers', {}))} workers restarted"
+
+
 def tick_all():
     d = load()
     sent = []
@@ -216,6 +269,8 @@ def main():
         print(json.dumps(scale(0), indent=1))
     elif a == "reap":
         print("\n".join(reap()))
+    elif a == "thinking":
+        print(set_thinking(sys.argv[2] if len(sys.argv) > 2 else "medium"))
     elif a == "tick":
         print("ticked: " + ", ".join(tick_all()))
     elif a == "assign":
