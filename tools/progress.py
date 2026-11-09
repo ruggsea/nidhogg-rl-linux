@@ -47,6 +47,15 @@ def count_attested():
             # None), and counting them made the streak look like 3 when it was 1 - exactly the kind of
             # over-count this project keeps having to retract.
             counted = bool((d.get("ok") or {}).get("dose_response"))
+            # SECOND over-count, found 01:18: two runs recorded dose_response=true but the gate only
+            # moved D=11 A=20 and D=128 A=8 - a fighter pinned against a wall, not one under control.
+            # Counted naively those make the streak read 2 when no two genuine passes are adjacent.
+            # A pass must show MOVEMENT, not just the right sign.
+            g = d.get("gate") or {}
+            disp_d = abs(float(g.get("D", 0) or 0))
+            disp_a = abs(float(g.get("A", 0) or 0))
+            enough = max(disp_d, disp_a) >= 40.0 and min(disp_d, disp_a) >= 30.0
+            counted = counted and enough
             if str(d.get("verdict", "")).startswith("ATTESTED") and counted:
                 ok += 1
                 consecutive += 1

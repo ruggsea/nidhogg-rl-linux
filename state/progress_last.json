@@ -1,12 +1,12 @@
 {
- "ts": 1794183448.1492212,
- "attest_passing": 5,
+ "ts": 1794183489.492494,
+ "attest_passing": 3,
  "attest_total": 20,
- "attest_best_streak": 2,
+ "attest_best_streak": 1,
  "plan_done": 0,
  "plan_total": 17,
  "plan_done_rows": [],
  "claims": 2,
- "generations": 1,
+ "generations": 0,
  "rounds_observed": 0
 }
