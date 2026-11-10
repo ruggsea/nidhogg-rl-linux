@@ -56,22 +56,11 @@ def load_jsonl(path):
 def snapshot():
     plan = load_json(os.path.join(STATE, "plan.json"), {"steps": []})
     done = [(s.get("id"), s.get("title", "")) for s in plan.get("steps", []) if s.get("status") == "done"]
-    # MEASURED miscount (2026-11-09 23:5x): rounds.jsonl held 49 individual fighter TELEPORTS across 12
-    # timestamps, some with nine fighters on one timestamp - those are level/scene loads in a scripted
-    # AI-vs-AI tournament, not rounds of a match anyone played. Counting them fired a "first_round"
-    # milestone that was not real. A round now requires the probe to say so explicitly.
-    # MEASURED (2026-11-10 02:25): two entries labelled kind="round" carried their own fields
-    # "corroborated": false AND "score_changed": false - the writer said plainly it had not verified the
-    # boundary, and this module counted them anyway because it only trusted the label. A round now requires
-    # the corroboration the writer recorded, not the name it chose.
-    def _is_round(r):
-        if str(r.get("kind", "")).lower() not in ("round", "round_end", "roundend"):
-            return False
-        if r.get("corroborated") is True:
-            return True
-        return r.get("score_changed") is True or r.get("verified") is True
-    rounds = [r for r in load_jsonl(os.path.join(STATE, "rounds.jsonl")) if _is_round(r)]
-    wins = [r for r in rounds if str(r.get("result", "")).lower() in ("win", "won", "p1")]
+    from verified import counts as _vcounts
+    _vc = _vcounts(os.path.join(STATE, "rounds.jsonl"))
+    rounds = [None] * _vc["rounds"]  # only the count is used below
+    wins = [None] * _vc["wins"]
+    decided = _vc["decided"]
     runs = load_jsonl(os.path.join(STATE, "attest_runs.log"))
     streak = best = 0
     for r in runs:
@@ -111,7 +100,7 @@ def snapshot():
             if r.returncode == 0:
                 alive += 1
     return {"done": done, "best_streak": best, "generations": gens,
-            "rounds": len(rounds), "wins": len(wins), "workers_alive": alive}
+            "rounds": len(rounds), "wins": len(wins), "decided": decided, "workers_alive": alive}
 
 
 def candidates(snap, last_progress_ts):
@@ -126,6 +115,13 @@ def candidates(snap, last_progress_ts):
         out["first_round"] = f"{snap['rounds']} round transition(s) observed"
     if snap["wins"] >= 1:
         out["first_win"] = f"{snap['wins']} verified round win(s)"
+    # A win RATE only exists above 10 rounds, and it is the number a person actually cares about. Fires
+    # once, when it first becomes measurable - not on every increment (that would be counter noise).
+    decided = snap.get("decided", 0)
+    if decided >= 10:
+        rate = 100.0 * snap["wins"] / decided
+        out["winrate_measured"] = (f"first measured win rate: {snap['wins']}/{decided} = {rate:.0f}% "
+                                   f"(opponent inert unless stated otherwise)")
     if snap["workers_alive"] < 0:
         pass                                    # could not determine - never fire on ignorance
     elif snap["workers_alive"] == 0:
@@ -179,7 +175,13 @@ def main():
     body.append(f"  rounds      : {snap['rounds']} observed, {snap['wins']} won")
     body.append(f"  workers     : {snap['workers_alive']} alive")
     body.append("")
-    body.append("No win rate is claimed until 10+ verified rounds exist.")
+    from verified import win_rate as _wrate
+    _wr = _wrate(os.path.join(STATE, "rounds.jsonl"))
+    if _wr is None:
+        body.append("No win rate is claimed until 10+ decided rounds exist.")
+    else:
+        body.append(f"Win rate: {_wr:.0f}% over {snap['decided']} decided rounds "
+                    f"(opponent inert unless a lane says otherwise).")
     text = "\n".join(body)
 
     if "--json" in sys.argv:
