@@ -1,0 +1,12 @@
+ATTESTED 2026-11-08 ~20:30
+
+`python tools/attest.py` -> "VERDICT: ATTESTED - training run is meaningful"
+
+  room=ok      room 2 -> 17 -> 29 (rCastleCenter), reached unattended
+  bind=ok      BOUND to instance 103318 (responded on 2 cycles, on the ground)
+  gate=ok      direction gate D=+243.0  A=+116.2  -> PASS
+  opponent=ok  opponent instance moved
+
+Evidence and caveats in NOTES.md (sessions 220-221) and docs/ROOM_NAMES.md.
+Caveat recorded: the player object index varies by room (154 in one arena, 244 in another), so the
+authoritative fighter is the response-bound instance, not a named slot.

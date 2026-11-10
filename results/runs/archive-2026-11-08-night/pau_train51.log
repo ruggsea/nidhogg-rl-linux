@@ -1,0 +1,28 @@
+[08:13:34] instance 0: launched pid 26927
+[08:14:22] instance 0: using cached entry n_lead=1 S=2
+[08:15:25] instance 0: control gate A_px=18.0 (PASS)
+[08:15:35] instance 0: live AND drivable (gate confirmed)
+[08:15:39] instance 0: captured 28 Match variables -> /tmp/nid_vars_out_0.txt
+[08:15:42] instance 0: ensure_match alive=True stale=False players=True ever=True attempt=0 state={'them_x': 202.0, 'them_y': 128.0, 'me_x': 118.0, 'me_y': 128.0, 'have154': 1, 'have242': 1}
+[08:15:45] instance 0: no round boundary within 3s - starting anyway
+[08:15:51] instance 0: control gate A_px=38.0 (PASS)
+[08:16:01] instance 0: gate passed but the OPPONENT is inert (x stayed at 202) - not a training match
+[08:16:03] instance 0: control gate A_px=28.0 (PASS)
+[08:16:13] instance 0: gate passed but the OPPONENT is inert (x stayed at 202) - not a training match
+[08:16:16] instance 0: using cached entry n_lead=1 S=2
+[08:17:24] instance 0: control gate A_px=6.0 (FAIL)
+[08:17:25] instance 0: control gate A_px=16.0 (PASS)
+[08:17:35] instance 0: gate passed but the OPPONENT is inert (x stayed at 202) - not a training match
+[08:17:35] instance 0: cached entry failed, re-searching
+[08:17:35] instance 0: trying entry n_lead=1 S=2
+[08:18:39] instance 0: control gate A_px=9.0 (PASS)
+[08:18:49] instance 0: gate passed but the OPPONENT is inert (x stayed at 202) - not a training match
+[08:18:52] instance 0: control gate A_px=13.0 (PASS)
+[08:19:02] instance 0: gate passed but the OPPONENT is inert (x stayed at 202) - not a training match
+[08:19:02] instance 0: S=2 gave no live fight - trying next variant
+[08:19:02] instance 0: trying entry n_lead=2 S=2
+[08:20:08] instance 0: control gate A_px=8.0 (FAIL)
+[08:20:09] instance 0: control gate A_px=13.0 (PASS)
+[08:20:19] instance 0: gate passed but the OPPONENT is inert (x stayed at 202) - not a training match
+[08:20:19] instance 0: S=2 gave no live fight - trying next variant
+[08:20:19] instance 0: trying entry n_lead=1 S=1

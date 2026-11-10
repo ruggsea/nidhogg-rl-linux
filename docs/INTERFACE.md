@@ -22,6 +22,32 @@ confirmed it. Everything else stays `unknown`, however plausible it looks.
 | 14 | tick / frame counter | monotone int | — | — | unknown |
 | 15 | room / stage id | invalidates cached addresses | — | — | unknown |
 
+## Phase 2 results (key sweep, macOS harness) — `results/keysweep_0.json`
+
+Stimulus: hold one key 0.55 s. Oracle: the offset must move under that key and must NOT
+move under a no-key control (control moved only `0xd0`, `0x2cc` — camera/timer bookkeeping,
+discarded before attribution). One run, one live match (`have154=have242=1`).
+
+| offset | stimulus | observed | sign check | provenance |
+|---|---|---|---|---|
+| `+0xEC` (mirror `+0xFC`) | `A` (65) | 113.5 -> 108.5 | decreases (left) | **proven**, mutual with `D` |
+| `+0xEC` (mirror `+0xFC`) | `D` (68) | 108.5 -> 113.5 | increases (right) | **proven**, mutual with `A` |
+| `+0xF0` (mirror `+0x100`) | `G` (71) | 560.0 -> 529.0 | y decreases = upward | **proven** (jump) |
+| `+0xF0` (mirror `+0x100`) | `SPACE` (32) | 527.0 -> 545.0 | y increases = falling | **proven** (landing edge of same arc) |
+| `+0x120`, `+0x128` | `A`/`D`/`F` | tracks x, offset -1.5/+1.5 | moves with x only | inferred: collision-box edges, not position |
+| `+0x124`, `+0x12C` | `G`/`SPACE` | tracks y, offset -26/+0 | moves with y only | inferred: same box, vertical edges |
+
+Rows 4/5/7/9 of the contract are **not** yet proven: `F` (attack), `W` and `S` produced no
+attributable offset, and `SHIFT` did nothing. `F` moved x by +3.0 with no animation field
+identified, which is consistent with an attack lunge but is not evidence of one — a single
+sample with no discriminating oracle. Naming attack needs the animation field, which is the
+next stimulus to hunt.
+
+**Negative results, recorded because they are deliverables (Pau's rule 6):** `W` (87),
+`S` (83) and `SHIFT` (16) change **no** offset in `0x80..0x2FF`. On this build jump is `G`,
+not `W` — the tutorial says "PRESS G TO JUMP" — so `W`/`S` are not reachable actions here
+and must not be in the action space.
+
 ## Proven facts this table rests on
 
 ```

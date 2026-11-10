@@ -10,6 +10,7 @@ Fitness = 10*rounds_won - 6*rounds_lost + 30*match_won + small shaping so early
 random policies still get a gradient (advance toward the enemy goal).
 """
 import argparse
+import sys
 import json
 import os
 import threading
@@ -21,6 +22,13 @@ import neuro
 import train_state as TS
 
 LOG = "/tmp/nid_win_train.jsonl"
+# DURABLE RUN RECORD. Everything until now lived in /tmp, so every restart destroyed the
+# evidence for the previous run - including tonight's falsified claims, which had to be
+# reconstructed from logs that were still in memory. Each run now writes its own directory
+# under results/runs/ with a per-episode JSONL that carries every field needed to judge whether
+# the episode was REAL: the entry gate, the opponent's span, kills/deaths, and what the round
+# detector claimed plus whether it verified.
+RUN_DIR = None
 RESET_LOCK = threading.Lock()
 
 
@@ -68,8 +76,34 @@ HOLD_TICKS = 8   # MEASURED: 8 -> advance 123-134 px per episode; 20 -> only 14-
                  # the intuitive 'be more decisive' change was wrong. Keep 8.   # 8 ticks (~0.16 s) made the agent change direction so often it
                  # travelled almost nowhere: advance varied only 11 px across a whole
                  # 70 s episode. 20 gives a sustained commitment.          # ~150 ms of held action per decision
-GOAL_X = 1650.0        # our goal line is on the right
-GOAL_X_OPP = 250.0    # the CPU goal line is on the left
+# MEASURED arena (300 s trajectory, 6224 samples): x spans about 0..462 and kill/respawn
+# teleports land at the ends. The old values (1650 / 250) made `me_armed` require me_x > 950,
+# which no sample ever reached - so a round win was structurally impossible regardless of the
+# policy. These are set from the measurement instead.
+# 440 was too early: verified crossings there produced NO round transition (me_span 6-19 px,
+# our fighter never teleported), so the proxy was firing mid-field on an arbitrary x and
+# paying the 60-point round term for nothing. Measured arena extremes reach ~512, so the line
+# is now at the actual end.
+GOAL_X = 500.0         # our goal line is at the right end of the measured arena
+GOAL_X_OPP = 20.0      # the CPU goal line is at the left end
+# A crossing must be WALKED, not teleported: respawns jump the whole arena in one sample and
+# would otherwise be scored as goals. Any single-sample move larger than this invalidates a
+# crossing for that sample.
+CROSS_MAX_STEP = 60.0
+
+
+def state_of(mgr):
+    """Episode state: the BOUND instance for us when one has been identified by response.
+
+    The named-state reader returns object 242/154, but the fighter we actually command has been
+    measured at object 244. When binding has succeeded, that instance is authoritative.
+    """
+    b = getattr(mgr, "bound_inst", None)
+    if b is not None:
+        rp = mgr.read_pair()
+        if rp:
+            return rp
+    return read_state(mgr.iid)
 
 
 def read_state(iid):
@@ -78,8 +112,12 @@ def read_state(iid):
         if len(v) < 6:
             return None
         o154x, o154y, y242x, y242y, h1, h2 = (float(x) for x in v[:6])
-        if not (h1 and h2):
-            return None
+        # DO NOT discard the sample when a flag reads 0. MEASURED (raw trace, t=0.25 s):
+        # the CPU's existence flag flickers to 0 for a frame or two while the fighter is
+        # plainly alive at (262, 560) - a reader flicker, the same artefact that once
+        # produced "345 kills, 0 deaths". Returning None here turned every flicker into
+        # "the match ended", which aborted episodes one second in. The flags travel with
+        # the sample now and the CALLER decides what a 0 means, with a sustained timer.
         # GATE: a (0,0) pair is a not-yet-initialised / frozen instance, not a
         # fighter standing at the goal. Without this the goal-crossing detector
         # counted every blank sample as a round loss (157/episode once).
@@ -87,9 +125,33 @@ def read_state(iid):
             return None
         if not (0.0 <= y242x <= 3000.0 and 0.0 <= o154x <= 3000.0):
             return None
-        return {"them_x": o154x, "them_y": o154y, "me_x": y242x, "me_y": y242y}
+        # The flags MUST be included. This function and InstanceManager.read_state()
+        # returned different shapes: this one omitted have154/have242, so any caller that
+        # then asked has_players() raised KeyError: 'have154'. Measured cost: an episode
+        # that had run its whole window (samples=1200) was marked inert by the exception
+        # and discarded - the gate error was the only trace, and it hid behind
+        # "no match" reporting for hours.
+        return {"them_x": o154x, "them_y": o154y, "me_x": y242x, "me_y": y242y,
+                "have154": int(h1), "have242": int(h2)}
     except (OSError, ValueError):
         return None
+
+
+def _act_name(code):
+    return {65: "A_left", 68: "D_right", 70: "F_attack", 71: "G_jump", 0: "IDLE",
+            None: "IDLE"}.get(code, f"key{code}")
+
+
+def _at_edge(x):
+    """True if x sits at an arena end.
+
+    MEASURED (300 s trajectory, 6224 samples): the arena spans x ~0..462 and kill/respawn
+    teleports land at the ends - observed jumps 2->462, 346->0, 246->-32, 256->6. A teleport
+    is therefore only a death if it lands at an edge. Requiring that fixed the previous
+    failure mode, where a bare "jump > SPAWN_JUMP" test counted 485 deaths in one episode and
+    the reward was switched off entirely.
+    """
+    return x is not None and (x < 60.0 or x > 400.0)
 
 
 def read_raw(iid):
@@ -111,6 +173,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 "match_won": 0, "trace": [], "tag": tag, "no_match": True}
 
     rng = np.random.default_rng(seed)
+    _episode_start = time.time()   # window the adversary judges this episode over
     # A match is ONE round. After it ends the fighters stay on screen but inert, so
     # ensure_match() sees "live" and every later individual reuses the same dead match -
     # measured: 54 episodes ran on a single entry, and all 12 individuals in a generation
@@ -125,17 +188,54 @@ def play(mgr, w, seconds, seed, tag, log=print):
         mgr._raise_speed()
     except Exception:
         pass
-    st0 = read_state(mgr.iid)
+    # PHASE 6 (Pau's plan): start every episode from a round boundary, so two policies are
+    # compared on the same initial conditions. Without this, one policy produced fits of
+    # -0.24 / 7.49 / -16.88 in three consecutive episodes (sd 12.5) and selection was noise.
+    try:
+        _reset_ok = mgr.start_from_round_boundary()
+    except Exception:
+        _reset_ok = False
+    st0 = state_of(mgr)
     inert = st0 is None
+    _adv = {"trust_match": False, "why": "not checked"}
+    if not inert and hasattr(mgr, "prime_controls"):
+        # The READY state has both fighters on screen and ignores discrete presses. The
+        # adversary reports it as "frozen / input not reaching game". Hold a direction
+        # first - measured to unlock movement (113.5 -> 428 px under a 2.5 s hold).
+        mgr.prime_controls(1.6)
     if not inert:
         xs = []
         tt = time.time()
         while time.time() - tt < 1.5:
-            s2 = read_state(mgr.iid)
+            s2 = state_of(mgr)
             if s2:
                 xs.append(s2["them_x"])
             time.sleep(0.1)
-        inert = len(xs) < 4 or (max(xs) - min(xs)) < 2.0
+        # The adversary is the authority on whether this is a real, drivable match. It runs
+        # in its own process on its own clock; a stale or failing vote makes the episode
+        # unscorable. Motion alone is NOT evidence: the title screen's attract demo moves.
+        # ENTRY-TIME GATE (Pau's shape): prove once that input reaches the simulation,
+        # then judge the episode on that proof plus fresh state. A per-tick motion test
+        # cannot work because a policy may legitimately stand still.
+        try:
+            # Use the RETRYING path, not a single shot. Measured: a one-shot gate at
+            # episode start returned A_px=7.0 against the 8 px threshold and the episode
+            # was thrown away, even though entry seconds earlier had passed with 15.0.
+            # _drivable_now() primes, re-gates, and uses the cheap Enter accept between
+            # attempts, which is exactly what this situation needs.
+            gok = mgr._drivable_now()
+            mgr.gate_ts = time.time()
+            st1 = state_of(mgr)
+            fresh = st1 is not None and mgr.has_players(st1)
+            _adv = {"entry_gate": gok, "A_px": round(mgr.gate_px, 1),
+                    "fresh_state": fresh}
+            inert = not (gok and fresh)
+        except Exception as e:
+            _adv = {"why": f"gate error: {e}"}
+            inert = True
+        except Exception as e:
+            _adv = {"why": f"adversary unavailable: {e}"}
+            inert = True
     if inert:
         mgr.press(27); time.sleep(1.5)
         mgr.press(27); time.sleep(1.5)
@@ -179,14 +279,38 @@ def play(mgr, w, seconds, seed, tag, log=print):
     saw_player = False
     gone_since = None
     accept_tries = [0]
+    death_actions = []
+    cross_verdicts = []
+    loss_verified = []
     real_samples = 0
+    max_y_me = None
+    exit_reason = "window-complete"
     sum_me = 0.0
     min_abs_dx = None
+    _stuck_since = None
     while time.time() - t0 < seconds:
+        # EARLY ABORT ON A STUCK GAME. Measured: states occur where both fighters sit at a live
+        # height but the flags are 0 and no key (P, Esc, Enter) changes anything - the episode then
+        # burns the full 60 s window to produce nothing. If we have seen no usable sample for 15 s,
+        # give up and let the caller re-enter: a stuck episode then costs 15 s instead of 60.
+        if real_samples == 0:
+            _stuck_since = _stuck_since or time.time()
+            if time.time() - _stuck_since > 15.0:
+                exit_reason = "stuck-no-samples"
+                print(f"  {tag}: aborting - no usable samples in 15 s", flush=True)
+                break
+        else:
+            _stuck_since = None
         # DEATH = the fighter's existence flag drops. read_state() deliberately
         # returns None when a flag is 0, so this check MUST run before that gate -
         # otherwise the death is never observed (measured: 0 deaths in 10 episodes).
         raw = read_raw(mgr.iid)
+        # TRACE THE FIRST SECONDS. Episodes are dying ~1 s after a passing gate with
+        # "accept-failed", and a round cannot end in one second - so the loop is almost
+        # certainly misreading a brief gap in the state file as a round boundary. Print the
+        # raw flags for the early part of each episode so the next run shows which it is.
+        if real_samples < 25 and (time.time() - t0) < 6.0:
+            print(f"    {tag} t={time.time()-t0:5.2f} raw={raw}", flush=True)
         if raw is not None and prev_flags is not None:
             if prev_flags[0] > 0.5 and raw[4] < 0.5:
                 them_deaths += 1
@@ -194,8 +318,14 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 me_deaths += 1
         if raw is not None:
             prev_flags = (raw[4], raw[5])
-        st = read_state(mgr.iid)
-        if st is None:
+        st = state_of(mgr)
+        # "gone" now means OUR fighter is absent AND the state is unreadable. A flicker in
+        # the OPPONENT's flag is not an absence: measured at t=0.25 s the CPU flag dropped
+        # while its position read (262, 560). Treating that as gone aborted the episode.
+        # OUR fighter absent, judged by POSITION: the have242 flag read 0 for a sustained
+        # 76 s during live play (independent observer), so it cannot be the liveness test.
+        gone = st is None or not (0.5 < abs(st.get("me_x") or 0.0) < 3000.0)
+        if gone:
             # once we have seen a live fighter, a sustained absence means the match
             # ended: stop the window and let the manager start a fresh process.
             if saw_player:
@@ -203,24 +333,38 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 # 8 s, not 2.5: a ROUND transition also hides both fighters for a
                 # moment, and 2.5 s cut every episode off after a single round, so
                 # a best-of-5 match only ever yielded one round of signal.
-                if time.time() - gone_since > 2.5:
+                if time.time() - gone_since > 4.0:
                     # A round just ended. Press accept to start the NEXT round instead
                     # of closing the episode: with one round per episode every episode
                     # was exactly "rounds 0-1", which gives the GA almost no signal.
                     accept_tries[0] += 1
                     if accept_tries[0] <= 2:
+                        # 1.2 s was far too short. MEASURED (results/restart_0.json):
+                        # after a round ends, Enter brings the fighters back in 7.61 s.
+                        # Pressing and then looking again 1.2 s later always saw "still
+                        # gone", so every round looked like the end of the match.
                         print(f"  {tag}: round over, accepting next "
                               f"(try {accept_tries[0]})", flush=True)
-                        mgr.press(13)
+                        # Enter alone was not enough: with the policy pressing keys, the
+                        # post-round screen sometimes ignored it and the episode ended at
+                        # samples=51. Fall back to the alternating Enter/Space path and
+                        # record which one worked, so the next run can stop guessing.
+                        got = mgr._accept_restart(tries=3, wait=8.0)
+                        print(f"  {tag}: accept via alternate keys -> {got}", flush=True)
+                        if not got:
+                            exit_reason = "accept-failed-alternate"
+                            break
                         gone_since = None
-                        time.sleep(1.2)
                         continue
-                    print(f"  {tag}: match over, ending window", flush=True)
+                    exit_reason = "accept-failed-after-2-tries"
+                    print(f"  {tag}: match over, ending window (accept failed)", flush=True)
                     break
             time.sleep(0.05)
             continue
         saw_player = True
         real_samples += 1
+        if max_y_me is None or st["me_y"] > max_y_me:
+            max_y_me = st["me_y"]
         sum_me += st["me_x"]
         adx = abs(st["them_x"] - st["me_x"])
         min_abs_dx = adx if min_abs_dx is None else min(min_abs_dx, adx)
@@ -241,10 +385,15 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 start_me, best_them = st["me_x"], st["them_x"]
                 start_them = st["them_x"]
                 best_me, worst_them = st["me_x"], st["them_x"]
-            elif me_jump:
-                died_me = True                    # we respawned => we died
+            elif me_jump and _at_edge(st["me_x"]):
+                died_me = True                    # we respawned at an arena end => we died
                 me_deaths += 1
-            elif them_jump:
+                # HOW did we die? Record the action we were holding. Measured need: the agent
+                # loses every exchange and we had no evidence about whether that is
+                # overcommitment (dying while attacking) or passivity (dying while idle). The
+                # action space is small enough that this histogram names the cause.
+                death_actions.append(_act_name(held_code))
+            elif them_jump and _at_edge(st["them_x"]):
                 died_them = True
                 them_deaths += 1
 
@@ -255,37 +404,118 @@ def play(mgr, w, seconds, seed, tag, log=print):
         # A respawning fighter sits at x ~ 0 (the CPU's spawn side), which used to
         # be read as "crossed our goal" and produced 1110 phantom losses in 10
         # episodes. Track approach from deep in the field, then require the cross.
-        if st["me_x"] > GOAL_X - 700:
+        # armed once we have been back in our own half this episode (the old
+        # `me_x > GOAL_X - 700` was true from the first sample in a 470 px arena)
+        if st["me_x"] < GOAL_X * 0.55:
             me_armed = True
         now_t = time.time()
         # A round win must be a GENUINE crossing between consecutive samples, not a
         # respawn that happens to land past the goal line. Measured: a fresh population
         # reported 10 wins in 10 rounds while its fighter never left x=808..897, which
         # is exactly this bug. Requiring prev sample < GOAL_X-150 kills the phantom.
-        genuine_cross = (prev is not None and prev["me_x"] < GOAL_X - 150
-                         and st["me_x"] >= GOAL_X and now_t - t0 > 3.0)
+        # walked, not teleported: the step into the goal must be small. Measured teleports
+        # cover a whole arena (2 -> 462) in one sample, so this rejects respawns cleanly.
+        # SELF-CONTRADICTION FIXED. The old guard required prev < GOAL_X - 150 AND now >=
+        # GOAL_X in the same sample - a 150+ px jump - while CROSS_MAX_STEP = 60 forbids any
+        # step over 60 px. Both could never be true at once, so `genuine_cross` was UNREACHABLE
+        # and no policy could ever score a round. (Session 145 "round wins are reachable" was
+        # therefore wrong: I changed GOAL_X 1650 -> 440 and added the step limit, but left the
+        # 150 px arming margin, which in a 470 px arena is a third of the field.)
+        # Correct form: cross the line in one ordinary step, having previously been back in our
+        # own half.
+        genuine_cross = (prev is not None
+                         and prev["me_x"] < GOAL_X
+                         and st["me_x"] >= GOAL_X
+                         and abs(st["me_x"] - prev["me_x"]) < CROSS_MAX_STEP
+                         and me_armed and now_t - t0 > 3.0)
         if genuine_cross and me_armed and not me_crossed and now_t - last_round_t > 6.0:
-            rounds_won += 1; match_rounds_won += 1
-            me_crossed = True; me_armed = False
-            last_round_t = now_t
-            next_accept_t = now_t + 2.5
-            if match_rounds_won >= ROUNDS_TO_WIN:
-                matches_won += 1
-                match_rounds_won = match_rounds_lost = 0
+            # VERIFY THE PROXY IN PASSING. Our round counter fires when our fighter walks past
+            # x>=GOAL_X, but nothing yet proves the GAME agrees. A real round transition moves
+            # both fighters far (the arena resets); if our fighter simply keeps walking, the
+            # proxy is fiction. Watched once, quietly, right after each crossing.
+            _paid = False
+            try:
+                _watch = []
+                _tw = time.time()
+                while time.time() - _tw < 1.5:
+                    _s = state_of(mgr)
+                    if _s:
+                        _watch.append(_s)
+                    time.sleep(0.05)
+                if _watch:
+                    _me_span = max(w["me_x"] for w in _watch) - min(w["me_x"] for w in _watch)
+                    _th_span = max(w["them_x"] for w in _watch) - min(w["them_x"] for w in _watch)
+                    # BOTH fighters must reposition. Measured: four crossings gave
+                    # me_span 6-19 px - our fighter never teleported - so no round was
+                    # ending. The old `or` accepted a CPU merely running 220 px as a
+                    # transition, which is not a round end.
+                    _transition = _me_span > 200 and _th_span > 200
+                    cross_verdicts.append(bool(_transition))
+                    _paid = bool(_transition)
+                    print(f"  {tag}: CROSSING VERIFY me_span={_me_span:.0f} "
+                          f"them_span={_th_span:.0f} transition={_transition}", flush=True)
+                    _paid = bool(_transition)
+            except Exception:
+                pass
+            # DO NOT PAY FOR UNVERIFIED ROUNDS. A goldfish audit found rounds_won was
+            # incremented unconditionally: the verifier only appended to a list, so a crossing
+            # with no observed round transition was still awarded 60 points. Measured: 4
+            # crossings at GOAL_X=440, none followed by a transition (me_span 6-19 px) - the
+            # search was being paid for walking past a coordinate.
+            # No `continue`: that would skip the prev-sample update below and silently break
+            # crossing detection on every following sample.
+            if _paid:
+                rounds_won += 1; match_rounds_won += 1
+                me_crossed = True; me_armed = False
+                last_round_t = now_t
+                next_accept_t = now_t + 2.5
+                if match_rounds_won >= ROUNDS_TO_WIN:
+                    matches_won += 1
+                    match_rounds_won = match_rounds_lost = 0
+            else:
+                print(f"  {tag}: crossing NOT counted (no round transition observed)",
+                      flush=True)
         if st["me_x"] < GOAL_X - 400:
             me_crossed = False
-        if st["them_x"] < GOAL_X_OPP + 700:
+        if st["them_x"] > GOAL_X * 0.45:
             them_armed = True
-        genuine_cross_them = (prev is not None and prev["them_x"] > GOAL_X_OPP + 150
-                              and st["them_x"] <= GOAL_X_OPP and now_t - t0 > 3.0)
+        genuine_cross_them = (prev is not None
+                              and prev["them_x"] > GOAL_X_OPP
+                              and st["them_x"] <= GOAL_X_OPP
+                              and abs(st["them_x"] - prev["them_x"]) < CROSS_MAX_STEP
+                              and them_armed and now_t - t0 > 3.0)
         if genuine_cross_them and them_armed and not them_crossed and now_t - last_round_t > 6.0:
-            rounds_lost += 1; match_rounds_lost += 1
-            them_crossed = True; them_armed = False
-            last_round_t = now_t
-            next_accept_t = now_t + 2.5
-            if match_rounds_lost >= ROUNDS_TO_WIN:
-                matches_lost += 1
-                match_rounds_won = match_rounds_lost = 0
+            # LOSSES GET THE SAME SCRUTINY. Only wins were verified, which is asymmetric:
+            # a "loss" fires when the CPU reaches x <= 20, and that could equally be a
+            # respawn after we killed it. Symmetric evidence, or neither claim stands.
+            _loss_ok = False
+            try:
+                _watch = []
+                _tw = time.time()
+                while time.time() - _tw < 1.5:
+                    _s = state_of(mgr)
+                    if _s:
+                        _watch.append(_s)
+                    time.sleep(0.05)
+                if _watch:
+                    _me_span = max(w["me_x"] for w in _watch) - min(w["me_x"] for w in _watch)
+                    _th_span = max(w["them_x"] for w in _watch) - min(w["them_x"] for w in _watch)
+                    _loss_ok = bool(_me_span > 200 and _th_span > 200)
+                    loss_verified.append(_loss_ok)
+                    print(f"  {tag}: LOSS VERIFY me_span={_me_span:.0f} "
+                          f"them_span={_th_span:.0f}", flush=True)
+            except Exception:
+                pass
+            if _loss_ok:
+                rounds_lost += 1; match_rounds_lost += 1
+                them_crossed = True; them_armed = False
+                last_round_t = now_t
+                next_accept_t = now_t + 2.5
+                if match_rounds_lost >= ROUNDS_TO_WIN:
+                    matches_lost += 1
+                    match_rounds_won = match_rounds_lost = 0
+            else:
+                print(f"  {tag}: loss NOT counted (no round transition observed)", flush=True)
         if st["them_x"] > GOAL_X_OPP + 400:
             them_crossed = False
         # After a round ends the game waits on a READY screen. Pressing accept starts
@@ -326,7 +556,24 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # reappears) - that is the next thing to build.
     # DIAGNOSTIC ONLY - never in fitness. Measured: 485 "kills" in one episode from the
     # teleport detector, which would contribute +249 and swamp every real term.
-    kills_reward = 0.0
+    # Kills and deaths, now measured by the edge-teleport signature rather than a bare
+    # jump threshold (which produced 485 false kills and had to be disabled). Weighted well
+    # below a round win (60) but enough to shape a fight: taking a stock is progress toward
+    # crossing, and dying hands the CPU ground.
+    # PRIMARY SIGNAL: net kills. An integer count per episode, so its variance is far lower
+    # than the continuous territory terms (measured sd ~12 across reps of one policy, vs a
+    # spread of ~5 for the kill counts themselves). Taking a stock is the mechanical
+    # precondition for crossing the goal, so this points at the objective as well as being
+    # measurable.
+    # SMALL NET TERM. The kill-dominant version (20 per net stock) was measured as NOISIER
+    # than territory (sd 23.3 vs 11.8) and produced spreads from -97.6 to +22.7 within one
+    # policy. Kept here only as a nudge, because kills are a genuine precondition for
+    # crossing while territory is the measured lower-variance signal.
+    # NET stocks, not separate rewards. Measured immediately after the first version:
+    # g0i0r2 with kills=3, deaths=3 scored fit=28.9 and g0i0r3 with the same 3/3 scored 32.3 -
+    # i.e. an EVEN trade was being paid +30, because 25 per kill against 15 per death is a
+    # 5:3 ratio. A one-for-one exchange should be worth nothing. Now it is.
+    kills_reward = 6.0 * (them_deaths - me_deaths)
     # TERRITORY IS THE LEARNING SIGNAL. Measured: every individual scored an identical
     # -8.3 because a Training match is ONE round, so the win/loss term is a single bit
     # and the GA has nothing to differentiate on. These continuous terms give a gradient
@@ -346,8 +593,11 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # 0-0), so nothing rewarded actually approaching the goal line. This term does, and
     # it is the only path by which a crossing - and therefore a round win - can appear.
     proximity = 0.0
-    if best_me is not None:
-        proximity = 4.0 * (best_me / float(GOAL_X))
+    # REMOVED: proximity used to pay 4.0 * (best_me / GOAL_X) - a flat reward for existing
+    # at a position on the field. Measured here: all six individuals in a generation scored
+    # an IDENTICAL 10.9, which is the signature of a term that cannot depend on the policy.
+    # Standing next to the CPU outscored taking ground, so the GA had no gradient toward
+    # the goal line. A position is not an achievement.
     # PUSH THEM BACK. Measured: running alone gains ~366 px and then gets shoved back to
     # the start, so the only way to hold ground is to win exchanges. Nothing rewarded
     # that: `conceded` only punishes being pushed. This term pays for driving the CPU
@@ -367,14 +617,116 @@ def play(mgr, w, seconds, seed, tag, log=print):
         # Closing is a precondition, not the objective; the outcome has to pay more.
         closeness = 1.0 * max(0.0, 1.0 - min_abs_dx / 200.0)
     territory = (2.0 * advance - 4.0 * conceded + proximity
-                 + 6.0 * pushed + closeness)
-    fitness = (10.0 * rounds_won - 6.0 * rounds_lost
-               + 30.0 * matches_won - 20.0 * matches_lost
+                 + 12.0 * pushed + closeness)
+    # THE NOISY TERMS ARE DEMOTED, NOT REMOVED. Measured (Session 151): four reps of ONE
+    # policy gave sd 11.76 on a score dominated by the territory terms, which is larger than
+    # any plausible difference between two policies. Kills (integer) now carry the objective;
+    # territory and progress are kept at a quarter weight as directional shaping only.
+    SHAPING = 1.0
+    fitness = (60.0 * rounds_won - 30.0 * rounds_lost
+               + 150.0 * matches_won - 80.0 * matches_lost
                + kills_reward
-               + float(np.clip(progress, -5, 5))
-               + float(np.clip(territory, -12, 12)))
-    no_match = real_samples < 20
-    rec = {"no_match": no_match, "real_samples": real_samples,
+               + SHAPING * float(np.clip(progress, -5, 5))
+               + SHAPING * float(np.clip(territory, -12, 12)))
+    # AN EPISODE AGAINST A STATUE IS NOT AN EPISODE. Measured (Session 166): five of six
+    # episodes had the CPU pinned at x=203 for the full 60 s - kills=0, deaths=0, rounds 0-0 -
+    # while the entry gate reported PASS because only OUR fighter was tested. A training match
+    # must have an opponent that plays, so an episode where the opponent never moved 15 px is
+    # discarded no matter how good the rest of the numbers look.
+    _th_span = None
+    try:
+        _th_span = abs(best_them - worst_them) if (best_them is not None and worst_them is not None) else None
+    except Exception:
+        pass
+    inert_opponent = (_th_span is not None and _th_span < 15.0 and real_samples > 20)
+    # A FROZEN AGENT IS NOT AN EPISODE EITHER. Measured: the "always left" seed pinned itself to
+    # the left wall and produced me=[114..114], [16..16], [95..95] - zero movement - while the
+    # opponent played, so those episodes passed the statue check and were scored. Their fitness
+    # describes the CPU, not our policy, and feeding them to selection rewards nothing. Both
+    # fighters must move for an episode to count.
+    _me_span_obs = (abs(best_me - start_me) if (best_me is not None and start_me is not None)
+                    else 0.0)
+    frozen_agent = (_me_span_obs < 15.0 and real_samples > 20)
+    # ARE WE ON THE MAIN SCREEN AGAIN? Title/menu characters read at x ~1288-1365; an arena is
+    # 0..512. This is logged on every episode so the answer never has to be assumed, and such an
+    # episode is discarded: it cannot contain a match.
+    _screen = mgr.screen_kind(st0)
+    if _screen == "menu":
+        log(f"  {tag}: DISCARDED - coordinates say MAIN SCREEN, not an arena "
+            f"(me_x={st0.get('me_x')}, them_x={st0.get('them_x')})")
+    main_screen = (_screen == "menu")
+    # A PLATFORM EPISODE IS NOT A FIGHT. Measured: live rounds put both fighters at y~560; READY
+    # and menu-platform states sit at y~128-160. An episode that never leaves the platform band
+    # cannot contain a round, but the fighter can still shuffle sideways enough to defeat the
+    # frozen-agent check - seen in this run as g1i1r2 sampling y=128 throughout.
+    # Threshold tightened to 250: measured platforms sit at y=96/128/160 and live rounds at y~560,
+    # but one entry reported y=278 which is not clearly either. Discarding a real fight is more
+    # expensive than keeping a mediocre one, so the cut is where the evidence is unambiguous.
+    # ONLY THE UNAMBIGUOUS PLATFORM RANGE. Observed y values across entries: 96, 128, 160 (the
+    # Y IS NOT A DISCRIMINATOR - my own filter was wrong and expensive. Measured:
+    #   g0i0r4  max_y=128  me=[149..306]  kills=1 deaths=3  opp_span=435
+    #   g0i0r5  max_y=160  me=[128..322]  kills=2 deaths=3  opp_span=394
+    # Those are REAL FIGHTS at exactly the heights I had labelled "platform band, never moves".
+    # This game puts arenas at different vertical baselines, so the y cut discarded five of six
+    # good episodes in one run. Removed. The frozen-agent check (our fighter's own travel) is the
+    # correct test and makes no assumption about where the fight is taking place.
+    platform_episode = False
+    if frozen_agent:
+        log(f"  {tag}: DISCARDED - our fighter moved only {_me_span_obs:.1f} px in "
+            f"{real_samples} samples (no policy signal)")
+    if inert_opponent:
+        log(f"  {tag}: DISCARDED - opponent moved only {_th_span:.1f} px in {real_samples} "
+            f"samples (inert opponent, not a training match)")
+    # unscorable if we never reached a live, drivable match, or could not see enough of it
+    # THE ENTRY GATE IS NOT EVIDENCE ABOUT THE EPISODE. A goldfish audit showed the two disagree
+    # in both directions (inert_entry=True with 462 px of opponent movement; inert_entry=False
+    # with 0 px), and the audit was right: measured in this run, two episodes with kills 3/2 and
+    # 3/3, opponent span 370-417 px and our own span 354 px were DISCARDED solely because the
+    # 10 s entry probe had failed. That throws away good fights - the most expensive resource in
+    # this project. Disqualification is now decided by during-episode evidence only; an entry
+    # failure is recorded as a warning.
+    no_match = ((real_samples < 20) or inert_opponent or frozen_agent
+                or platform_episode or main_screen)
+    # attribute every abandonment instead of inferring it later
+    # COORDINATE CALIBRATION. The round win/loss detector compares against GOAL_X=1650 and
+    # GOAL_X_OPP=250, and `me_armed` needs me_x > GOAL_X-700 = 950. Every position observed
+    # today was well below that, which would make a round win structurally impossible. The
+    # exact arena range in THIS build is unknown, so record it per episode instead of
+    # assuming it.
+    _me_rng = ""
+    if start_me is not None and best_me is not None:
+        _me_rng = f" me=[{start_me:.0f}..{best_me:.0f}]"
+    _th_rng = ""
+    if start_them is not None and worst_them is not None:
+        _th_rng = f" them=[{worst_them:.0f}..{best_them:.0f}]"
+    if RUN_DIR:
+        try:
+            import os as _os, json as _json
+            _os.makedirs(RUN_DIR, exist_ok=True)
+            with open(_os.path.join(RUN_DIR, "episodes.jsonl"), "a") as _f:
+                _f.write(_json.dumps({
+                    "tag": tag, "no_match": bool(no_match), "exit": exit_reason,
+                    "samples": real_samples, "inert_entry": bool(inert),
+                    "inert_opponent": bool(inert_opponent),
+                    "opp_span": _th_span, "me_span_range": [start_me, best_me],
+                    "kills": them_deaths, "deaths": me_deaths,
+                    "frozen_agent": bool(frozen_agent),
+                    "platform_episode": bool(platform_episode),
+                    "max_y": (round(max_y_me, 1) if max_y_me is not None else None),
+                    "rounds_won": rounds_won, "rounds_lost": rounds_lost,
+                    "cross_verified": cross_verdicts, "loss_verified": loss_verified,
+                    "death_acts": death_actions, "gate_px": mgr.gate_px,
+                    "fitness": round(fitness, 3), "ts": time.time(),
+                }) + "\n")
+        except Exception:
+            pass
+    log(f"  {tag}: exit={exit_reason} samples={real_samples} inert={bool(inert)} "
+        f"adv={_adv}{_me_rng}{_th_rng} kills={them_deaths} deaths={me_deaths} "
+        f"opp_span={(_th_span if _th_span is not None else -1):.0f} "
+        f"death_acts={death_actions} cross_verified={cross_verdicts} "
+        f"reset={_reset_ok} screen={_screen}")
+    rec = {"no_match": bool(no_match), "adversary": _adv,
+           "real_samples": real_samples,
            "advance": round(advance, 2), "conceded": round(conceded, 2),
            "territory": round(territory, 2), "fitness": round(fitness, 2),
            "pushed": round(pushed, 2), "closeness": round(closeness, 2),
@@ -385,6 +737,21 @@ def play(mgr, w, seconds, seed, tag, log=print):
            "trace": trace, "tag": tag, "weights": w.tolist()}
     log(f"  {tag} (inst {mgr.iid}): fit={fitness:.1f} rounds {rounds_won}-{rounds_lost} "
         f"matches {matches_won}-{matches_lost}")
+    # END-OF-EPISODE RESTART. A round ends when the episode ends, and the state file then
+    # drops to "no fighters". Discovering that at the START of the next individual forced a
+    # full menu re-entry (measured this session: 2-3 minutes per individual, so a generation
+    # of six rarely completed). Pressing Enter here, while we still know a round boundary
+    # just happened, starts the next match in well under a second.
+    try:
+        # Settle first: right at the end of an episode the round-over screen may still be
+        # showing both fighters, so an immediate check sees "players present" and skips the
+        # restart - and by the time the next individual asks, they are gone and it pays the
+        # full menu re-entry. Wait for the state to settle, then act.
+        time.sleep(2.0)
+        if not mgr.has_players(mgr.read_state()[0]):
+            mgr._accept_restart()
+    except Exception:
+        pass
     return rec
 
 
@@ -396,11 +763,34 @@ def main():
     ap.add_argument("--window", type=float, default=45.0)
     ap.add_argument("--seed", type=int, default=5)
     ap.add_argument("--init", action="store_true")
+    ap.add_argument("--reps", type=int, default=2)
     args = ap.parse_args()
+    global RUN_DIR
+    RUN_DIR = os.path.join("results", "runs",
+                           time.strftime("%Y%m%d-%H%M%S") + f"-p{os.getpid()}")
+    os.makedirs(RUN_DIR, exist_ok=True)
+    with open(os.path.join(RUN_DIR, "meta.json"), "w") as _m:
+        import json as _json
+        _json.dump({"argv": sys.argv, "started": time.time(),
+                    "cwd": os.getcwd()}, _m, indent=1)
+    print(f"run records -> {RUN_DIR}", flush=True)
+
+    # HARD GATE: refuse to train on an unhealthy environment. Measured reasons this matters: the
+    # launcher silently ran the game at nice 19 / background QoS (30 fps instead of 120) for a whole
+    # day, and a stale /tmp/nid_room_<id>.txt made the hook call room_goto(0) and kill the game.
+    # Both were visible in exactly the checks doctor.py runs.
+    import subprocess as _sp
+    _doc = _sp.run([sys.executable, "tools/doctor.py", "--gate"], capture_output=True, text=True)
+    print(_doc.stdout.strip(), flush=True)
+    if _doc.returncode != 0:
+        print("REFUSING TO TRAIN: doctor --gate did not pass "
+              "(fix the WARN/FAIL above, or run tools/doctor.py to see the detail)")
+        return
 
     os.environ["NID_ORDERS"] = "1"
     os.system('pkill -f "MacOS/Nidhogg" 2>/dev/null')
-    os.system('pkill -f train_win.py 2>/dev/null')
+    # (removed) this used to run `pkill -f train_win.py`, whose pattern matches the very
+    # process running it - starting a training run killed itself a moment later.
     time.sleep(2)
     # the prefs file is chmod 444 while a run is active (so injected menu keys cannot
     # rewrite the user's settings); unlock before writing, launch() re-locks it.
@@ -454,38 +844,107 @@ def main():
             for m in mgrs:
                 m.needs_reset = False
         pids = TS.InstanceManager._nidhogg_pids()
+        # Careful: the runner re-execs itself via SteamAPI_RestartAppIfNecessary, so 2
+        # processes are normal for a moment during a launch. Tightening this to `> len(mgrs)`
+        # made the sweep kill a healthy instance 8 s after a passing gate - measured, with
+        # the log showing "control gate A_px=15.0 (PASS) / live AND drivable" then instantly
+        # "== sweep: 2 game processes, resetting". Only sweep on real accumulation.
         if len(pids) > 2 * len(mgrs) + 2:
             print(f"== sweep: {len(pids)} game processes, resetting", flush=True)
             os.system('pkill -f "MacOS/Nidhogg"')
             time.sleep(3)
-        results = []
-        threads = []
-        for i, w in enumerate(pop.W):
-            mgr = mgrs[i % len(mgrs)]
-            tag = f"g{gen}i{i}"
-            time.sleep(0.15)
-            th = threading.Thread(target=lambda m=mgr, ww=w, t=tag:
-                                  results.append(play(m, ww, args.window, gen*997+i, t)))
-            th.start(); threads.append(th)
+        results = [None] * len(pop.W)
+        # ONE EPISODE AT A TIME PER INSTANCE. This used to spawn a thread per individual
+        # with `mgrs[i % len(mgrs)]`, so with --instances 1 six threads drove the SAME
+        # game concurrently: six interleaved key streams, six concurrent ensure_match /
+        # restart calls (which is where four `launched pid` lines inside one second came
+        # from), and episodes whose state was mangled by the others. It also made every
+        # individual's fitness depend on the neighbours rather than on its own weights.
+        # Now individuals are grouped by instance: parallel ACROSS instances, serial
+        # WITHIN one.
+        buckets = [[] for _ in mgrs]
+        for i in range(len(pop.W)):
+            buckets[i % len(mgrs)].append(i)
+
+        def run_bucket(slot):
+            for i in buckets[slot]:
+                # An exception inside play() used to kill this thread silently: results[i]
+                # stayed None, the "missing" filter skipped None rows, and the episode
+                # vanished with no log line at all. That is why runs showed entry working
+                # and then no episodes, with nothing to read.
+                try:
+                    # REPEATED MEASURES. Measured this session: the same seed scored 19.4 in
+                    # one episode and -1.6 in another, and the ranking REVERSED between runs
+                    # (always-attack 25.6 -> 2.2, always-right -1.6 -> 19.4). One episode
+                    # cannot rank two policies; per-episode noise swamps the difference. Each
+                    # individual is played `reps` times and the fitness averaged.
+                    runs = [play(mgrs[slot], pop.W[i], args.window,
+                                 gen * 997 + i * 7 + rep, f"g{gen}i{i}r{rep}")
+                            for rep in range(getattr(args, "reps", 2))]
+                    valid = [r for r in runs if r and not r.get("no_match")]
+                    if not valid:
+                        results[i] = runs[0] if runs else None
+                    else:
+                        avg = dict(valid[0])
+                        avg["fitness"] = float(np.mean([r["fitness"] for r in valid]))
+                        avg["fitness_all"] = [round(r["fitness"], 2) for r in valid]
+                        for k in ("rounds_won", "rounds_lost", "matches_won",
+                                  "matches_lost", "kills", "deaths"):
+                            avg[k] = int(np.mean([r.get(k, 0) for r in valid]))
+                        avg["tag"] = f"g{gen}i{i}"
+                        avg["no_match"] = False
+                        results[i] = avg
+                        print(f"  g{gen}i{i}: reps={len(valid)} "
+                              f"fits={avg['fitness_all']} mean={avg['fitness']:.2f}",
+                              flush=True)
+                except Exception:
+                    import traceback
+                    print(f"  g{gen}i{i}: play() RAISED:", flush=True)
+                    traceback.print_exc()
+                    results[i] = {"fitness": -100.0, "rounds_won": 0, "rounds_lost": 0,
+                                  "no_match": True, "tag": f"g{gen}i{i}",
+                                  "trace": [], "error": "see traceback"}
+
+        threads = [threading.Thread(target=run_bucket, args=(slot,))
+                   for slot in range(len(mgrs)) if buckets[slot]]
+        for th in threads:
+            th.start()
         for th in threads:
             th.join()
-        good = [r for r in results if not r.get("no_match")]
+        good = [r for r in results if r and not r.get("no_match")]
         if len(good) < len(results):
             # one global reset, then re-run only the individuals that had no match
-            missing = [i for i, r in enumerate(results) if r.get("no_match")]
+            missing = [i for i, r in enumerate(results) if r and r.get("no_match")]
             print(f"== gen {gen}: {len(missing)} individuals had no match, resetting",
                   flush=True)
             reset_all(mgrs)
             for i in missing:
                 w = pop.W[i]
                 tag = f"g{gen}i{i}"
-                results[i] = play(mgrs[i % len(mgrs)], w, args.window,
-                                  gen * 997 + i, tag)
-            good = [r for r in results if not r.get("no_match")]
+                r2 = play(mgrs[i % len(mgrs)], w, args.window, gen * 997 + i, tag)
+                # re-check the retry as well; a policy that does not move stays frozen after a
+                # reset, so the retry frequently returns no_match too
+                results[i] = r2
+                if r2 and r2.get("no_match"):
+                    print(f"  {tag}: retry also invalid ({r2.get('reason', 'no match')})",
+                          flush=True)
+            good = [r for r in results if r and not r.get("no_match")]
         if not good:
             print(f"== gen {gen}: all failed", flush=True)
             continue
-        pop.next_gen([r["fitness"] for r in results])
+        # SELECTION MUST SEE ONLY VALID EPISODES. This line used to pass EVERY record's fitness
+        # to next_gen, including ones marked no_match - which includes frozen-agent episodes and
+        # statues. A goldfish audit found the consequence: a discarded episode carrying fitness
+        # +16.218 (highest in its generation, produced entirely by the CPU's behaviour while our
+        # fighter never moved) would have ranked top-1 and become elite. `good` was computed and
+        # then used only for printing.
+        _selection_fits = [(r["fitness"] if (r and not r.get("no_match")) else -100.0)
+                           for r in results]
+        if any(r and r.get("no_match") and r.get("fitness", -100) > -99 for r in results):
+            print(f"== gen {gen}: selection excludes "
+                  f"{sum(1 for r in results if r and r.get('no_match'))} invalid episode(s)",
+                  flush=True)
+        pop.next_gen(_selection_fits)
         best = max(good, key=lambda r: r["fitness"])
         mean = float(np.mean([r["fitness"] for r in good]))
         print(f"== gen {gen} best {best['fitness']:.2f} mean {mean:.2f} "

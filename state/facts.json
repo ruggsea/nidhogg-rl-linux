@@ -1,0 +1,213 @@
+{
+ "_comment": "Machine-readable facts for this project. Every entry must carry how it was established. If a fact is listed as 'measured' the measurement exists in NOTES.md or docs/. Anything not here should be re-measured, not remembered. This file exists because the session was compacted twice and the same facts (menu keys, room meaning, mouse calibration) were re-derived several times.",
+ "environment": {
+  "game_binary": "/Users/ruggsea/Library/Application Support/Steam/steamapps/common/Nidhogg/Nidhogg.app/Contents/MacOS/Nidhogg",
+  "hook": "hook/inject.dylib (built from hook/inject.m + hook/hook.s, arm64)",
+  "control_files": {
+   "keys": "/tmp/nid_keys_<id>.txt  (one GML key code per line; 65=A 68=D 87=W 83=S 70=F 71=G 13=Enter 27=Esc 38=ArrowUp 32=Space)",
+   "state": "/tmp/nid_state_<id>.txt  (them_x them_y me_x me_y have154 have242 - NOTE names are unreliable, see player_identity)",
+   "instances": "/tmp/nid_insts_<id>.txt  (id object_index x y, one line per instance)",
+   "room_now": "/tmp/nid_room_now_<id>.txt  (current room index, int32)",
+   "click": "/tmp/nid_click_<id>.txt  (window-content x y, posts a real CGEvent click)",
+   "DANGER_room_cmd": "/tmp/nid_room_<id>.txt is a room_goto COMMAND; a stale value there kills the game ('Game ended before loading first room')"
+  },
+  "launch_env_required": {
+   "NID_THREAD": "1 - without it the hook's probe thread never starts, so there are no state files at all",
+   "NID_MAN": "1 - publishes the state file",
+   "NID_FOCUS": "1",
+   "NID_SHOW": "1 - keeps the window on screen; MEASURED 120-320 fps visible vs ~24-30 fps parked",
+   "NID_VISIBLE": "1 - trainer sets NID_SHOW from this",
+   "NID_NICE": "unset by default; setting it applies nice 19 + background QoS, which MEASURED 4x slower"
+  },
+  "visibility": {
+   "policy": "game MAY be visible; it MUST be muted. Relaxed 2026-11-08 by the user.",
+   "measured": "visible 120-320 fps vs ~24-30 fps parked (macOS throttles an essentially-offscreen window), so visible is 2x-5x faster and now the default",
+   "mute_mechanism": "the game's own prefs only: prefs.ini [audio] unmuted=0 and musicVol=0, restored from prefs_locked.ini at every launch and chmod 444 during a run. NEVER touch the Mac system volume.",
+   "env": "NID_VISIBLE=1 (default in the launcher); NID_HIDDEN=1 parks the window for a 2x slowdown"
+  }
+ },
+ "rooms": {
+  "source": "decompiled from Contents/Resources/game.ios by a pi subagent; table in docs/ROOM_NAMES.md; 82 rooms",
+  "2": "rMainMenu",
+  "3": "rMultiMenu",
+  "4": "rOnlineLobby",
+  "17": "rLevelSelect",
+  "21": "rTutorial",
+  "25": "rPreMatch",
+  "20": "rMatchStats",
+  "19": "rControlsRoom",
+  "arenas": "26-77 excluding 69 and 78 (castle / mines / sky / wilds / cemetery sections)",
+  "note": "the title screen's attract demo runs INSIDE an arena room (29 rCastleCenter), so room index alone cannot distinguish demo from match"
+ },
+ "menu": {
+  "source": "screenshot-verified, session 217-220",
+  "keys": {
+   "S": "moves cursor DOWN and WRAPS",
+   "W": "does NOT move the main menu",
+   "ArrowUp": "acts as BACK",
+   "Enter": "select",
+   "Esc": "back one level"
+  },
+  "structure": "the list SCROLLS under a FIXED highlight bar; the bar sits at the same screen position regardless of selected row",
+  "highlight_bar_capture": "in a 1920x1256 capture of a 960x628 window the bar spans image y 836-886; grey value 30 at x=0.33W",
+  "consequence": "the selected row can only be identified by the TEXT under the bar (band template matching, see nav3.py), never by a coordinate",
+  "danger": "pressing Enter inside OPTIONS cycles the LANGUAGE row: measured flips to French and then Chinese",
+  "verified_path": "fresh launch -> Enter -> (S x5 from MULTIPLAYER) -> Enter -> S -> Enter -> Enter -> S -> Enter -> Enter => room 2 -> 17 -> 29"
+ },
+ "player_identity": {
+  "source": "measured by holding D/A and diffing every instance (session 220)",
+  "finding": "the object index of the player DIFFERS BY ROOM: object 154 answered in one arena (D +64, A -25), object 244 in another; the other object did not move at all",
+  "consequence": "no fixed me/them slot mapping is correct; the authoritative fighter is the one that RESPONDS to D -> right and A -> left (bind_by_response)",
+  "hook_labels": "the state file's first pair (them_*) comes from object 154, the second (me_*) from object 242 - neither is reliably 'us'"
+ },
+ "timing": {
+  "hook_key_hold": "12 frames per press; MEASURED: at 30 fps that was 200 ms, at 120 fps 100 ms - this made menu presses stop registering when fps changed",
+  "boot_wait": "48 s after launch before entry keys",
+  "round_settle": "the round does not accept input immediately after entering the arena; ~4 s settle was needed before binding succeeded"
+ },
+ "verified_pipeline": {
+  "attest": "python tools/attest.py -> 'VERDICT: ATTESTED' (room ok / bind ok / gate ok / opponent ok). Evidence in out/ATTESTED",
+  "gate": "direction gate: hold D and require the bound instance to move right, hold A and require left; both must pass",
+  "doctor": "python tools/doctor.py -> environment health (processes, priority, fps, room, file freshness, stale command file)"
+ },
+ "open": [
+  "no verified round transition has ever been observed, so rounds_won is 0 and no win rate exists",
+  "the round counter in the reward cannot fire; fitness rests on net kills and territory only",
+  "menu navigation works but is slow (band capture + scroll per step)"
+ ],
+ "windows_build": {
+  "source": "strings over ~/nidfarm/game/data.win on artemis (the patched copy), 2026-11-09, worker 2 (prober) + worker 1 (engineer)",
+  "version": "arcade version 2026070301",
+  "note": "NEWER than the macOS game.ios build the rooms table above came from (2025-10-30). Room INDICES and menu structure differ - do NOT cross-trust the macOS table for the artemis build. The grid reached after SINGLE PLAYER is VsLevelSelect (MAP select), NOT room 17 rLevelSelect.",
+  "new_rooms": [
+   "rCastleStairs",
+   "rCastleStairsCenter",
+   "rCastleStairsLeftA",
+   "rCastleStairsLeftB",
+   "rCastleStairsLeftEnd",
+   "rCastleStairsRightA",
+   "rCastleStairsRightB",
+   "rCastleStairsRightEnd",
+   "rCastleStairsSuddenDeath",
+   "rChallengeMode",
+   "rTournamentIntro",
+   "rForceStartLevel",
+   "rCaslteBRightA",
+   "rCaslteWithYardSketch"
+  ],
+  "modes": [
+   "ARCADE",
+   "TRAINING",
+   "CPU BATTLE",
+   "TOURNAMENT",
+   "CHALLENGE",
+   "FREE PLAY",
+   "LOCAL",
+   "ONLINE"
+  ],
+  "training": "solo, fight the CPU on any map without Arcade; menu = personality list (~15: BRAWLER, DIVEKICKER, DIVEKICK ONLY, LUNGE, NEVER LUNGES, NO DIVEKICKS, NO THROWS, PARRY MASTER, RANDOM, RUN N LUNGE, THROWS ONLY, ...) then AI DIFFICULTY, MAP/CHANGE LEVEL, START. The CPU brain (createBrainForPlayer) is assigned ONLY by walking this menu; skipping it leaves the CPU passive/frozen.",
+  "mode_semantics": {
+   "source": "strings over ~/nidfarm/game/data.win, 2026-11-09, worker 1 (engineer)",
+   "CPU_BATTLE": "watch-only: two CPU fighters fight each other, no drivable P1 (help text: \"CPU BATTLE pits two CPU fighters against each other\")",
+   "TRAINING": "solo vs CPU on any map, needs personality + difficulty menus to create the CPU brain (help text: \"the new Training mode lets you fight the CPU on any map\")",
+   "ARCADE": "coin-gated solo vs CPU progression (strings: COINS TO PLAY, ADD CREDIT, insert coin, hasEnoughCoins, spendCoins, getArcadeModeDifficulty, addArcadeModeLevel)",
+   "frozen_READY_signature": "the ready-up lobby of offline multiplayer/tournaments, NOT arcade (string: \"Offline multiplayer now uses the same ready-up lobby as online mode\")",
+   "brain_creation": "createBrainForPlayer/createBrainForFighter + addToPlayerIndexBrain run only via the menu path that sets personality/difficulty (TRAINING), or a mode that assigns a brain"
+  }
+ },
+ "net_test_autostart_flags": {
+  "source": "STRG strings over ~/nidfarm/game/data.win (strg_dump.py) + macOS symbol table (NOTES.md Session 48), 2026-11-09 worker 1 (engineer)",
+  "route": "the game is a YYC build (data.win has NO CODE chunk; GML compiled into Nidhogg.exe 25.6MB PE32+ x86-64 which embeds gml_Script_net_test_autostart). net_test_autostart parses -net* flags and calls startMatch directly (skip menus).",
+  "flags": {
+   "-netlevel": [
+    "training",
+    "arcade",
+    "tourney",
+    "tourneysim",
+    "cpu"
+   ],
+   "-netplayers": "count",
+   "-netai": "boolean - opponent gets an AI brain",
+   "-netdiff / -netdiffs": "difficulty number",
+   "-netpersonality": [
+    "brawler",
+    "divekicker",
+    "divekick_only",
+    "no_divekicks",
+    "no_throws",
+    "run_n_lunge",
+    "random",
+    "parry king",
+    "lunge"
+   ],
+   "-netarcade": "start a local arcade match from the title screen",
+   "-netbot / -netbotaggr / -netbotpassive": "bot / aggression",
+   "-netvariant": [
+    "nodivekicks",
+    "boomerangSwords",
+    "throwsOnly",
+    "spineSwords",
+    "suddenDeathOnly",
+    "lowGravity",
+    "noSwords",
+    "trails",
+    "pumpkinMode"
+   ]
+  },
+  "measured": " -netai ALONE leaves the opponent FROZEN (0px in four consecutive 6s windows; sustained_check.py). The single-window opp_moves=True at ~75s was a scripted spawn/intro walk. So the brain needs the personality+difficulty globals too.",
+  "arcade_operator": "arcade_settings.ini in AppData/Roaming/Nidhogg holds coinsPerPlay (0=FREE PLAY), aiDifficulty, winnerStaysOn. Only OLD prefix ~/nidpfx has it; active farm prefixes ~/nidfarm/prefixes/{1,2} LACK it, so earlier coin-gate probes seeded the wrong prefix."
+ },
+ "linux_menu_walk": {
+  "source": "2026-11-09 worker 1 (engineer) live probes on :99 (screen_state.py + frame pixel classify + enter_training_linux.py)",
+  "boot_to_menu": "fresh launch -> title/attract (big YELLOW region ~22k px) -> Return -> MAIN MENU (bright: yellow ~15k + orange ~33k px)",
+  "training_walk": "main menu -> w (SINGLE PLAYER) -> Return (submenu) -> s (TRAINING) -> Return -> PARTNER LIST (DARK screen, white text on black, mean~27) -> Return (pick partner) -> DIFFICULTY submenu",
+  "blocker": "the DIFFICULTY submenu has 3 rows (AI DIFFICULTY / MAP-CHANGE-LEVEL / START per facts.windows_build); navigating to MAP/CHANGE-LEVEL and pressing Return opens the VsLevelSelect grid which RENDERS BLACK (mean~6.5) and answers keys (Return/Up exits back to the menu). enter_training_linux.py only presses ONE s (DIFFICULTY->START) so it selects MAP/CHANGE-LEVEL and lands in the black grid instead of START.",
+  "correction_2026-11-09": "the 'AI DIFFICULTY / MAP / START' 3-row reading is UNVERIFIED. STRG index 5668 'AI DIFFICULTY' is actually the ARCADE OPERATOR MENU label (5663 OPERATOR MENU / 5664 COINS TO PLAY region), not the training menu. The game's own -lttraining localtest shows the real training flow is: personality list -> DIFFICULTY WINDOW (separate screen) -> ONE press -> rLevelSelect (map select) -> START. So the dark 3-row screen after 'pick partner' is most likely the DIFFICULTY WINDOW (3 difficulty levels), not a row-list menu.",
+  "flag_route": "(-netlevel training -netai -netpersonality brawler -netdiff 3) boots to rOnlineLobby ready-up flow, NOT a training match (claim 1584456f)."
+ },
+ "training_flow_localtest": {
+  "source": "2026-11-09 worker 1 (engineer) state/probes/localtest_training_teams.log + lttraining_full_run.log (-lttraining)",
+  "flow": "main menu (120 steps) -> 'do TRAINING' -> training list (personality, detected in 9 steps) -> difficulty window (detected in 0 steps) -> beat cmd 6 (press) -> rLevelSelect -> [CRASH: TrainingMenu object 215 destroyed, timing race at difficulty->map transition]",
+  "consequence": "the difficulty window is a SEPARATE screen between the personality list and the map select. The manual walk must pick a personality, then handle the difficulty window, then the (black-rendering) map select, then START."
+ },
+ "linux_procs_bug": {
+  "source": "2026-11-09 worker 1 (engineer)",
+  "bug": "nid_linux.py stop() UNLINKS nidfarm/procs.json, and every input primitive (key/keydown/keyup) reads _disp(i) from procs.json and silently no-ops when the entry is missing. launch_linux.sh does NOT write procs.json. So after stop()+launch_linux.sh, key() sends ZERO keys and entry scripts report bound=None as if entry failed.",
+  "fix": "register the live instance: write {\"0\":{\"wrapper\":0,\"display\":\":99\"}} to ~/nidfarm/procs.json after launch_linux.sh (or use nid_linux.start which writes procs.json)."
+ },
+ "lobby_walk_plates": {
+  "source": "2026-11-09 worker 1 (engineer) strings over ~/nidfarm/game/Nidhogg.exe (strings -n4 | grep)",
+  "finding": "the ready-up 'walk onto the plates' is NOT a special key. lt_walk (gml_Script_lt_walk) logs '[seq] holding the walk until the lobby sequence is done' - it holds the fighter's OWN movement key (P1=d/a, P2=arrows) until BOTH fighters are on their plates.",
+  "evidence_strings": [
+   "gml_Script_lt_walk",
+   "[seq] holding the walk until the lobby sequence is done",
+   "FAIL walk: never both ready",
+   "ready-up room: two fighters, two places",
+   "ready-up room: the plates wait for both of a side",
+   "no plate",
+   "gml_Object_ReadyZone_Create_0 / Step_2 / Draw_0 / Draw_64"
+  ],
+  "consequence": "prober's 20:25 probe moved only P1 (d, x=8->142) and left P2 parked, so the game saw 'never both ready' and never opened level select. Both fighters must be driven onto their plates simultaneously.",
+  "after_plates": "from the game's own localtest log: level select (rLevelSelect) -> 'the pick timer starts the match' (~10s, NO pick key) -> arena -> 'round 2: X won' -> rMatchStats (auto-timeout ~10s) -> ready-up."
+ },
+ "training_difficulty_window_20261109": {
+  "source": "worker 1 (engineer) RE of localtest_training_teams.log + submenu_probe.jsonl, 2026-11-09",
+  "finding": "the difficulty window advances to rLevelSelect (room 17, map select) with exactly ONE press (claim sha d2ec7e39). It is a separate screen between the personality list and the map select.",
+  "diagnosis": "submenu_probe 21:01 shows 3 rows at game-y 70/126/139 but the grey highlight band moves 70->80->90 in 10px steps per s (NOT row-to-row ~55px jumps) -> row 1 (y~70) is a single-line CYCLE VALUE (difficulty), cycled by s or Left/Right, not a scrolling list row.",
+  "map_select": "training map select has NO picker countdown (string \"training: no picker countdown, not a local session\") so the player must pick a map + START manually; it renders BLACK on Linux (logic runs)."
+ },
+ "training_mode_20261109": {
+  "source": "strings over ~/nidfarm/game/Nidhogg.exe (build 10/30/2026), this tick",
+  "training_mode": "single-player Training mode: fight the CPU on any map without Arcade (patch-notes string)",
+  "cpu_battle": "CPU BATTLE = watch two CPU fighters (patch-notes string)",
+  "pick_timer": "level select has a pick timer that starts the match (string \"the pick timer starts the match\")",
+  "levelselect_picker": "one player is the picker; other player cannot start it",
+  "lt_flags": [
+   "-ltcontrols",
+   "-ltshow5",
+   "-ltteams",
+   "-lttraining"
+  ],
+  "untested": "-ltcontrols and -ltteams and -ltshow5 never probed on artemis yet"
+ }
+}

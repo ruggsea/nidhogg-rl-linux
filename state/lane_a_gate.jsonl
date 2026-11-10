@@ -1,0 +1,5 @@
+{"trial": 1, "ts": 1794269945.7, "window_s": 65.1, "enter": true, "p1": "0x190e200", "x0": 1007.0, "x1": 1112.0, "delta": 105.0, "sprite_px": 60222, "ok": true}
+{"trial": 1, "ts": 1794270271.6, "window_s": 65.1, "enter": true, "p1": "0x190da00", "x0": 1112.0, "x1": 1112.0, "delta": 0.0, "sprite_px": 54395, "ok": false}
+{"trial": 1, "ts": 1794270616.7, "window_s": 65.1, "enter": true, "p1": "0x190d800", "x0": 1112.0, "x_final": 1112.0, "max_during_delta": 0.0, "final_delta": 0.0, "sprite_px": 41519, "ok": false}
+{"trial": 1, "ts": 1794271690.4, "p1": "0x190da00", "x0": 1112.0, "max_delta": 5600.0, "n_during": 6, "sprite_px": 38348, "ok": true}
+{"trial": 2, "ts": 1794271826.1, "p1": "0x190e000", "x0": 1007.0, "max_delta": 4705.0, "n_during": 6, "sprite_px": 46744, "ok": true}

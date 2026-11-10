@@ -1,0 +1,247 @@
+=== RUN 1 22:06:39 ===
+1. LAUNCH (always fresh)
+[22:06:46] instance 0: launched pid 22291
+   launched, boot wait 48s, room=29
+2. NAVIGATE (mapped path)
+   try 0: diff vs SINGLE PLAYER = 57.7
+   no menu bar visible - pressing Enter to open the menu (1)
+   try 2: diff vs SINGLE PLAYER = 28.7
+   try 3: diff vs SINGLE PLAYER = 23.8
+   try 4: diff vs SINGLE PLAYER = 37.2
+   try 5: diff vs SINGLE PLAYER = 26.3
+   try 6: diff vs SINGLE PLAYER = 33.0
+   try 7: diff vs SINGLE PLAYER = 8.3
+   SINGLE PLAYER is under the highlight bar
+   enter SINGLE PLAYER    room=2 rMainMenu
+   S -> TRAINING          room=2 rMainMenu
+   enter TRAINING         room=2 rMainMenu
+   pick partner           room=2 rMainMenu
+   S -> START             room=2 rMainMenu
+   START                  room=17 rLevelSelect
+   skip intro             room=29 arena
+   skip intro again       room=29 arena
+   result: room=29 (arena) me_x=897.0
+3. ROOM
+   room=29  left title room: True
+3b. SETTLE (wait for the round to accept input)
+   settled
+4-5. BIND + CONTROL GATE (re-bind on failure; CPU is active)
+[22:08:16] instance 0: BOUND to instance 103188 (D +199 A -234)
+   attempt 1: bound instance 103188
+   attempt 1: gate FAIL {}
+[22:08:34] instance 0: BOUND to instance 103496 (D +224 A -176)
+   attempt 2: bound instance 103496
+[22:08:34] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 2: gate FAIL {}
+[22:08:48] instance 0: BOUND to instance 104320 (D +134 A -158)
+   attempt 3: bound instance 104320
+[22:08:48] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 3: gate FAIL {}
+[22:09:02] instance 0: bind found no fighter-shaped responder (D={} A={})
+   attempt 4: no responder; trying round restart
+[22:09:15] instance 0: bind found no fighter-shaped responder (D={105039: 0.0} A={105039: 272.0})
+   attempt 5: no responder; trying round restart
+[22:09:17] instance 0: refusing to bind - not in an arena room
+   attempt 6: no responder; trying round restart
+[22:09:31] instance 0: BOUND to instance 105167 (D +230 A -235)
+   attempt 7: bound instance 105167
+[22:09:34] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 7: gate FAIL {}
+[22:09:47] instance 0: BOUND to instance 105702 (D +189 A -161)
+   attempt 8: bound instance 105702
+[22:09:47] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 8: gate FAIL {}
+[22:10:01] instance 0: bind found no fighter-shaped responder (D={105893: 0.0, 105894: 216.0, 105897: 194.0} A={105893: 222.0})
+   attempt 9: no responder; trying round restart
+[22:10:15] instance 0: BOUND to instance 106018 (D +217 A -217)
+   attempt 10: bound instance 106018
+[22:10:21] instance 0: direction gate D=+137.0 A=53.2 -> PASS
+   bound instance: 106018
+   gate: PASS  {'D': 137.0, 'A': 53.23}
+6. OPPONENT IS NOT A STATUE
+   opponent moved: True
+
+VERDICT: ATTESTED - training run is meaningful
+  room=ok  bind=ok  gate=ok  opponent=ok
+=== RUN 2 22:10:27 ===
+1. LAUNCH (always fresh)
+[22:10:33] instance 0: launched pid 30896
+   launched, boot wait 48s, room=29
+2. NAVIGATE (mapped path)
+   try 0: diff vs SINGLE PLAYER = 57.9
+   no menu bar visible - pressing Enter to open the menu (1)
+   try 2: diff vs SINGLE PLAYER = 28.7
+   try 3: diff vs SINGLE PLAYER = 23.8
+   try 4: diff vs SINGLE PLAYER = 37.2
+   try 5: diff vs SINGLE PLAYER = 26.3
+   try 6: diff vs SINGLE PLAYER = 33.0
+   try 7: diff vs SINGLE PLAYER = 8.3
+   SINGLE PLAYER is under the highlight bar
+   enter SINGLE PLAYER    room=2 rMainMenu
+   S -> TRAINING          room=2 rMainMenu
+   enter TRAINING         room=2 rMainMenu
+   pick partner           room=2 rMainMenu
+   S -> START             room=2 rMainMenu
+   START                  room=17 rLevelSelect
+   skip intro             room=29 arena
+   skip intro again       room=29 arena
+   result: room=29 (arena) me_x=897.0
+3. ROOM
+   room=29  left title room: True
+3b. SETTLE (wait for the round to accept input)
+   settled
+4-5. BIND + CONTROL GATE (re-bind on failure; CPU is active)
+[22:12:04] instance 0: BOUND to instance 103051 (D +227 A -218)
+   attempt 1: bound instance 103051
+   attempt 1: gate FAIL {}
+[22:12:22] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 2: no responder; trying round restart
+[22:12:36] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 3: no responder; trying round restart
+[22:12:49] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 4: no responder; trying round restart
+[22:13:03] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 5: no responder; trying round restart
+[22:13:16] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 6: no responder; trying round restart
+[22:13:30] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 7: no responder; trying round restart
+[22:13:44] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 8: no responder; trying round restart
+[22:13:57] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 9: no responder; trying round restart
+[22:14:11] instance 0: bind found no fighter-shaped responder (D={100383: 0.0} A={100383: 0.0})
+   attempt 10: no responder; trying round restart
+   bound instance: None
+   gate: FAIL  {}
+6. OPPONENT IS NOT A STATUE
+   opponent moved: True
+
+VERDICT: NOT ATTESTED - bind, gate failed
+  room=ok  bind=FAIL  gate=FAIL  opponent=ok
+=== RUN 3 22:14:19 ===
+1. LAUNCH (always fresh)
+[22:14:25] instance 0: launched pid 39756
+   launched, boot wait 48s, room=29
+2. NAVIGATE (mapped path)
+   try 0: diff vs SINGLE PLAYER = 57.7
+   no menu bar visible - pressing Enter to open the menu (1)
+   try 2: diff vs SINGLE PLAYER = 28.7
+   try 3: diff vs SINGLE PLAYER = 23.8
+   try 4: diff vs SINGLE PLAYER = 37.2
+   try 5: diff vs SINGLE PLAYER = 26.3
+   try 6: diff vs SINGLE PLAYER = 33.0
+   try 7: diff vs SINGLE PLAYER = 8.3
+   SINGLE PLAYER is under the highlight bar
+   enter SINGLE PLAYER    room=2 rMainMenu
+   S -> TRAINING          room=2 rMainMenu
+   enter TRAINING         room=2 rMainMenu
+   pick partner           room=2 rMainMenu
+   S -> START             room=2 rMainMenu
+   START                  room=17 rLevelSelect
+   skip intro             room=29 arena
+   skip intro again       room=29 arena
+   result: room=29 (arena) me_x=894.0
+3. ROOM
+   room=29  left title room: True
+3b. SETTLE (wait for the round to accept input)
+   settled
+4-5. BIND + CONTROL GATE (re-bind on failure; CPU is active)
+[22:15:56] instance 0: BOUND to instance 103063 (D +233 A -222)
+   attempt 1: bound instance 103063
+[22:15:56] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 1: gate FAIL {}
+[22:16:10] instance 0: BOUND to instance 103238 (D +134 A -40)
+   attempt 2: bound instance 103238
+[22:16:10] instance 0: bound instance gone mid-gate (killed?); re-bind needed
+   attempt 2: gate FAIL {}
+[22:16:31] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 3: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:16:53] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 4: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:17:15] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 5: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:17:37] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 6: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:17:59] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 7: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:18:21] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 8: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:18:43] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 9: gate FAIL {'D': 0.0, 'A': 0.0}
+[22:19:03] instance 0: direction gate D=+0.0 A=0.0 -> FAIL
+   attempt 10: gate FAIL {'D': 0.0, 'A': 0.0}
+   bound instance: 103238
+   gate: FAIL  {'D': 0.0, 'A': 0.0}
+6. OPPONENT IS NOT A STATUE
+   opponent moved: True
+
+VERDICT: NOT ATTESTED - gate failed
+  room=ok  bind=ok  gate=FAIL  opponent=ok
+{"ts": 1794179089.501718, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "opponent": true}, "room": 29, "gate": {"D": 139.0, "A": 40.99000000000001}, "bound": 103849}
+{"ts": 1794179199.654679, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "opponent": true}, "room": 29, "gate": {"D": 143.0, "A": 128.84}, "bound": 103361}
+{"ts": 1794179446.959585, "verdict": "NOT ATTESTED - bind, gate, opponent failed", "ok": {"room": true, "bind": false, "gate": false, "opponent": false}, "room": 4, "gate": {}, "bound": null}
+{"ts": 1794179475.9802449, "verdict": "NOT ATTESTED - bind, gate, dose_response, opponent failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": false}, "room": 4, "gate": {}, "bound": null}
+{"ts": 1794179660.3944619, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "dose_response": true, "opponent": true}, "room": 29, "gate": {"D": 147.0, "A": 121.75}, "bound": 103055}
+{"ts": 1794179970.047611, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 27, "gate": {}, "bound": null}
+{"ts": 1794180153.656384, "verdict": "NOT ATTESTED - dose_response failed", "ok": {"room": true, "bind": true, "gate": true, "dose_response": false, "opponent": true}, "room": 28, "gate": {"D": 10.0, "A": 13.0}, "bound": 103703}
+{"ts": 1794180394.803894, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 29, "gate": {}, "bound": null}
+{"ts": 1794180561.073935, "verdict": "NOT ATTESTED - dose_response failed", "ok": {"room": true, "bind": true, "gate": true, "dose_response": false, "opponent": true}, "room": 28, "gate": {"D": 149.0, "A": 30.0}, "bound": 105495}
+{"ts": 1794180674.0172951, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "dose_response": true, "opponent": true}, "room": 29, "gate": {"D": 145.0, "A": 145.0}, "bound": 103322}
+{"ts": 1794180915.734786, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 29, "gate": {}, "bound": null}
+{"ts": 1794181059.225282, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "dose_response": true, "opponent": true}, "room": 28, "gate": {"D": 145.0, "A": 151.0}, "bound": 104144}
+{"ts": 1794181199.093088, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "dose_response": true, "opponent": true}, "room": 29, "gate": {"D": 128.0, "A": 8.0}, "bound": 104170}
+{"ts": 1794181476.133486, "verdict": "NOT ATTESTED - gate, dose_response failed", "ok": {"room": true, "bind": true, "gate": false, "dose_response": false, "opponent": true}, "room": 28, "gate": {"D": 0.0, "A": 0.0}, "bound": 103522}
+{"ts": 1794181721.084517, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 28, "gate": {}, "bound": null}
+{"ts": 1794182368.4828491, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "dose_response": true, "opponent": true}, "room": 28, "gate": {"D": 11.0, "A": 20.0}, "bound": 103425}
+{"ts": 1794182688.9909241, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 28, "gate": {}, "bound": null}
+{"ts": 1794182934.711732, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 29, "gate": {}, "bound": null}
+{"ts": 1794183177.9827042, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 29, "gate": {}, "bound": null}
+{"ts": 1794183419.4514308, "verdict": "NOT ATTESTED - bind, gate, dose_response failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": true}, "room": 28, "gate": {}, "bound": null}
+{"ts": 1794183576.177685, "verdict": "NOT ATTESTED - dose_response failed", "ok": {"room": true, "bind": true, "gate": true, "dose_response": false, "opponent": true}, "room": 28, "gate": {"D": 93.0, "A": 9.0}, "bound": 103533}
+{"ts": 1794183802.545799, "verdict": "NOT ATTESTED - dose_response failed", "ok": {"room": true, "bind": true, "gate": true, "dose_response": false, "opponent": true}, "room": 28, "gate": {"D": 21.0, "A": 9.0}, "bound": 103551}
+{"ts": 1794184040.076504, "verdict": "NOT ATTESTED - bind, gate failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": true, "opponent": true}, "room": 28, "gate": {}, "bound": null}
+{"ts": 1794184152.045331, "verdict": "NOT ATTESTED - dose_response failed", "ok": {"room": true, "bind": true, "gate": true, "dose_response": false, "opponent": true}, "room": 28, "gate": {"D": 143.0, "A": 16.0}, "bound": 103219}
+{"ts": 1794184635.867954, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "dose_response": true, "opponent": true}, "room": 29, "gate": {"D": 155.0, "A": 142.0}, "bound": 103415}
+{"ts": 1794184827.868006, "verdict": "NOT ATTESTED - dose_response failed", "ok": {"room": true, "bind": true, "gate": true, "dose_response": false, "opponent": true}, "room": 28, "gate": {"D": 9.0, "A": 9.0}, "bound": 103551}
+{"ts": 1794184972.873603, "verdict": "ATTESTED - training run is meaningful", "ok": {"room": true, "bind": true, "gate": true, "dose_response": true, "opponent": true}, "room": 28, "gate": {"D": 145.0, "A": 122.72000000000001}, "bound": 104654}
+{"ts": 1794185243.12413, "verdict": "NOT ATTESTED - bind, gate, dose_response, opponent failed", "ok": {"room": true, "bind": false, "gate": false, "dose_response": false, "opponent": false}, "room": 68, "gate": {}, "bound": null}
+{"ts": 1794217512.5340781, "verdict": "NOT ATTESTED - dose_response failed", "ok": {"live": true, "bind": true, "gate": true, "floor": true, "dose_response": false}, "host": "artemis", "addr": "0x1908eec", "gate": {"D": 86.0, "A": 73.0}, "dose": {"short": 36.0, "long": 43.0, "ratio": 1.1944444444444444}}
+{"ts": 1794217717.5504942, "verdict": "ATTESTED - training run is meaningful", "ok": {"live": true, "bind": true, "gate": true, "floor": true, "dose_response": true}, "host": "artemis", "addr": "0x1908eec", "gate": {"D": 73.0, "A": 73.0}, "dose": {"short": 18.0, "long": 43.0, "ratio": 2.388888888888889}}
+{"ts": 1794217758.9125974, "verdict": "ATTESTED - training run is meaningful", "ok": {"live": true, "bind": true, "gate": true, "floor": true, "dose_response": true}, "host": "artemis", "addr": "0x1908eec", "gate": {"D": 73.0, "A": 73.0}, "dose": {"short": 16.0, "long": 45.0, "ratio": 2.8125}}
+{"ts": 1794217799.3898633, "verdict": "ATTESTED - training run is meaningful", "ok": {"live": true, "bind": true, "gate": true, "floor": true, "dose_response": true}, "host": "artemis", "addr": "0x1908eec", "gate": {"D": 75.0, "A": 73.0}, "dose": {"short": 16.0, "long": 43.0, "ratio": 2.6875}}
+{"ts": 1794217854.575813, "verdict": "ATTESTED - training run is meaningful", "ok": {"live": true, "bind": true, "gate": true, "floor": true, "dose_response": true}, "host": "artemis", "addr": "0x1908eec", "gate": {"D": 76.0, "A": 73.0}, "dose": {"short": 14.0, "long": 73.0, "ratio": 5.214285714285714}}
+{"ts": 1794217905.2016726, "verdict": "ATTESTED - training run is meaningful", "ok": {"live": true, "bind": true, "gate": true, "floor": true, "dose_response": true}, "host": "artemis", "addr": "0x1908eec", "gate": {"D": 73.0, "A": 73.0}, "dose": {"short": 14.0, "long": 46.0, "ratio": 3.2857142857142856}}
+{"ts": 1794217982.840973, "verdict": "ATTESTED - training run is meaningful", "ok": {"live": true, "bind": true, "gate": true, "floor": true, "dose_response": true}, "host": "artemis", "addr": "0x1908eec", "gate": {"D": 75.0, "A": 106.0}, "dose": {"short": 14.0, "long": 65.0, "ratio": 4.642857142857143}}
+{"ts": 1794218071.66362, "verdict": "ATTESTED - training run is meaningful", "ok": {"live": true, "bind": true, "gate": true, "floor": true, "dose_response": true}, "host": "artemis", "addr": "0x1908eec", "gate": {"D": 76.0, "A": 76.0}, "dose": {"short": 14.0, "long": 70.0, "ratio": 5.0}}
+{"ts": 1794218129.8524528, "verdict": "ATTESTED - training run is meaningful", "ok": {"live": true, "bind": true, "gate": true, "floor": true, "dose_response": true}, "host": "artemis", "addr": "0x1908eec", "gate": {"D": 76.0, "A": 76.0}, "dose": {"short": 14.0, "long": 43.0, "ratio": 3.0714285714285716}}
+{"ts": 1794222363.1809514, "verdict": "NOT ATTESTED - floor, running, opponent failed", "ok": {"live": true, "bind": true, "gate": true, "floor": false, "dose_response": true, "running": false, "opponent": false}, "host": "artemis", "addr": "0x191acec", "gate": {"D": 18.0, "A": 43.0}, "dose": {"short": 12.0, "long": 63.0, "ratio": 5.25}}
+{"ts": 1794222665.1469293, "verdict": "NOT ATTESTED - dose_response, running, opponent failed", "ok": {"live": true, "bind": true, "gate": true, "floor": true, "dose_response": false, "running": false, "opponent": false}, "host": "artemis", "addr": "0x191acec", "gate": {"D": 108.0, "A": 63.0}, "dose": {"short": 7.0, "long": 53.0, "ratio": 7.571428571428571}}
+{"ts": 1794240404.7777324, "verdict": "NOT ATTESTED - live, bind failed", "ok": {"live": false, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794245154.3101833, "verdict": "NOT ATTESTED - live, bind failed", "ok": {"live": false, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794245154.6145127, "verdict": "NOT ATTESTED - live, bind failed", "ok": {"live": false, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794245154.9212892, "verdict": "NOT ATTESTED - live, bind failed", "ok": {"live": false, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794245155.3836195, "verdict": "NOT ATTESTED - live, bind failed", "ok": {"live": false, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794245156.2279198, "verdict": "NOT ATTESTED - live, bind failed", "ok": {"live": false, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794245156.5457685, "verdict": "NOT ATTESTED - live, bind failed", "ok": {"live": false, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794246104.4691231, "verdict": "NOT ATTESTED - gate, floor, dose_response, opponent failed", "ok": {"live": true, "bind": true, "gate": false, "floor": false, "dose_response": false, "running": true, "opponent": false}, "host": "artemis", "addr": "0x1a20ef0", "gate": {"D": 0.0, "A": 0.0}, "dose": {"short": 0.0, "long": 0.0, "ratio": 0.0}, "note": null}
+{"ts": 1794246165.1487408, "verdict": "NOT ATTESTED - floor, dose_response, running, opponent failed", "ok": {"live": true, "bind": true, "gate": true, "floor": false, "dose_response": false, "running": false, "opponent": false}, "host": "artemis", "addr": "0x10723210", "gate": {"D": 0.0085601806640625, "A": 0.035125732421875}, "dose": {"short": 6.2080230712890625, "long": 0.002899169921875, "ratio": 0.00046700372865608617}, "note": null}
+{"ts": 1794246227.037777, "verdict": "NOT ATTESTED - bind failed", "ok": {"live": true, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794247143.1230261, "verdict": "NOT ATTESTED - bind failed", "ok": {"live": true, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794248167.1289399, "verdict": "NOT ATTESTED - live failed", "ok": {"live": false, "crash": true}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": "NameError: name 'INST' is not defined"}
+{"ts": 1794248167.6736214, "verdict": "NOT ATTESTED - live failed", "ok": {"live": false, "crash": true}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": "NameError: name 'INST' is not defined"}
+{"ts": 1794248168.230002, "verdict": "NOT ATTESTED - live failed", "ok": {"live": false, "crash": true}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": "NameError: name 'INST' is not defined"}
+{"ts": 1794248289.055096, "verdict": "NOT ATTESTED - gate, floor, dose_response, running, opponent failed", "ok": {"live": true, "bind": true, "gate": false, "floor": false, "dose_response": false, "running": false, "opponent": false}, "host": "artemis", "addr": "0x19f9ed0", "gate": {"D": 0.0, "A": 0.0}, "dose": {"short": 0.0, "long": 0.0, "ratio": 0.0}, "note": null}
+{"ts": 1794248316.3311634, "verdict": "NOT ATTESTED - bind failed", "ok": {"live": true, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794248361.9387305, "verdict": "NOT ATTESTED - bind failed", "ok": {"live": true, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794248652.7799094, "verdict": "NOT ATTESTED - bind failed", "ok": {"live": true, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794248704.1702535, "verdict": "NOT ATTESTED - bind failed", "ok": {"live": true, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794248786.318542, "verdict": "NOT ATTESTED - gate, floor, dose_response, running, opponent failed", "ok": {"live": true, "bind": true, "gate": false, "floor": false, "dose_response": false, "running": false, "opponent": false}, "host": "artemis", "addr": "0x19de8ec", "gate": {"D": 0.0, "A": 0.0}, "dose": {"short": 0.0, "long": 0.0, "ratio": 0.0}, "note": null}
+{"ts": 1794249303.8543496, "verdict": "NOT ATTESTED - bind failed", "ok": {"live": true, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794249348.0894833, "verdict": "NOT ATTESTED - bind failed", "ok": {"live": true, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794249348.1019378, "verdict": "NOT ATTESTED - bind failed", "ok": {"live": true, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794249366.6348853, "verdict": "NOT ATTESTED - bind failed", "ok": {"live": true, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794249386.4866672, "verdict": "NOT ATTESTED - bind failed", "ok": {"live": true, "bind": false}, "host": "artemis", "addr": null, "gate": null, "dose": null, "note": null}
+{"ts": 1794249431.5818665, "verdict": "NOT ATTESTED - gate, floor, dose_response, running, opponent failed", "ok": {"live": true, "bind": true, "gate": false, "floor": false, "dose_response": false, "running": false, "opponent": false}, "host": "artemis", "addr": "0x18eecf0", "gate": {"D": 0.0, "A": 0.0}, "dose": {"short": 0.0, "long": 0.0, "ratio": 0.0}, "note": null}
+{"ts": 1794256346.8331473, "verdict": "NOT ATTESTED - live failed", "ok": {"live": false}, "host": "artemis", "lane": 1, "addr": null, "gate": null, "dose": null, "note": "flag=-netlevel training -netai -netpersonality brawler -netdiff 3"}
+{"ts": 1794256585.6774015, "verdict": "NOT ATTESTED - live failed", "ok": {"live": false}, "host": "artemis", "lane": 1, "addr": null, "gate": null, "dose": null, "note": "flag=-netlevel training -netai -netpersonality brawler -netdiff 3"}

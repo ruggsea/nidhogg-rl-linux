@@ -9,11 +9,11 @@ measurement, not ours. Do not re-derive a GIVEN; consume it.
 | fact | value |
 |---|---|
 | entry to a live match | `nidstate.enter_match_v2(i)` — MULTIPLAYER/local-2P, ~58 s, proven |
-| P1 / P2 keys | `WASD` / `IJKL` — one harness drives both (self-play is free) |
+| P1 / P2 keys | `WASD` (yellow) / `Left`·`Right` arrows (orange) — one harness drives both (self-play is free). ⚠️ corrected from `IJKL`: `i/j/k/l` do nothing (`nidstate.py:765`, `LAYOUT.md`) |
 | fighter record layout | stride `0x200`; `x@+0xEC`, `y@+0xF0`, `facing f32@+0xD8`, `anim u32@+0xBC`, `type u32@+0x88` |
 | ground / pad y | `192` / `128` |
-| **ORANGE (P2) score** | **`0xd5f57c8`** u32 — write 0/1/2 changes HUD bars |
-| score copies (not displayed) | `0xf3c6368`, `0xf3c63e8`, `0xf3c6468` (stride `0x80`, region `0xece0000`) |
+| **ORANGE (P2) score** | ⚠️ **REFUTED on artemis** (was Pau's `0xd5f57c8`): 2-worker replay shows writes land (readback=2) but the HUD is unchanged on a byte-identical build — the score global moved in our launch env. Lane C is re-mining the region |
+| score copies (not displayed) | ⚠️ also not reproducing: `0xf3c6368`/`0xf3c63e8`/`0xf3c6468` read 2,2,2 at boot on artemis |
 | HUD score rects | P1 `[56,14,80,30]`, P2 `[214,14,238,30]`, drawn only on READY |
 | round boundary on demand | `Escape` → `Down, Down` → `Enter` → FORFEIT → YES (real Winner screen) |
 | writes persist | `x += 300` does not snap back, does not crash |
@@ -72,11 +72,11 @@ Extend `n.track(...)` to publish `phase` in `/tmp/nid_state_<pid>`; verify it fl
 **Accept:** 10/10 boundaries visible in the state file with no screenshot.
 
 ### Lane F — reward signal *(needs A + C)*
-Reward = Δ(ORANGE score) − Δ(YELLOW score) per round, plus shaped terms from `x`/`y` progress.
+Reward = Δ(own score) − Δ(opponent score) per round, plus shaped terms from `x`/`y` progress. The agent drives YELLOW (P1, WASD), so this is Δ(YELLOW) − Δ(ORANGE); a yellow forfeit must score NEGATIVE. (Original "Δ(ORANGE)−Δ(YELLOW)" was the opponent's reward — corrected.)
 **Accept:** a scripted episode yields a non-zero reward trace with correct sign when we forfeit.
 
 ### Lane G — self-play driver *(needs A + D)*
-One policy drives `WASD`, opponent policy drives `IJKL`; episodes reset via lane D.
+One policy drives `WASD`, opponent policy drives the `Left`·`Right` arrows; episodes reset via lane D.
 **Accept:** 100 consecutive rounds with both policies acting, no crash, round outcomes recorded.
 **Falsifier:** any round where neither fighter moves.
 

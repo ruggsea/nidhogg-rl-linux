@@ -1,0 +1,4 @@
+[pi-web-access] Dynamic tool activation requires Pi 0.86.0 or newer; web tools remain eagerly available.
+Warning: No models match pattern "kimi-coding/k3.1-pro"
+Warning: No models match pattern "openrouter/z-ai/glm-5.3"
+Error: Failed to load extension "/home/ruggsea/.pi/agent/extensions/self-loop.ts": Tool "loop" conflicts with /home/ruggsea/nidhogg-pau/.pi/extensions/self-loop.ts

@@ -1,0 +1,31 @@
+{
+ "ts": 1794271065.8269274,
+ "overall": "PASS",
+ "checks": [
+  {
+   "check": "game process",
+   "status": "PASS",
+   "detail": "Nidhogg.exe pid 3474049"
+  },
+  {
+   "check": "display",
+   "status": "PASS",
+   "detail": "Xvfb :99 socket present"
+  },
+  {
+   "check": "frame",
+   "status": "PASS",
+   "detail": "mean brightness 20.5"
+  },
+  {
+   "check": "spy",
+   "status": "PASS",
+   "detail": "pong 3474049"
+  },
+  {
+   "check": "mute",
+   "status": "PASS",
+   "detail": "no audio server and no sound card - game is muted by construction"
+  }
+ ]
+}

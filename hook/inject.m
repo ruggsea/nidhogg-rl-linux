@@ -217,6 +217,53 @@ static void post_ns_event(int code, bool down) {
     [NSApp postEvent:e atStart:NO];
 }
 
+// MOUSE CLICKS. Keyboard navigation needs the menu cursor position, which is not readable without
+// more decomp work; the menu ITEMS however are at fixed positions inside the window. Clicking a row
+// is deterministic and needs no state at all.
+// Control file: /tmp/nid_click_<id>.txt containing "x y" in window CONTENT coordinates
+// (origin top-left of the game view, e.g. 320x200 space scaled to the window).
+static void pump_click(void) {
+    FILE *f = fopen(ctl_path("nid_click"), "r");
+    if (!f) return;
+    char b[64] = {0};
+    size_t n = fread(b, 1, sizeof b - 1, f);
+    fclose(f);
+    { FILE *w = fopen(ctl_path("nid_click"), "w"); if (w) fclose(w); }
+    if (!n) return;
+    double cx = 0, cy = 0;
+    if (sscanf(b, "%lf %lf", &cx, &cy) != 2) return;
+
+    NSWindow *win = nil;
+    for (NSWindow *w in [NSApp windows]) {
+        if (![NSStringFromClass([w class]) containsString:@"GMWindow"]) continue;
+        if ([w frame].size.width < 100) continue;
+        win = w; break;
+    }
+    if (!win) { LOG("[click] no window\n"); return; }
+    NSRect fr = [win frame];
+    // content height for the flip (top-left origin for the caller)
+    CGFloat ch = [win contentRectForFrameRect:fr].size.height;
+    // CGEvent screen coordinates: origin TOP-LEFT of the main display, y downward
+    NSPoint originInScreen = fr.origin;
+    CGFloat screenH = [[[NSScreen screens] firstObject] frame].size.height;
+    double screen_x = originInScreen.x + cx;
+    double screen_y = (screenH - originInScreen.y - ch) + cy;
+    CGPoint pt = CGPointMake(screen_x, screen_y);
+    CGEventRef move = CGEventCreateMouseEvent(NULL, kCGEventMouseMoved, pt, kCGMouseButtonLeft);
+    CGEventRef down = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, pt, kCGMouseButtonLeft);
+    CGEventRef up   = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseUp, pt, kCGMouseButtonLeft);
+    if (move) CGEventPost(kCGHIDEventTap, move);
+    usleep(60000);
+    if (down) CGEventPost(kCGHIDEventTap, down);
+    usleep(60000);
+    if (up)   CGEventPost(kCGHIDEventTap, up);
+    if (move) CFRelease(move);
+    if (down) CFRelease(down);
+    if (up)   CFRelease(up);
+    LOG("[click] posted at %.0f,%.0f (window %.0fx%.0f content h=%.0f)\n",
+        screen_x, screen_y, fr.size.width, fr.size.height, ch);
+}
+
 static void pump_keys(void) {
     for (int i = pending_n - 1; i >= 0; i--) {
         if (--pending_left[i] <= 0) {
@@ -247,7 +294,11 @@ static void pump_keys(void) {
             post_ns_event(code, true);
             LOG("[keys] f=%d down %d\n", frame, code);
             pending_code[pending_n] = code;
-            pending_left[pending_n] = 6;
+            // HOLD LENGTH IS IN FRAMES, so it shrinks as the frame rate rises. At 30 fps (the
+            // old, nice-19-throttled rate) 6 frames was 200 ms; at 120 fps it is 50 ms and menu
+            // presses started getting missed. Use ~12 frames so the hold stays ~100 ms at 120 fps
+            // and ~400 ms at 30 fps - both long enough for the game to see the key.
+            pending_left[pending_n] = 12;
             pending_n++;
         }
     }
@@ -356,12 +407,16 @@ static void pump_room_goto(void) {
     if (up < 12.0 && frame < 300) return;
     static int goto_count = 0;
     if (goto_count >= 1) return;      // 2nd room_goto KILLS the game (verified)
-    FILE *f = fopen(ctl_path("nid_room"), "r");
+    // RENAMED from "nid_room" to "nid_roomgoto". The old name collided with the room-index OUTPUT
+    // namespace: publishing the current room to /tmp/nid_room_<id>.txt made the hook read its own
+    // output as a command and call room_goto(0) every frame, killing the game ("Game ended before
+    // loading first room"). A command file must never share a name pattern with an output file.
+    FILE *f = fopen(ctl_path("nid_roomgoto"), "r");
     if (!f) return;
     char b[64] = {0};
     size_t n = fread(b, 1, sizeof b - 1, f);
     fclose(f);
-    FILE *w = fopen(ctl_path("nid_room"), "w"); if (w) fclose(w);
+    FILE *w = fopen(ctl_path("nid_roomgoto"), "w"); if (w) fclose(w);
     if (!n) return;
     int idx = atoi(b);
     LOG("[room] goto %d requested (call %d)\n", idx, goto_count + 1);
@@ -463,6 +518,48 @@ static void probe_byname(void) {
         double d1 = *(const double *)(b + 8);
         float f4 = *(const float *)(b + 4);
         LOG("[byname] %s -> slot=%p u0=%u f4=%.3f d1=%.3f\n", names[i], slot, u0, f4, d1);
+    }
+}
+
+// Query NAMED GML variables on the Match object. The builtin struct window (0x80..0x600)
+// contains no plausible round counter, because GameMaker keeps GML variables in a separate
+// array reachable only by name lookup - which the runner already exposes and this hook
+// already wraps. Trigger: echo "vars" > /tmp/nid_vars_<id>.txt
+extern void *g_match_inst_fwd;   // (declared for real with the instance globals below)
+static void pump_vars(void) {
+    FILE *f = fopen(ctl_path("nid_vars"), "r");
+    if (!f) return;
+    char trig[64] = {0};
+    size_t tn = fread(trig, 1, sizeof trig - 1, f);
+    fclose(f);
+    { FILE *w = fopen(ctl_path("nid_vars"), "w"); if (w) fclose(w); }
+    if (!tn) return;                    // empty file: not a request (was firing 8k times)
+    if (!pFindOrAlloc || !pCInstanceFind) return;
+    int *ids = NULL, n = 0;
+    int objs[2] = {106, 107};                  // Match, MatchStats
+    const char *names[] = {"x", "y", "sprite_index", "image_index",
+                           "score", "score1", "score2", "p1score", "p2score",
+                           "round", "rounds", "roundsWon", "roundsLost", "wins", "losses",
+                           "winner", "match_score", "points", "state", "phase", "mode",
+                           "timer", "time", "timeLeft", "started", "over", "finished"};
+    for (int o = 0; o < 2; o++) {
+        ids = NULL; n = 0;
+        void *p = NULL;
+        if (g_match_inst_fwd && o == 0) {
+            p = g_match_inst_fwd;              // prefer the pointer the object walk captured
+        } else if (safe_instlist(objs[o], &ids, &n) && n > 0 && ids) {
+            p = pCInstanceFind ? pCInstanceFind(ids[0]) : NULL;
+        }
+        if (!p) { LOG("[vars] obj=%d -> no instance\n", objs[o]); continue; }
+        for (unsigned i = 0; i < sizeof names / sizeof names[0]; i++) {
+            void *slot = pFindOrAlloc(p, names[i]);
+            if (!slot) continue;
+            const unsigned char *b = (const unsigned char *)slot;
+            unsigned u0 = *(const unsigned *)b;
+            double d1 = *(const double *)(b + 8);
+            float f4 = *(const float *)(b + 4);
+            LOG("[vars] obj=%d %s -> u0=%u f4=%.3f d1=%.3f\n", objs[o], names[i], u0, f4, d1);
+        }
     }
 }
 
@@ -633,12 +730,20 @@ static void relocate_once(void) {
     // its match lifecycle when the window is fully invisible (orderOut) — so the
     // window is parked with a 2-px hairline at the screen edge: rendering is
     // guaranteed, and nothing recognizable is ever on screen.
+    // SHOW MODE (debugging): /tmp/nid_show_<id>.txt places the window on screen instead of
+    // parking it as a hairline, so a human can watch what the trainer is doing.
+    // MEASURED: the game runs at 24 fps when parked as a 2-px hairline and 48 fps when actually
+    // on screen - macOS stops rendering an essentially-offscreen window. So "hidden" costs HALF
+    // the frame rate, and much of what looked like the game freezing was starvation. NID_SHOW in
+    // the environment makes this survive launches (the control file is wiped by clean_files).
+    int show = (access(ctl_path("nid_show"), F_OK) == 0) || getenv("NID_SHOW");
     int moved = 0;
     for (NSWindow *w in [NSApp windows]) {
         if (![NSStringFromClass([w class]) containsString:@"GMWindow"]) continue;
         NSSize sz = [w frame].size;
         if (sz.width < 100) continue;              // skip tiny helpers
         [w setAlphaValue:1.0];
+        if (show) { [w setFrameOrigin:NSMakePoint(80, 120)]; [w orderFrontRegardless]; moved++; continue; }
         [w setFrameOrigin:NSMakePoint(-(sz.width - 2), 0)];
         [w orderFrontRegardless];
         moved++;
@@ -708,6 +813,7 @@ static void tick_main(void) {
         }
     }
     pump_keys();
+    pump_click();
     if (frame == 2) LOG("[tick] running on main thread\n");
     if (!installed_quiet && frame > 240 && frame % 20 == 0) relocate_once();
     // in-process mute (belt and braces with prefs_muted.ini); addresses are
@@ -761,7 +867,12 @@ static void my_flushBuffer(id self, SEL _cmd) {
 #define OBJ_MAN 105
 
 static void *g_match_inst = NULL;
+void *g_match_inst_fwd = NULL;   // same pointer, visible to pump_vars (defined above it)
 static float g_p154x, g_p154y, g_p242x, g_p242y;
+// Pau's Phase 2 (docs/NEXT_STEPS.md): "player state machine - full key sweep against the
+// animation field". That needs the struct itself, not two coordinates, so keep the P1
+// pointer and dump a window of it on demand.
+static const char *g_p242_inst = NULL;
 static int g_have154, g_have242;
 
 static void publish_screen(const char *names[], int n) {
@@ -775,6 +886,16 @@ static void publish_screen(const char *names[], int n) {
     fclose(f);
 }
 
+// CURRENT ROOM INDEX. _Current_Room (0x101530d98) is an INT32 GLOBAL, not a pointer:
+//     leaq _Current_Room(%rip), %rax
+//     cvtsi2sdl (%rax), %xmm0      <- loads the value, converts int -> double
+// proven from `otool -tvV` at 0x100d396bc. An earlier attempt dereferenced it as a pointer and
+// always returned -1, so the room was never usable as a "are we in a match" signal.
+static int current_room_index(void) {
+    intptr_t sl = _dyld_get_image_vmaddr_slide((uint32_t)game_index);
+    return *(const int *)(0x101530d98ULL + (uint64_t)sl);
+}
+
 static void publish_state(void) {
     static const char *last = 0;
     (void)last;
@@ -782,6 +903,13 @@ static void publish_state(void) {
     if (!published_once) { published_once = 1; LOG("[pub] first publish attempt\n"); }
     char path[64];
     snprintf(path, sizeof path, "/tmp/nid_state_%s.txt", g_id);
+    { char rp[64];
+      // NOT /tmp/nid_room_<id>.txt: that is the room_goto COMMAND file. Publishing the current
+      // index there made the hook execute room_goto(0) continuously ("[room] goto 0 executed on
+      // main thread"), which killed the game. Use a separate channel.
+      snprintf(rp, sizeof rp, "/tmp/nid_room_now_%s.txt", g_id);
+      FILE *rf = fopen(rp, "w");
+      if (rf) { fprintf(rf, "%d\n", current_room_index()); fclose(rf); } }
     FILE *f = fopen(path, "w");
     if (!f) return;
     fprintf(f, "%.1f %.1f %.1f %.1f %d %d\n",
@@ -896,6 +1024,7 @@ static void pump_localtest(void) {
     if (!n) return;
     int arg = atoi(b);
     LOG("[lt] localTestTraining(arg=%d) self=%p\n", arg, g_match_inst);
+    // NULL self ABORTS the game (measured: "Abort trap: 6"), so require a real Match instance.
     if (g_match_inst && pLocalTestTraining) {
         __block int a0 = arg;
         __block void *self = g_match_inst;
@@ -908,6 +1037,64 @@ static void pump_localtest(void) {
             LOG("[lt] localTestTraining executed (arg=%d)\n", a0);
         });
     }
+}
+
+// OBJECT INSPECTOR (Pau's Phase 4). To prove a round/score field we must watch the right
+// object across a round transition, not guess offsets in the player struct. Given a name
+// substring, walk the instance table and dump every match's name, object_index, position
+// and a window of its fields. Trigger: echo "Match" > /tmp/nid_objs_<id>.txt
+static void pump_objs(void) {
+    FILE *f = fopen(ctl_path("nid_objs"), "r");
+    if (!f) return;
+    char want[64] = {0};
+    size_t n = fread(want, 1, sizeof want - 1, f);
+    fclose(f);
+    { FILE *w = fopen(ctl_path("nid_objs"), "w"); if (w) fclose(w); }
+    if (!n) return;
+    want[strcspn(want, "\n")] = 0;
+    intptr_t slide = _dyld_get_image_vmaddr_slide((uint32_t)game_index);
+    const char *base = (const char *)(0x1015173f8ULL + (uint64_t)slide);
+    const char *table = *(const char *const *)base;
+    uint32_t mask = *(const uint32_t *)(base + 8);
+    if (!table || mask == 0 || mask > (1u << 20)) { LOG("[objs] no table\n"); return; }
+    int seen = 0, matched = 0;
+    for (uint32_t b = 0; b <= mask && matched < 8 && seen < 4000; b++) {
+        const char *node = *(const char *const *)(table + (size_t)b * 16);
+        while (node && matched < 8 && seen < 4000) {
+            const char *inst = *(const char *const *)(node + 0x18);
+            if (inst) {
+                seen++;
+                const char *cobj = *(const char *const *)(inst + 0x88);
+                const char *nm = "";
+                if (cobj) {
+                    const char *nmp = *(const char *const *)cobj;
+                    if (nmp && (uintptr_t)nmp > 0x1000) nm = nmp;
+                }
+                if (nm[0] && strstr(nm, want)) {
+                    matched++;
+                    if (strstr(nm, "Match") && !strstr(nm, "EntryPoint")) {
+                        g_match_inst = (void *)inst;
+                        g_match_inst_fwd = (void *)inst;
+                    }
+                    int obj = *(const int *)(inst + 0xb8);
+                    float fx = *(const float *)(inst + 0xec);
+                    float fy = *(const float *)(inst + 0xf0);
+                    LOG("[objs] name=\"%s\" obj=%d x=%.2f y=%.2f inst=%p\n", nm, obj, fx, fy, inst);
+                    // 0x200 was too shallow: GameMaker keeps instance variables well above
+                    // the builtin block, and a round/score field was never going to show up
+                    // in a window where every slot read 0 or a timer.
+                    for (unsigned off = 0x80; off < 0x600; off += 4) {
+                        float v = *(const float *)(inst + off);
+                        if (v != v) continue;              // skip NaN
+                        if (v == 0.0f) continue;           // keep the log readable
+                        LOG("[objs]   +0x%x = %.3f\n", off, v);
+                    }
+                }
+            }
+            node = *(const char *const *)(node + 0x08);
+        }
+    }
+    LOG("[objs] want=\"%s\" seen=%d matched=%d\n", want, seen, matched);
 }
 
 static void pump_brain(void) {
@@ -945,6 +1132,54 @@ static void pump_brain(void) {
     LOG("[brain] returned %.0f\n", r);
     double e = call_script1(pBrainExists, (double)idx);
     LOG("[brain] brainExistsForPlayerIndex(%d) -> %.0f\n", idx, e);
+}
+
+// PUBLISH EVERY INSTANCE with plausible fighter coordinates.
+//
+// Why: all three name/position-based identifications failed on this build (title-screen attract
+// match, attract-demo input drift, and screens where fighters are visible but no instance matches
+// "YellowPlayer"/"OrangePlayer"). The only method that survived testing is a stimulus-response
+// test: press D and the instance we control must move RIGHT, press A and it must move LEFT.
+// To run that test the caller needs the candidates, so this dumps them.
+// Format: one line per instance: id, object_index, x, y.
+static void publish_instances(void) {
+    if (game_index < 0) return;
+    intptr_t slide = _dyld_get_image_vmaddr_slide((uint32_t)game_index);
+    const char *base = (const char *)(0x1015173f8ULL + (uint64_t)slide);
+    const char *table = *(const char *const *)base;
+    uint32_t mask = *(const uint32_t *)(base + 8);
+    if (!table || mask == 0 || mask > (1u << 20)) return;
+    char path[64];
+    snprintf(path, sizeof path, "/tmp/nid_insts_%s.txt", g_id);
+    FILE *f = fopen(path, "w");
+    if (!f) return;
+    // Cap raised from 120 to 600: with 120 the walk truncated arbitrarily, so consecutive
+    // snapshots contained DIFFERENT subsets and the identity-intersection in bind_by_response
+    // dropped the fighter (measured: instance 102914 was present at x=223 but never survived two
+    // snapshots). Stable membership matters more than a small file.
+    int n = 0, seen = 0;
+    for (uint32_t b = 0; b <= mask && n < 600 && seen < 6000; b++) {
+        const char *node = *(const char *const *)(table + (size_t)b * 16);
+        while (node && n < 600 && seen < 6000) {
+            const char *inst = *(const char *const *)(node + 0x18);
+            if (inst) {
+                seen++;
+                float fx = *(const float *)(inst + 0xec);
+                float fy = *(const float *)(inst + 0xf0);
+                int obj = *(const int *)(inst + 0xb8);
+                uint32_t iid = *(const uint32_t *)(node + 0x10);
+                // keep only coordinates that could be a fighter position on screen
+                if (fx > -50.0f && fx < 1200.0f && fy > -50.0f && fy < 700.0f && (fx != 0.0f || fy != 0.0f)) {
+                    fprintf(f, "%u %d %.2f %.2f\n", iid, obj, fx, fy);
+                    n++;
+                }
+            }
+            node = *(const char *const *)(node + 0x08);
+        }
+    }
+    fclose(f);
+    static int logged = 0;
+    if (!logged) { LOG("[insts] wrote %d instances to %s\n", n, path); logged = 1; }
 }
 
 static void read_fighters(const char *tag) {
@@ -995,7 +1230,8 @@ static void read_fighters(const char *tag) {
                 int is_yellow = strcmp(nbuf, "YellowPlayer") == 0;
                 int is_orange = strcmp(nbuf, "OrangePlayer") == 0;
                 if (strcmp(nbuf, "Match") == 0) g_match_inst = (void *)inst;
-                if (is_yellow)  { g_p242x = fx; g_p242y = fy; g_have242 = 1; }
+                if (is_yellow)  { g_p242x = fx; g_p242y = fy; g_have242 = 1;
+                                  g_p242_inst = (const char *)inst; }
                 if (is_yellow && getenv("NID_VARGATE")) {
                     static int byname_done = 0;
                     if (!byname_done && pFindOrAlloc) {
@@ -1038,6 +1274,27 @@ static void read_fighters(const char *tag) {
             node = *(const char *const *)(node + 0x08);
         }
     }
+    // struct dump for the key sweep: /tmp/nid_dump_<id>.txt = 0x80..0x2FF as floats
+    static int dump_enabled = -1;
+    if (dump_enabled < 0) {
+        char spath[64];
+        snprintf(spath, sizeof spath, "/tmp/nid_dumpswitch_%s.txt", g_id);
+        dump_enabled = (access(spath, F_OK) == 0);
+    }
+    if (g_p242_inst && dump_enabled) {
+        char dpath[64];
+        snprintf(dpath, sizeof dpath, "/tmp/nid_dump_%s.txt", g_id);
+        FILE *df = fopen(dpath, "w");
+        if (df) {
+            for (unsigned off = 0x80; off < 0x540; off += 4) {
+                float v = *(const float *)(g_p242_inst + off);
+                if (v != v) v = 0.0f;               // NaN -> 0 so parsers stay happy
+                if (v > 1e9f || v < -1e9f) v = 0.0f;
+                fprintf(df, "%x %.3f\n", off, v);
+            }
+            fclose(df);
+        }
+    }
     publish_state();
     publish_screen(screen_names, screen_n);
 }
@@ -1072,9 +1329,13 @@ static void *thread_probe(void *arg) {
         pump_brain();
         pump_startmatch();
         pump_localtest();
+        pump_objs();          // on-demand object inspector (Phase 4)
+        pump_vars();          // on-demand named-variable query
         if (!pInstNumber) continue;
         tick++;
         if (getenv("NID_VARGATE") && tick % 60 == 0) probe_byname();
+        { static int inst_tick = 0;
+          if ((inst_tick++ % 5) == 0) publish_instances(); }
         if (getenv("NID_MAN")) {
             // publish EVERY probe-thread iteration (~40 Hz). The game can run at
             // 300+ fps and the agent's observation rate was the bottleneck, not
