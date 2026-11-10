@@ -42,7 +42,7 @@ REPO = os.path.expanduser("~/nidhogg-pau")
 STATE = os.path.join(REPO, "state")
 WFILE = os.path.join(STATE, "workers.json")
 SESS_PREFIX = "nid-w"
-MAX_WORKERS = 5
+MAX_WORKERS = 8
 CTX_COMPACT = 150_000          # restart a worker above this many context tokens
 ROLES = ["engineer", "prober", "auditor", "engineer", "prober"]
 # Thinking is per role, not global: judgement work (closing steps, auditing claims) is worth the
