@@ -1,12 +1,12 @@
 {
  "digest": {
-  "rounds": 8,
-  "wins": 5,
-  "gate_passes": 2,
-  "gate_max_delta": 5600,
-  "entry_proven": true,
+  "rounds": 0,
+  "wins": 0,
+  "gate_passes": 0,
+  "gate_max_delta": 0,
+  "entry_proven": false,
   "score_verified": false,
-  "claims": 153
+  "claims": 0
  },
- "ts": 1794279069.231626
+ "ts": 1794311729.46124
 }

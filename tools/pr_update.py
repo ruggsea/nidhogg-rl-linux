@@ -129,15 +129,34 @@ def body_for(d, prev):
     return "\n".join(lines)
 
 
+def reachable():
+    """An unreachable host must never look like a regression.
+
+    MEASURED (2026-11-10 12:44): artemis dropped off the network mid-run, every fetch returned "",
+    and the digest read that as "8 rounds -> 0, 5 wins -> 0" and POSTED it to the PR. A comment that
+    says verified progress was lost is worse than no comment.
+    """
+    return "ok" in ssh("echo ok", timeout=20)
+
+
 def main():
     dry = "--dry-run" in sys.argv
     os.makedirs(STATE, exist_ok=True)
+    if not reachable():
+        print("pr_update: artemis unreachable - refusing to post (zeros would read as a regression)")
+        return 0
     try:
         prev = json.load(open(DIGEST))
     except (OSError, ValueError):
         prev = {"digest": {}, "ts": 0}
     d = verified_digest()
     prev_d = prev.get("digest", {})
+    if prev_d.get("claims", 0) > 50 and d.get("claims", 0) == 0:
+        print("pr_update: fetch looks empty while the last pass saw claims - refusing to post")
+        return 0
+    if prev_d.get("rounds", 0) > 0 and d.get("rounds", 0) == 0:
+        print("pr_update: corroborated rounds dropped to 0 - treating as a fetch failure, not progress")
+        return 0
     body = body_for(d, prev_d)
     if not body:
         print("pr_update: nothing new and verified - no comment")
