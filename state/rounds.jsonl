@@ -1,0 +1,66 @@
+{"ts": 1794267828.59, "kind": "teleport", "addr": "0x107d8aec", "x_before": 514.0, "y_before": 35.0, "x_after": 307.0, "y_after": 221.0, "dx": -207.0, "dy": 186.0}
+{"ts": 1794267828.59, "kind": "teleport", "addr": "0x107d90ec", "x_before": 87.0, "y_before": 175.0, "x_after": 338.0, "y_after": 241.0, "dx": 251.0, "dy": 66.0}
+{"ts": 1794267828.59, "kind": "teleport", "addr": "0x107d96ec", "x_before": 80.0, "y_before": 128.0, "x_after": 323.0, "y_after": 256.0, "dx": 243.0, "dy": 128.0}
+{"ts": 1794267828.59, "kind": "teleport", "addr": "0x107da2ec", "x_before": 96.0, "y_before": 160.0, "x_after": 848.0, "y_after": 111.0, "dx": 752.0, "dy": -49.0}
+{"ts": 1794267828.59, "kind": "teleport", "addr": "0x107daeec", "x_before": 128.0, "y_before": 160.0, "x_after": 855.0, "y_after": 17.0, "dx": 727.0, "dy": -143.0}
+{"ts": 1794267828.59, "kind": "teleport", "addr": "0x107db4ec", "x_before": 288.0, "y_before": 176.0, "x_after": 1088.0, "y_after": 112.0, "dx": 800.0, "dy": -64.0}
+{"ts": 1794267828.59, "kind": "teleport", "addr": "0x107dbaec", "x_before": 144.0, "y_before": 176.0, "x_after": 1088.0, "y_after": 112.0, "dx": 944.0, "dy": -64.0}
+{"ts": 1794267828.59, "kind": "teleport", "addr": "0x107dc0ec", "x_before": 320.0, "y_before": 176.0, "x_after": 1022.0, "y_after": 116.0, "dx": 702.0, "dy": -60.0}
+{"ts": 1794267828.59, "kind": "teleport", "addr": "0x107dc6ec", "x_before": 160.0, "y_before": 208.0, "x_after": 801.0, "y_after": 134.0, "dx": 641.0, "dy": -74.0}
+{"ts": 1794267833.95, "kind": "teleport", "addr": "0x107d90ec", "x_before": 338.0, "y_before": 241.0, "x_after": 864.0, "y_after": 72.0, "dx": 526.0, "dy": -169.0}
+{"ts": 1794267833.95, "kind": "teleport", "addr": "0x107d96ec", "x_before": 323.0, "y_before": 256.0, "x_after": 832.0, "y_after": 135.0, "dx": 509.0, "dy": -121.0}
+{"ts": 1794267839.3, "kind": "teleport", "addr": "0x107d8aec", "x_before": 736.0, "y_before": 248.8, "x_after": 343.0, "y_after": 32.0, "dx": -393.0, "dy": -216.8}
+{"ts": 1794267839.3, "kind": "teleport", "addr": "0x107d90ec", "x_before": 864.0, "y_before": 72.0, "x_after": 438.0, "y_after": 32.0, "dx": -426.0, "dy": -40.0}
+{"ts": 1794267839.3, "kind": "teleport", "addr": "0x107d9cec", "x_before": 992.0, "y_before": 152.0, "x_after": 379.0, "y_after": 31.0, "dx": -613.0, "dy": -121.0}
+{"ts": 1794267839.3, "kind": "teleport", "addr": "0x107da2ec", "x_before": 1056.0, "y_before": 112.0, "x_after": 240.0, "y_after": 32.0, "dx": -816.0, "dy": -80.0}
+{"ts": 1794267839.3, "kind": "teleport", "addr": "0x107db4ec", "x_before": 1088.0, "y_before": 112.0, "x_after": 288.0, "y_after": 33.0, "dx": -800.0, "dy": -79.0}
+{"ts": 1794267839.3, "kind": "teleport", "addr": "0x107dc0ec", "x_before": 1022.0, "y_before": 116.0, "x_after": 219.0, "y_after": 32.0, "dx": -803.0, "dy": -84.0}
+{"ts": 1794267839.3, "kind": "teleport", "addr": "0x107dc6ec", "x_before": 801.0, "y_before": 134.0, "x_after": 343.0, "y_after": 32.0, "dx": -458.0, "dy": -102.0}
+{"ts": 1794267850.07, "kind": "teleport", "addr": "0x107d8aec", "x_before": 347.5, "y_before": 32.0, "x_after": 736.0, "y_after": 251.5, "dx": 388.5, "dy": 219.5}
+{"ts": 1794267850.07, "kind": "teleport", "addr": "0x107d90ec", "x_before": 438.5, "y_before": 32.0, "x_after": 1024.0, "y_after": 80.0, "dx": 585.5, "dy": 48.0}
+{"ts": 1794267850.07, "kind": "teleport", "addr": "0x107d9cec", "x_before": 395.5, "y_before": 31.0, "x_after": 1024.0, "y_after": 152.0, "dx": 628.5, "dy": 121.0}
+{"ts": 1794267850.07, "kind": "teleport", "addr": "0x107da2ec", "x_before": 266.5, "y_before": 32.0, "x_after": 848.0, "y_after": 111.0, "dx": 581.5, "dy": 79.0}
+{"ts": 1794267850.07, "kind": "teleport", "addr": "0x107db4ec", "x_before": 327.5, "y_before": 33.0, "x_after": 1088.0, "y_after": 112.0, "dx": 760.5, "dy": 79.0}
+{"ts": 1794267850.07, "kind": "teleport", "addr": "0x107dc0ec", "x_before": 266.5, "y_before": 32.0, "x_after": 1022.0, "y_after": 116.0, "dx": 755.5, "dy": 84.0}
+{"ts": 1794267850.07, "kind": "teleport", "addr": "0x107dc6ec", "x_before": 374.5, "y_before": 32.0, "x_after": 801.0, "y_after": 134.0, "dx": 426.5, "dy": 102.0}
+{"ts": 1794267855.48, "kind": "teleport", "addr": "0x107d84ec", "x_before": 369.0, "y_before": 170.0, "x_after": 329.0, "y_after": 14.0, "dx": -40.0, "dy": -156.0}
+{"ts": 1794267855.48, "kind": "teleport", "addr": "0x107d8aec", "x_before": 736.0, "y_before": 251.5, "x_after": 135.0, "y_after": 284.0, "dx": -601.0, "dy": 32.5}
+{"ts": 1794267855.48, "kind": "teleport", "addr": "0x107d90ec", "x_before": 1024.0, "y_before": 80.0, "x_after": 378.0, "y_after": 284.0, "dx": -646.0, "dy": 204.0}
+{"ts": 1794267855.48, "kind": "teleport", "addr": "0x107d96ec", "x_before": 864.0, "y_before": 136.0, "x_after": 517.0, "y_after": 259.0, "dx": -347.0, "dy": 123.0}
+{"ts": 1794267871.57, "kind": "teleport", "addr": "0x107d96ec", "x_before": 537.0, "y_before": 214.0, "x_after": 188.0, "y_after": 264.0, "dx": -349.0, "dy": 50.0}
+{"ts": 1794267876.91, "kind": "teleport", "addr": "0x107d84ec", "x_before": 282.0, "y_before": 188.0, "x_after": 333.0, "y_after": 16.0, "dx": 51.0, "dy": -172.0}
+{"ts": 1794267903.86, "kind": "teleport", "addr": "0x107d90ec", "x_before": 350.0, "y_before": 51.0, "x_after": 174.6, "y_after": 110.0, "dx": -175.4, "dy": 59.0}
+{"ts": 1794267903.86, "kind": "teleport", "addr": "0x107d96ec", "x_before": 316.0, "y_before": 27.0, "x_after": 474.3, "y_after": 193.0, "dx": 158.3, "dy": 166.0}
+{"ts": 1794267909.26, "kind": "teleport", "addr": "0x107d84ec", "x_before": 310.0, "y_before": 16.0, "x_after": 159.0, "y_after": 141.0, "dx": -151.0, "dy": 125.0}
+{"ts": 1794267909.26, "kind": "teleport", "addr": "0x107d96ec", "x_before": 474.3, "y_before": 193.0, "x_after": 256.0, "y_after": 80.0, "dx": -218.3, "dy": -113.0}
+{"ts": 1794267914.69, "kind": "teleport", "addr": "0x107d84ec", "x_before": 159.0, "y_before": 141.0, "x_after": 63.0, "y_after": 34.0, "dx": -96.0, "dy": -107.0}
+{"ts": 1794267914.69, "kind": "teleport", "addr": "0x107d90ec", "x_before": 336.0, "y_before": 96.0, "x_after": 87.0, "y_after": 175.0, "dx": -249.0, "dy": 79.0}
+{"ts": 1794267914.69, "kind": "teleport", "addr": "0x107d96ec", "x_before": 256.0, "y_before": 80.0, "x_after": 80.0, "y_after": 128.0, "dx": -176.0, "dy": 48.0}
+{"ts": 1794267914.69, "kind": "teleport", "addr": "0x107da8ec", "x_before": 32.0, "y_before": 112.0, "x_after": 272.0, "y_after": 144.0, "dx": 240.0, "dy": 32.0}
+{"ts": 1794267914.69, "kind": "teleport", "addr": "0x107daeec", "x_before": 240.0, "y_before": 128.0, "x_after": 128.0, "y_after": 160.0, "dx": -112.0, "dy": 32.0}
+{"ts": 1794267914.69, "kind": "teleport", "addr": "0x107db4ec", "x_before": 64.0, "y_before": 144.0, "x_after": 288.0, "y_after": 176.0, "dx": 224.0, "dy": 32.0}
+{"ts": 1794267914.69, "kind": "teleport", "addr": "0x107dbaec", "x_before": 224.0, "y_before": 128.0, "x_after": 144.0, "y_after": 176.0, "dx": -80.0, "dy": 48.0}
+{"ts": 1794267952.51, "kind": "teleport", "addr": "0x107d8aec", "x_before": 495.0, "y_before": 35.0, "x_after": 135.0, "y_after": 284.0, "dx": -360.0, "dy": 249.0}
+{"ts": 1794267952.51, "kind": "teleport", "addr": "0x107d90ec", "x_before": 544.0, "y_before": 175.0, "x_after": 378.0, "y_after": 284.0, "dx": -166.0, "dy": 109.0}
+{"ts": 1794267952.51, "kind": "teleport", "addr": "0x107d96ec", "x_before": 80.0, "y_before": 128.0, "x_after": 517.0, "y_after": 259.0, "dx": 437.0, "dy": 131.0}
+{"ts": 1794267952.51, "kind": "teleport", "addr": "0x107d9cec", "x_before": 256.0, "y_before": 128.0, "x_after": 293.5, "y_after": 53.0, "dx": 37.5, "dy": -75.0}
+{"ts": 1794267952.51, "kind": "teleport", "addr": "0x107da2ec", "x_before": 96.0, "y_before": 160.0, "x_after": 272.5, "y_after": 52.0, "dx": 176.5, "dy": -108.0}
+{"ts": 1794267952.51, "kind": "teleport", "addr": "0x107da8ec", "x_before": 272.0, "y_before": 144.0, "x_after": 374.5, "y_after": 27.0, "dx": 102.5, "dy": -117.0}
+{"ts": 1794267974.13, "kind": "teleport", "addr": "0x107d8aec", "x_before": 390.0, "y_before": 140.0, "x_after": 355.0, "y_after": 41.0, "dx": -35.0, "dy": -99.0}
+{"ts": 1794268343.47, "kind": "teleport", "addr": "0x107d8aec", "x_before": 190.2, "y_before": 66.2, "x_after": 514.0, "y_after": 35.0, "dx": 323.8, "dy": -31.2}
+{"event": "done", "ts": 1794268344.0038037, "seen_fighter": true}
+{"ts": 1794271643.5, "kind": "observe_no_teleport", "score_before": 1819045746, "score_after": 1819045746, "p1_before": [1112.0, 192.0], "p2_before": [994.0, 192.0], "last": {"t": 1794271643.4, "p1": [1112.0, 192.0], "p2": [994.0, 192.0]}}
+{"ts": 1794271963.09, "kind": "observe_no_teleport", "score_before": 1819045746, "score_after": 1819045746, "p1_before": [992.0, 192.0], "p2_before": [1112.0, 192.0], "last": {"t": 1794271963.07, "label": "cont4", "p1": [992.0, 192.0], "p2": [1112.0, 192.0]}}
+{"ts": 1794272014.22, "kind": "observe_no_teleport", "score_before": 1819045746, "score_after": 1819045746, "p1_before": [1112.0, 192.0], "p2_before": [989.0, 192.0], "last": {"t": 1794272014.21, "label": "cont4", "p1": [1112.0, 192.0], "p2": [989.0, 192.0]}}
+{"event": "step02_start", "p1": "0x190e200", "p2": "0x190da00", "x0": 1007.0}
+{"ts": 1794272535.17, "kind": "teleport", "addr": "0x190e200", "x_before": 1091.0, "x_after": 0.0, "dx": -1091.0, "src": "step02_round.py"}
+{"ts": 1794272548.77, "kind": "teleport", "addr": "0x190e200", "x_before": 0.0, "x_after": 1095.9, "dx": 1095.9, "src": "step02_round.py"}
+{"event": "step02", "ok": true, "transitions": 2, "final_x": 1051.3216552734375}
+{"event": "step02_start", "p1": "0x190e000", "p2": "0x190d800"}
+{"event": "step02", "ok": false, "both_fighter_teleports": 0}
+{"ts": 1794273058.71, "kind": "round", "who": "P1", "addr": "0x190e000", "before": [1081.0, 192.0], "after": [0.0, 0.0], "dx": -1081.0, "dy": -192.0, "other": {"addr": "0x106f0200"}}
+{"ts": 1794273210.4, "kind": "round", "who": "P1", "addr": "0x190e000", "before": [1081.0, 192.0], "after": [0.0, 300.0], "dx": -1081.0, "dy": 108.0, "other": {"addr": "0x190d800"}}
+{"event": "step02_start", "p1": "0x190e200", "p2": "0x190da00"}
+{"event": "step02", "ok": false, "both_fighter_teleports": 0}
+{"ts": 1794273608.96, "kind": "round", "transition": "forfeit", "corroborated": false, "result": "win", "winner": "P2", "forfeit_by": "P1", "pid": 460100, "score_orange_bars_before": 391, "score_orange_bars_after": 0, "score_changed": false, "p1_before": {"addr": "0x190e000", "x": 992.0, "y": 192.0}, "p2_before": {"addr": "0x106f2200", "x": 1116.0, "y": 167.0}, "ready_fighters": [], "both_reset": false}
+{"ts": 1794273661.15, "kind": "round", "transition": "forfeit", "corroborated": false, "result": "win", "winner": "P2", "forfeit_by": "P1", "pid": 460100, "score_orange_bars_before": 0, "score_orange_bars_after": 0, "score_changed": false, "p1_before": {"addr": "0x106f2200", "x": 1116.0, "y": 167.0}, "p2_before": {"addr": "0x190da00", "x": 992.0, "y": 192.0}, "ready_fighters": [], "both_reset": false}
