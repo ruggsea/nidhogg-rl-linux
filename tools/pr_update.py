@@ -59,6 +59,13 @@ def load_jsonl_remote(path):
 
 
 def verified_digest():
+    # Use the SHARED definition via the remote helper, so this file cannot drift from milestones.py.
+    remote = ssh("cd ~/nidhogg-pau && python3 tools/verified.py 2>/dev/null")
+    shared = {}
+    try:
+        shared = json.loads(remote) if remote.strip().startswith("{") else {}
+    except ValueError:
+        shared = {}
     rounds = load_jsonl_remote("state/rounds.jsonl")
 
     def is_round(r):
@@ -95,9 +102,15 @@ def verified_digest():
             continue
         score_ok.append(c)
 
+    def _shared(k, fallback):
+        return shared.get(k, fallback) if isinstance(shared, dict) else fallback
+    good_n = _shared("rounds", len(good))
+    wins_n = _shared("wins", len(wins))
+    decided_n = _shared("decided", 0)
     return {
-        "rounds": len(good),
-        "wins": len(wins),
+        "rounds": good_n,
+        "wins": wins_n,
+        "decided": decided_n, "decided": decided_n,
         "gate_passes": len(gate_ok),
         "gate_max_delta": int(max([float(g.get("max_delta") or 0) for g in gate_ok], default=0)),
         "entry_proven": len(entry_ok) > 0,
@@ -122,10 +135,13 @@ def body_for(d, prev):
         return None
     lines = ["**Verified update** (auto-posted, only facts that pass the corroboration rules)", ""]
     lines += [f"* {c}" for c in changed]
+    # Win rate is wins over DECIDED rounds (wins+losses). Dividing by all rounds counts undecided
+    # forfeit boundaries as losses: it published 69% when the shared definition said 95% over 19.
+    dec = d.get("decided") or 0
+    rate = f"{100.0*d['wins']/dec:.0f}% over {dec} decided rounds" if dec >= 10 else \
+           f"no win rate claimed until 10+ decided rounds (now {dec})"
     lines += ["", f"Totals: {d['rounds']} corroborated rounds, {d['wins']} wins, "
-                  f"{d['claims']} claims recorded. " +
-                  ("Win rate: " + f"{100.0*d['wins']/d['rounds']:.0f}% over {d['rounds']} rounds."
-                   if d["rounds"] >= 10 else "No win rate claimed until 10+ rounds.")]
+                  f"{d['claims']} claims recorded. Win rate: {rate}."]
     return "\n".join(lines)
 
 
