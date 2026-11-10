@@ -111,3 +111,47 @@ Wave 1 wants **4 game lanes**, so `scale 5` (4 probers + 1 engineer) while the f
 3. A scripted episode produces reward traces with the correct sign.
 4. Rounds won per hour is measured and recorded with a claim + falsifier.
 5. Only then: any statement about beating anything.
+
+---
+
+## WAVE 1b — remaining memory mapping Pau lists as MISSING or INFERRED
+
+These come from his §3 ("inferred, not proven") and §4 ("missing before training"). Treat every one as
+UNKNOWN until a double check passes.
+
+### Lane R — room / substage id *(his §3: "no field located")*
+Purpose: know when cached addresses are invalid (addresses are stable across processes today, but a room
+change may legitimately invalidate them).
+1. Force a room change (stage select, or the forfeit boundary if it reloads the arena).
+2. Hunt for an int32 whose value changes exactly at the room transition and is stable within a room.
+3. Distinguish it from the 2283 round-phase candidates (lane B) — they are different problems; coordinate.
+**Accept:** the field changes on room change and not otherwise, across **two independent processes**.
+**Falsifier:** a field that also changes within a room, or one that changes only once.
+
+### Lane S — sword set mapping *(his §4: needed for the per-tick state file)*
+His §2.5: swords are a **set** — held / flying / stuck / on the ground — and a dead player's sword persists.
+`+0x200`/`+0x400` reallocate, so identify by **type + behaviour**, never by offset.
+1. Enumerate sword-ish records by `type u32@+0x88` and behaviour (does it follow the body? does it move
+   when the player is disarmed? does it stay put after death?).
+2. Produce a 4-state classifier per player: `held | flying | stuck | ground | none`.
+**Accept:** classifier correct on 20 sampled frames, hand-labelled from screenshots, two runs.
+**Falsifier:** any frame where the classifier and the screenshot disagree.
+
+### Lane T — score cap rule *(his §3)*
+Writes 7 and 100 draw the same bars as 2. Determine whether the cap is a frame index or a separate field.
+Low priority; only if R and S close early.
+
+---
+
+## DOUBLE-CHECK PROTOCOL (applies to every memory-mapping lane)
+
+A field is not "found" until all four hold:
+
+1. **Two processes** — the same absolute address behaves identically in two fresh game processes.
+2. **Two directions** — read it changing on its own, AND write it and watch the corresponding behaviour.
+3. **A written falsifier** — `claim.py record` with `--falsifier` naming what would refute it.
+4. **Cross-worker replay** — a *different* worker re-runs the claim's `--cmd` and reports the same result
+   in `state/mail/engineer.md`. A claim replayed only by its author is UNVERIFIED.
+
+Addresses that are merely "stable and plausible" are the exact failure mode this project has hit four
+times (teleports-as-rounds, wall-pinned gates, attract demos, day-old generations). Do not accept them.
