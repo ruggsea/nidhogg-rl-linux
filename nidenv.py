@@ -9,8 +9,14 @@ Actions per player (one step = STEP_TICKS = 4 game ticks = 67 ms):
 left/right are held while consecutive steps want them; jump/attack/up/down are pressed at step
 start and released after 2 ticks, so a repeated attack is a new press every step.
 
-Observation (8,) float32: P1 x/1000, P1 height (192-y)/100, P1 facing, dx (P2-P1)/300,
-P2 height, P2 facing, P1 anim/500, P2 anim/500.
+Observation (N_OBS = 34,) float32, each value clipped to [-2, 2]:
+  0-7   P1 x/1000, P1 height (192-y)/100, P1 facing, dx (P2-P1)/300, P2 height, P2 facing,
+        P1 anim/500, P2 anim/500 (the original 8)
+  8-20  P1's 13 fields, 21-33 P2's 13 fields, world frame, in nidobs.FEATS order: has_sword,
+        stance, held_sword, floor, ledge_left, ledge_right, ceiling, view_left, view_right,
+        fly_present, fly_dx, ground_present, ground_dx (definitions in nidobs.py).
+The fields are re-read from the instance records every step (instances are recreated on
+respawn); reset() forces a full heap scan. self.feat keeps the last read (selfplay_env mirrors it).
 
 Reset (every episode, no menus): release every key of both players; re-identify a fighter by
 input if its record died; find each fighter's master record (writes to the fighter record's x
@@ -35,11 +41,21 @@ import json, time
 
 import numpy as np
 
+import nidobs
 from nidmem import FARM, KEYS, Mem, n
 
 STEP_TICKS, MAX_STEPS = 4, 450          # 450 x 4 ticks = 30 s of game time
 FREEZE_TICKS, RESPAWN_S = 30, 6.0
 DEATH_ANIMS = (240, 345)                # 243/245 -> 297 and 325/327 seen on every kill
+# idle stance anims (high/mid/low): the only anims at 836 settled resets in ~/nf-sp, ~/nf-vnc
+# and ~/nf-fix episodes (465: 668, 463: 136, 461: 32), all at floor y 128/160/192. A reset is
+# settled only with both fighters in one of them (not hanging, not in a ledge grab or a fall).
+# 366 = standing still UNARMED (sword lost): it moves ~45 px per 24 ticks vs 13-21 armed, all
+# other reset checks pass; rejecting it failed every attempt while the fighter stayed unarmed
+IDLE_ANIMS = (366, 461, 463, 465)
+# hanging from a ledge: 580 seen at y 173 between the 160 and 192 floors; 659 in the same failed
+# resets (baseline 2026-11-22, 3-4 of 5 attempts in each of the 4 failed resets)
+HANG_ANIMS = (580, 659)
 SEP, SETTLE_TICKS = 140.0, 20
 CONTACT_PX = 40.0                       # blades touch at ~30-40 px apart
 PROBE_TICKS, PROBE_SHIFTS = 24, (0, -24, 24, -48, 48, -72, 72, -120, 120, -180, 180)
@@ -47,6 +63,7 @@ ACTIONS = [(), ("left",), ("right",), ("jump",), ("attack",), ("up",), ("down",)
            ("left", "attack"), ("right", "attack")]
 HOLD = ("left", "right")
 WHO = ("P1", "P2")
+N_OBS = 8 + 2 * nidobs.N_FEAT
 
 
 def _rec(st, who):
@@ -71,6 +88,10 @@ class Env:
         self.m, self.seed, self.ep, self.log = Mem(inst), seed, 0, log
         self.held, self.strikes = set(), {}
         self.home = {}        # room index -> centre x where a reset settled in that room
+        self.home_y = {}      # room index -> floor y of that settled reset
+        self.floor_y = None   # y written with x on every probe/place of this reset
+        self.seen_recs = set()   # fighter-type records present at any earlier episode start
+        self.reader, self.feat = nidobs.Reader(self.m.pid), None
 
     # ------------------------------------------------------------ reset
     def _find(self, who, away, r):
@@ -95,7 +116,7 @@ class Env:
         """Write both x and let the game resolve y. The write sets x only: a fighter written over
         a lower floor falls, one written into a step is pushed up or sideways. The spot is
         free when both end still, at their written x, on one floor."""
-        self.m.place(*tx)
+        self.m.place(*tx, y=self.floor_y)
         # a long write (the home spot is often 300+ px from where they stood) can leave a body
         # climbing or falling for a while: watch up to 4x PROBE_TICKS until 8 still ticks
         tr = self.m.ticks(PROBE_TICKS)
@@ -111,6 +132,15 @@ class Env:
         ok = (still and abs(end.p1_x - tx[0]) < 3 and abs(end.p2_x - tx[1]) < 3
               and abs(end.p1_y - end.p2_y) < 2)
         return ok, end
+
+    def _unhang(self, hung, tx):
+        """Tap each hanging fighter's drop key, place both at the target again, re-check."""
+        m = self.m
+        for w in hung:
+            m.send([f"kd {KEYS[w]['down']}"]); m.ticks(3); m.send([f"ku {KEYS[w]['down']}"])
+        m.ticks(20)
+        m.place(*tx, y=self.floor_y)
+        return self._settle_ok(tx)
 
     def _settle_ok(self, tx):
         self.m.ticks(1)                          # the sample of the write tick may predate it
@@ -164,6 +194,8 @@ class Env:
             orig = (st.p1_x, st.p2_x)
             room = m.room_log[-1][1] if m.room_log else -1
             r["room"] = room
+            self.floor_y = self.home_y.get(room, max(st.p1_y, st.p2_y))   # same floor for both
+            r["floor_y"] = self.floor_y
             mid = (cam + 160, (st.p1_x + st.p2_x) / 2, st.p1_x + SEP / 2, st.p2_x - SEP / 2,
                    cam + 160)[attempt]          # retries: centred on spots known to be free
             if room in self.home and attempt in (0, 3):
@@ -196,8 +228,13 @@ class Env:
             a2, d2 = m.answers(m.rec["P2"], "P2", 1)
             m.track(); m.release_all()
             m.ticks(30)                          # fighters slide ~17 px after a walk key
-            m.place(*tx)
+            m.place(*tx, y=self.floor_y)
             stick, near, held_free, end = self._settle_ok(tx)
+            hung = [w for w, a in (("P1", end.p1_anim), ("P2", end.p2_anim)) if a in HANG_ANIMS]
+            if hung:
+                r["unhang"] = {"hung": hung, "anims_before": [end.p1_anim, end.p2_anim]}
+                stick, near, held_free, end = self._unhang(hung, tx)
+                r["unhang"]["anims_after"] = [end.p1_anim, end.p2_anim]
             sc = m.screen(f"r{attempt}b", {"P1": end.p1_y, "P2": end.p2_y})
             # some yellow and some orange cluster sit at the records' gap (not only the densest
             # ones: a corpse of the same colour can outweigh the fighter)
@@ -220,11 +257,16 @@ class Env:
                      master_offset={w: m.offset[m.rec[w]] for w in WHO})
             floor = abs(end.p1_y - pe.p1_y) < 2      # the floor the probe found: no step climbed
             r.update(orig=[round(x, 1) for x in orig], same_floor_as_before=floor)
-            r["ok"] = bool(stick1 and a1 and a2 and stick and near and held_free and on_screen and floor)
+            idle = end.p1_anim in IDLE_ANIMS and end.p2_anim in IDLE_ANIMS
+            r.update(end_anim=[end.p1_anim, end.p2_anim], idle=idle)
+            r["ok"] = bool(stick1 and a1 and a2 and stick and near and held_free and on_screen and floor and idle)
             tries.append(r)
             if r["ok"]:
                 self.home.setdefault(room, round((tx[0] + tx[1]) / 2, 1))
+                self.home_y.setdefault(room, end.p1_y)
                 break
+            if r.get("home"):                    # the preferred spot just failed: do not reuse it
+                self.home.pop(room, None); self.home_y.pop(room, None)
             m.place(*orig); m.ticks(20)          # back to where both stood free (out of a step)
             # both sprites drawn but their gap is not the records' gap: one record is an
             # attached object (arm/sword) that answers the keys too. The camera follows the
@@ -243,6 +285,12 @@ class Env:
         self.reset_info = tries
         assert tries[-1]["ok"], f"reset failed 5 times: {json.dumps(tries)}"
         self.recs0 = set(m.type_records())
+        # stale-death bookkeeping (see _stale): who each fighter was at THIS reset, what was
+        # dead before it, and every record seen at earlier episode starts
+        self.start_recs, self.prior_dead = dict(m.rec), set(m.dead)
+        self.prior_seen = set(self.seen_recs)
+        self.seen_recs |= self.recs0 | {r for r in m.rec.values() if r}
+        self.room_start = self._room_now()
         self.st0 = self.last = end
         self.steps, self.tick0 = 0, end.tick
         self.still = {w: 0 for w in WHO}
@@ -253,12 +301,24 @@ class Env:
         self.prev_dir = {w: 0 for w in WHO}
         self.kill_frame = None
         self.play_from = self.play_to = len(m.room_log)   # room samples taken during play
+        self.reader.win = None                            # full scan: new room / new instances
         return self._obs(end)
 
-    def _obs(self, st):
+    def _obs(self, st, at_end=False):
         v = [st.p1_x / 1000, (192 - st.p1_y) / 100, st.p1_facing, (st.p2_x - st.p1_x) / 300,
              (192 - st.p2_y) / 100, st.p2_facing, st.p1_anim / 500, st.p2_anim / 500]
-        return np.clip(np.array(v, np.float32), -2, 2)
+        try:
+            self.feat = self.reader.read({"P1": (st.p1_x, st.p1_y), "P2": (st.p2_x, st.p2_y)})
+            extra = np.concatenate([self.feat["P1"], self.feat["P2"]])
+        except AssertionError as e:
+            if not at_end:
+                raise
+            # after a kill the dead fighter may have no live body yet (corpse branch): the
+            # terminal obs carries zeros for the extra fields, and says so in info["obs_error"]
+            z = np.zeros(nidobs.N_FEAT, np.float32)
+            self.feat = {"P1": z, "P2": z, "error": str(e)[:300]}
+            extra = np.zeros(2 * nidobs.N_FEAT, np.float32)
+        return np.concatenate([np.clip(np.array(v, np.float32), -2, 2), extra])
 
     # ------------------------------------------------------------ step
     def step(self, a1, a2):
@@ -358,6 +418,23 @@ class Env:
         self.last = m.track()
         return ev
 
+    def _room_now(self):
+        import struct
+        raw = n.memory(self.m.pid, self.m.room_addr, 4, "/tmp/nidenv_room.bin")
+        return struct.unpack("<i", raw)[0] if raw else None
+
+    def _stale(self, who, ev):
+        """Reasons a confirmed death of `who` is stale (empty list = it counts)."""
+        old, out = int(ev["record"], 16), []
+        if old != self.start_recs.get(who):
+            out.append(f"dead record {ev['record']} is not {who}'s record at this reset "
+                       f"({self.start_recs.get(who) and hex(self.start_recs[who])})")
+        if old in self.prior_dead:
+            out.append(f"dead record {ev['record']} was already dead before this episode")
+        if ev.get("new_record") and int(ev["new_record"], 16) in self.prior_seen:
+            out.append(f"respawn record {ev['new_record']} was present at an earlier episode start")
+        return out
+
     def _end(self, info, evidence):
         self.m.release_all(); self.held = set()
         after = self.m.track()
@@ -370,6 +447,13 @@ class Env:
                "rule": f"one fighter frozen>={FREEZE_TICKS} ticks + (new record answers its keys "
                        f"| death anim {DEATH_ANIMS} and old record ignores its keys)",
                "t": time.strftime("%Y-%m-%dT%H:%M:%S")}
+        stale = {w: self._stale(w, ev) for w, ev in evidence.items()
+                 if w in WHO and isinstance(ev, dict) and ev.get("dead")}
+        row["stale_deaths"] = {w: r for w, r in stale.items() if r}
+        room_end = self._room_now()
+        row["round_state"] = {"room_start": self.room_start, "room_end": room_end,
+                              "agree": None, "why_null": "no in-match score/round field is located; "
+                              "room index is the only game-side state read"}
         rooms = [r for _t, r in self.m.room_log]
         rle = []
         for r in rooms:
@@ -394,4 +478,6 @@ class Env:
             f.write(json.dumps(row) + "\n")
         self.ep += 1
         info["evidence"] = evidence
-        return self._obs(after), True, info
+        obs = self._obs(after, at_end=True)
+        info["obs_error"] = self.feat.get("error")
+        return obs, True, info

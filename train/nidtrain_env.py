@@ -164,7 +164,9 @@ class TrainEnv:
             self._restart("previous episode left the arena rooms")
         try:
             return self.env.reset()
-        except (AssertionError, RuntimeError) as e:   # reset could not settle or game hung: restart once
+        except (AssertionError, RuntimeError, ValueError, OSError) as e:   # reset could not settle or game hung: restart once
+            if hasattr(self, "_reset_failed"):
+                self._reset_failed(e)
             self._restart(str(e))
             self.env.seed = s
             return self.env.reset()
@@ -196,21 +198,31 @@ class TrainEnv:
         Logged to $NIDFARM/restarts.jsonl with the reason."""
         import nidenv
         from nidmem import n, s
-        t0 = time.time()
-        n.start_ids([self.inst])
-        pid = None
-        for _ in range(40):
-            pid = n._game_pid(self.inst)
-            if pid and n.ping(pid):
+        t0, entered = time.time(), False
+        # up to 3 full relaunches; enter_match_v2 can return False while the match does start a
+        # moment later (seen 3 times on :70), so in_match decides. No live match -> fail loudly.
+        for attempt in range(3):
+            n.start_ids([self.inst])
+            pid = None
+            for _ in range(40):
+                pid = n._game_pid(self.inst)
+                if pid and n.ping(pid):
+                    break
+                time.sleep(10)
+            time.sleep(8)
+            called = s.enter_match_v2(self.inst) if pid else False
+            if pid and not called:
+                time.sleep(3)
+            entered = bool(pid) and s.in_match(self.inst)
+            rec = {"t": time.strftime("%Y-%m-%dT%H:%M:%S"), "run": self.run_id, "i": self.count,
+                   "why": why[:3000], "attempt": attempt, "pid": pid, "enter_match_v2": called,
+                   "in_match": entered, "secs": round(time.time() - t0)}
+            with open(FARM / "restarts.jsonl", "a") as f:
+                f.write(json.dumps(rec) + "\n")
+            self.last_progress = time.time()
+            if entered:
                 break
-            time.sleep(10)
-        time.sleep(8)
-        entered = s.enter_match_v2(self.inst)
-        rec = {"t": time.strftime("%Y-%m-%dT%H:%M:%S"), "run": self.run_id, "i": self.count,
-               "why": why[:3000], "pid": pid, "entered": entered, "secs": round(time.time() - t0)}
-        with open(FARM / "restarts.jsonl", "a") as f:
-            f.write(json.dumps(rec) + "\n")
-        assert entered, f"restart did not reach a live match: {rec}"
+        assert entered, f"restart did not reach a live match after 3 relaunches: {rec}"
         old = self.env
         self.env = nidenv.Env(seed=old.seed, inst=self.inst, log=old.log)
         self.env.ep, self.env.row_hook = old.ep, old.row_hook
@@ -227,7 +239,7 @@ class TrainEnv:
               else partner(-dx, self.rng, dy))
         try:
             obs, done, info = self.env.step(int(a), a2)
-        except (AssertionError, RuntimeError) as e:
+        except (AssertionError, RuntimeError, ValueError, OSError) as e:
             return self._abort(f"{type(e).__name__}: {e}")
         if not done and MAX_TICKS and self.env.last.tick - self.env.tick0 >= MAX_TICKS:
             obs, done, info = self.env._end({"tick": self.env.last.tick, "outcome": "undecided"},

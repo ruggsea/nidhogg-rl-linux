@@ -171,16 +171,8 @@ def stop_id(i):
 
 
 def _game_pid(i):
-    """The wine process for instance i: the Nidhogg.exe whose DISPLAY matches, or None.
-
-    None (not KeyError) when the farm has never been started: three separate scripts had to
-    wrap this in try/except KeyError because a cold farm is the normal case on first run.
-    """
-    info = _pids().get(str(i))
-    if not info:
-        return None
-    disp = info["display"]
-    matches = []
+    """The wine process for instance i: the Nidhogg.exe whose DISPLAY matches."""
+    disp = _pids()[str(i)]["display"]
     for d in Path("/proc").iterdir():
         if not d.name.isdigit():
             continue
@@ -191,17 +183,8 @@ def _game_pid(i):
         except OSError:
             continue
         if f"DISPLAY={disp}".encode() in env:
-            matches.append(int(d.name))
-    if len(matches) <= 1:
-        return matches[0] if matches else None
-    # Two games on one display happens for real: a leftover from an earlier launch plus the
-    # new one. Returning the first match then drives a process with no spy (reads come back
-    # None, the screen never changes) — so prefer the newest, and among equals the one whose
-    # spy answers.
-    for pid in sorted(matches, reverse=True):
-        if ping(pid):
-            return pid
-    return max(matches)
+            return int(d.name)
+    return None
 
 
 # ---------------------------------------------------------------- input
@@ -462,21 +445,9 @@ def memory_many(pid, requests, timeout=15.0):
         cmd_out = Path(path)
         cmd_out.unlink(missing_ok=True)
         lines.append(f"dump {addr:x} {size:x} {path}")
-    # The spy reads the whole command file in one pass; more text than its buffer and the tail
-    # is dropped silently. Chunk by bytes, not by request count.
-    batch, size = [], 0
-    for line in lines:
-        if size + len(line) > 512 * 1024:
-            _send(pid, "\n".join(batch))
-            if not _wait_idle(pid, timeout):
-                return [None] * len(requests)
-            batch, size = [], 0
-        batch.append(line)
-        size += len(line) + 1
-    if batch:
-        _send(pid, "\n".join(batch))
-        if not _wait_idle(pid, timeout):
-            return [None] * len(requests)
+    _send(pid, "\n".join(lines))
+    if not _wait_idle(pid, timeout):
+        return [None] * len(requests)
     out = []
     for addr, size, path in requests:
         p = Path(path)
@@ -563,62 +534,6 @@ def wait_state(pid, after_seq=0, timeout=0.2):
         s = state(pid)
         if s is not None and s.seq > after_seq:
             return s
-        time.sleep(0.0005)
-    return None
-
-
-# ---------------------------------------------------------------- arbitrary-field watch
-#
-# `watch` samples up to 16 u32 slots on the same per-tick seam as the state file. It is the
-# instrument every memory hunt needs: a candidate set becomes a 60 Hz time series, so
-# "does this field step exactly when the round ends" is measured instead of guessed.
-#
-# Layout must match Watch in spy/nidspy.zig.
-WATCH_FMT = "<IIQII" + "I" * 16 + "8x"
-WATCH_SIZE = 96
-WATCH_MAGIC = 0x5744494E
-
-
-class NidWatch(NamedTuple):
-    seq: int
-    tick: int
-    count: int
-    values: tuple          # ints, in the order the addresses were given
-
-
-def watch(pid, addrs):
-    """Sample these addresses (u32 each, max 16) at tick rate. Empty list = stop."""
-    _send(pid, "watch " + " ".join(f"{a:x}" for a in addrs[:16]))
-
-
-def unwatch(pid):
-    _send(pid, "watch")
-
-
-def watched(pid):
-    """Latest watch sample, or None."""
-    try:
-        raw = Path(f"/tmp/nid_watch_{pid}").read_bytes()
-    except OSError:
-        return None
-    if len(raw) != WATCH_SIZE:
-        return None
-    f = struct.unpack(WATCH_FMT, raw)
-    if f[0] != WATCH_MAGIC:
-        return None
-    return NidWatch(seq=f[2], tick=f[3], count=f[4], values=tuple(f[5:5 + f[4]]))
-
-
-def wait_watch(pid, after_seq=0, timeout=0.2):
-    """Block until a watch sample newer than after_seq arrives."""
-    if not after_seq:
-        cur = watched(pid)
-        after_seq = cur.seq if cur else 0
-    t0 = time.time()
-    while time.time() - t0 < timeout:
-        w = watched(pid)
-        if w is not None and w.seq > after_seq:
-            return w
         time.sleep(0.0005)
     return None
 

@@ -222,7 +222,7 @@ class Mem:
                     return d
         return None
 
-    def place(self, x1, x2):
+    def place(self, x1, x2, y=None):
         """Write both fighters' x into their master records in ONE spy batch (same tick).
         The body can sit a few px off its master (0, 1.7, 8 and 28 px measured, it changes with
         state), so read the body back and correct the offset, up to 3 writes. Needs both
@@ -233,8 +233,17 @@ class Mem:
                 r = self.rec[who]
                 lines.append(f"poke {self.masters[r] + s.X_OFF:x} "
                              f"{struct.pack('<f', x - self.offset[r]).hex()}")
+                if y is not None:     # same floor for both (x-only writes keep a raised-floor y)
+                    lines.append(f"poke {self.masters[r] + s.Y_OFF:x} {struct.pack('<f', y).hex()}")
             self.send(lines)
-            prev, got = self.ticks(4)[-2:]
+            tr = self.ticks(4)
+            for _ in range(5):          # a stalled game can publish ONE sample for all 4 ticks
+                if len(tr) >= 2:
+                    break
+                tr += self.ticks(1)
+            if len(tr) < 2:
+                raise RuntimeError(f"place: state read gave {len(tr)} sample(s) after 6 reads")
+            prev, got = tr[-2:]
             err = {"P1": got.p1_x - x1, "P2": got.p2_x - x2}
             if all(abs(e) < 0.5 for e in err.values()):
                 return
