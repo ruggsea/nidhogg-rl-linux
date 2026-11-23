@@ -86,3 +86,40 @@ Status: the debug-copy code is not yet committed to this branch. Next round in t
 - Generation 0: 15 of 40 (0.375, Wilson 0.24-0.53).
 - Generation 5: 21 of 40 (0.525, Wilson 0.375-0.671). As P1 12/20, as P2 9/20.
 - Intervals still overlap; no clear improvement yet. About 25-29 minutes per generation.
+
+## 13. Reset debugging, hours 3-4 (debug copy; es4 unchanged)
+Counts per reset, from reset traces logged by the viewer game (rows 214-409, 195 resets, 2026-11-23 17:15-19:16Z).
+
+| Bug | Hour 3 (99 resets) | Hour 4 (96 resets) |
+|---|---|---|
+| A: tracked record changes object during reset (caught before write) | 33 | 40 |
+| B: body dies during reset | 3 | 3 |
+| C: stale death | 3 | 0 |
+
+- **Fix A2** (drop and re-identify a record whose object changed before writing): caught 27 rows in hour 3 and 34 in hour 4. Works as coded. Cause not fixed: the game reuses a fighter's record address for another object while the reset reads it.
+- **Read-back threshold after place():** 3 px was too strict (stopped 13 probes, mostly standing bodies 4-8 px off). 10 px (hour 4): 14 rows, 18 stops, all real off-spot bodies (one 396.7 px).
+- **Stale-death address rule:** the "respawn present at an earlier start" reason voided two real kills in hour 4 (rows 374, 408). Dropped. Now 0.
+- **Room check** (refuse probe spots outside the start room): untested, no reset left the room in hour 4.
+- **Death during a probe** (fix 2): 0 in hours 3-4.
+- **Failed resets** ("reset failed 5 times", "no record answers to P1's keys") still restart the game: 2 in hour 4, 11 in hour 3.
+
+## 14. Early stop and episode length (debug copy findings)
+- **Early-stop bug (episode 13, 2026-11-23 16:21Z):** P2 died to a real kill (death animation 327) while P1 stood idle. Both then froze, and the freeze check needs exactly one frozen fighter, so the death check never ran. The "both frozen 90 ticks" early stop ended the episode as undecided, scoring 0/0 for a real kill. The same rule is in es4's code. Proposed fix (debug copy first): when both are frozen and one is in a death animation, run the death check on that one. Not yet tested.
+- **Episode length** (265 viewer episodes with per-step traces, from 13:52Z; see review/episode_length.md on pippi):
+  - Play itself never exceeds 605 ticks. The 600-tick cap applies to play; end-of-episode checks add the rest.
+  - 41 episodes ran long through the kill path: corpse frozen 30 ticks, then the death check waits up to 360 ticks for respawn, then the 1.5 s double-kill check.
+  - 10 episodes had a false freeze whose death check waited about 430 ticks inside the cap, cutting play to 174-554 ticks.
+  - After a kill, play continues: median 15 steps (6.7 s) before the episode ends. The respawned fighter never plays in that episode. The next reset therefore starts about 7 s after the kill.
+  - No reset started before the previous episode row was written.
+  - 11 resets produced no episode row (failed reset, then game restart, then a fresh reset). On screen this looks like a double reset with a black screen of about 2 minutes.
+
+## Training (es4, fixed reference, decided episodes only)
+- Generation 10 (2026-11-23 17:49Z): P1 10/20 (0.50, Wilson 0.30-0.70), walked 28 vs 28 frozen; P2 10/20 (0.50), walked 30 vs 26 frozen.
+- Generations 0, 5, 10: 0.375, 0.525, 0.50 pooled. Intervals overlap; no clear improvement yet.
+- Generation 10 took 2,698 s against about 1,300-1,900 s before. Training stalled with 0 games for a period on 2026-11-23 around 19:23Z (load 89), then resumed at 12 games by 19:35Z.
+- Farm2 worker crashed at 16:12:45Z on an unchecked memory read (TypeError in nidobs.py line 126; the episode handler does not catch TypeError). Worker relaunched; one-line fix proposed, not applied to es4.
+
+## Open
+- Decision needed from Ruggero: reset sides (keep as ended, or always restore fixed P1-left/P2-right). This is the visible "teleport".
+- Decision needed: a kill that also gets the walking penalty scores 0 (for example, row 53: kill +1, walk -1). Affects training signal.
+- Debug-copy fix code is not on this branch. It will be committed only after a round validates it.
