@@ -61,3 +61,28 @@ Kept current with the PR. Each entry: symptom, cause, fix, and the evidence. Num
 - Reward design: the walking penalty may still need tuning if the new run stops moving again.
 - Acceptance: 400-episode test for death-animation kills is still pending.
 - Maintenance: the working code is spread over several server folders; it needs one clean branch and reviewable commits.
+
+## 11. Reset bugs found by reviewing recorded episodes (2026-11-23, debug copy)
+Method: each viewer episode is recorded with video and a reset phase trace (wall time, tick, object index, x, y, animation for both fighters). Every event is then explained from video and logs before the next episode is run.
+
+- **Reset visible as a teleport:** the reset always writes P1 left and P2 right, so when fighters finish on swapped sides, the next reset moves them back across each other. The reset works as coded. Open decision: keep the sides as they ended, or always restore fixed sides.
+- **Bug A, fighter record in hang animation 580/659 during the reset:** 18 of 65 resets (1 in 4), in the first hour with fixes 1-3. Mostly not a fighter hanging on a ledge: the game frees a record and reuses its address for another object while the reset still reads it. Of 73 trace points with animation 580/659, 5 were a real body (object 74); the rest were objects 154 (18), 243 (18), 244 (4), or no record (28).
+- **Bug B, fighter dies during the reset:** 11 of 65. Nine of these were deaths during probe writes, i.e. a test spot put a fighter within the other's blade reach.
+- **Bug C, stale death:** 1 of 65. Same cause as A: a respawn record at an address seen in an earlier episode.
+- **Fix 1 (accept a respawn only if object 74):** 0 rejections in 65 episodes. It never fired.
+- **Fix 2 (a death during a probe ends the probe):** fired 9 times. It moves the reset on after the death but does not prevent it.
+- **Fix 3 (confirm a death that started before the time limit):** fired once; it turned an undecided episode into a P1 win.
+- **Earlier 0-of-5 result was luck:** rows 71-75 had no bug events, but none of the fixes fired in them, so they don't show the fixes work.
+
+Status: the debug-copy code is not yet committed to this branch. Next round in the debug copy: re-check each tracked record's object index after every write, keep probe spots out of blade reach, and compare records by instance id instead of address. Not yet validated.
+
+## 12. Training worker crash on a failed memory read (es4, 2026-11-23)
+- **Symptom:** the farm2 worker exited at 16:12:45Z in generation 6.
+- **Cause:** a game-memory read returned nothing. The observation code (nidobs.py line 126) unpacks it without a check, which raises a TypeError. The episode error handler catches only assertion, runtime, value and OS errors, so the TypeError ended the worker process.
+- **Handling:** the worker was relaunched within the cap; the coordinator re-queued the episode it was playing. No training data lost.
+- **Open:** adding TypeError to the episode-level handler is a one-line fix. Not applied to the running training, to keep generations comparable.
+
+## Training progress (es4, fixed reference, decided episodes only)
+- Generation 0: 15 of 40 (0.375, Wilson 0.24-0.53).
+- Generation 5: 21 of 40 (0.525, Wilson 0.375-0.671). As P1 12/20, as P2 9/20.
+- Intervals still overlap; no clear improvement yet. About 25-29 minutes per generation.
