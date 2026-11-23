@@ -130,3 +130,16 @@ Per the user's instruction, Fable makes the decisions until the goal (controllab
 2. Reward: a kill always scores +1; the walking penalty applies only to episodes without a kill, at -0.25. Reason: the current rule scores a real kill as 0 when the killer also gets the penalty.
 3. Validity: a decided kill is never discarded because the victim moved under 40 px. The 5-step and 40 px test applies per fighter, to cap episodes only; v3 is kept as a reported statistic. Reason: the current rule throws away the killer's learning signal.
 Status: not yet tested. Pending: trace checker run and two control matches (trained vs idle; same policy vs itself), each reported with n.
+
+## 16. Viewer outage from a trace patch (2026-11-23, our mistake)
+- **What broke:** a per-tick trace patch applied about 19:52 UTC left part of Env.__init__ inside a new method. Every Env then lacked home_y, so the viewer's reset crashed.
+- **Effect:** the viewer's restart loop relaunched its game 81 times between 19:51 and 23:34 UTC and played 0 episodes. The VNC showed launches and black screens for about 3 h 40 min.
+- **Not affected:** es4 uses ~/nf-p/code, not the debug copy.
+- **Fix:** 23:34 UTC, the init lines restored into __init__ (checked with the AST). The viewer recovered by its own restart; episodes resumed at 23:36 UTC.
+- **Process change:** each status report now first checks the viewer's last episode row time, not only the hourly counts.
+
+## 17. Full per-tick traces (debug copy)
+- **Debug launches:** 23:22 UTC (boot retry worked; the game was lost between match entry and the first episode, then hit the same home_y bug); 23:34 UTC (match at 23:37, first try). The 23:34 launch broke the one-launch-per-hour rule on purpose, after the fix.
+- **First trace:** ~/nf-p/viz85/trace/20261123T233713-3494928_ep0000.jsonl.gz, 5.6 KB, episode 0: current policy as P1, P2 won.
+- **Pending:** 20-episode trace cycle with trace_check results by episode number; controls (40 trained vs idle, 40 frozen vs frozen), each with n and side split; total trace size.
+- **Status:** the Fable decisions (random reset sides, kill always +1, walking penalty -0.25 only without a kill, 40 px test on cap episodes only) are applied in the debug copy only. Nothing from them is validated yet.
