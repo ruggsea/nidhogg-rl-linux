@@ -123,3 +123,10 @@ Counts per reset, from reset traces logged by the viewer game (rows 214-409, 195
 - Decision needed from Ruggero: reset sides (keep as ended, or always restore fixed P1-left/P2-right). This is the visible "teleport".
 - Decision needed: a kill that also gets the walking penalty scores 0 (for example, row 53: kill +1, walk -1). Affects training signal.
 - Debug-copy fix code is not on this branch. It will be committed only after a round validates it.
+
+## 15. Decisions taken by the Fable oracle (2026-11-23, applied in the debug copy first)
+Per the user's instruction, Fable makes the decisions until the goal (controllable, reliable, robust training episodes) is met.
+1. Reset sides: randomised per episode, with mirrored start spots; the side is logged; evaluation is balanced 50/50 by side. Reason: a side advantage must not be learned as skill.
+2. Reward: a kill always scores +1; the walking penalty applies only to episodes without a kill, at -0.25. Reason: the current rule scores a real kill as 0 when the killer also gets the penalty.
+3. Validity: a decided kill is never discarded because the victim moved under 40 px. The 5-step and 40 px test applies per fighter, to cap episodes only; v3 is kept as a reported statistic. Reason: the current rule throws away the killer's learning signal.
+Status: not yet tested. Pending: trace checker run and two control matches (trained vs idle; same policy vs itself), each reported with n.
