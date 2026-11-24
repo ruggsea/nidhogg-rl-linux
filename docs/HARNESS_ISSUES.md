@@ -143,3 +143,16 @@ Status: not yet tested. Pending: trace checker run and two control matches (trai
 - **First trace:** ~/nf-p/viz85/trace/20261123T233713-3494928_ep0000.jsonl.gz, 5.6 KB, episode 0: current policy as P1, P2 won.
 - **Pending:** 20-episode trace cycle with trace_check results by episode number; controls (40 trained vs idle, 40 frozen vs frozen), each with n and side split; total trace size.
 - **Status:** the Fable decisions (random reset sides, kill always +1, walking penalty -0.25 only without a kill, 40 px test on cap episodes only) are applied in the debug copy only. Nothing from them is validated yet.
+
+## 18. Trace cycle 1 and control matches (debug farm, es4 generation 20, Fable rules)
+Raw file: ~/nf-p/dbg86/ctrl.jsonl on pippi, 100 rows; totals checked against the agent's table (P1 16, P2 28, undecided 56).
+
+Trace cycle 1 (20 episodes): 3 with unexplained events (episodes 1 and 11: a tracked body record freed mid-play, fix in debug copy for cycle 2; episode 12: game exit with code 1 during a reset, cause not found). Best clean run 9; current 7 at cycle end.
+Checker rules were relaxed during the run (writes counted as pokes, 6-tick settle, reset phases excluded from jump checks). Re-checked on all 20 files: 0 play-tick jumps over 30 px without a write within 6 ticks, out of 25,982 ticks.
+
+Controls (first policy's wins among decided episodes, Wilson 95%):
+- A, current vs frozen (n=20): 7/14 = 0.50 [0.27, 0.73]. Agrees with es4's evaluations: no measurable gain.
+- B, current vs idle, always action 0 (n=40): 1/7 decided = 0.14 [0.03, 0.51]; 33 undecided. The policy does not learn to attack a standing opponent.
+- C, frozen vs frozen (n=40): 10/23 = 0.43 [0.26, 0.63]; P1 won 7/23 = 0.30 [0.16, 0.51]. The 0.5 check holds; the seat split is too small to call bias.
+
+Conclusion: no learning signal yet. The training design is the open question.
