@@ -331,3 +331,8 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Fix in debug copy nidmem.py (lines 72-76): if a batch is not done after 2 s, wait up to 8 s more without resending keys; each late batch is counted as spy_late with its wait time. Read from pippi: the 8 s wait and the counter are present; the file parses.
 - Not yet validated: cycle 13 with the fix is pending; the count of spy_late events per cycle is the measure.
 - Real hangs over 240 traced episodes: 4 (Wilson 95% 0.006-0.042), none since cycle 3.
+
+## 47. Cycle 13 (run 20261124T034926, 03:49-04:01 UTC), checked from raw files
+- 20 trace files; no restart or abort text; the only launcher exit is the run's own stop at 04:01:26 (rc -15). Boot retries 0, reset-failure restarts 0, code-1 exits 0.
+- spy_late 0 in the run: no batch needed the extra 8 s wait. Clean under the restart rule: 1 of 3 (cycle 12 reset the count).
+- Hang rate over 260 traced episodes: 4/260 = 0.015 (Wilson 95% 0.006-0.039). No real hang since cycle 3.
