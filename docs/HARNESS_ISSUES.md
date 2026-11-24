@@ -526,3 +526,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 ## 79. Cycle 20 started (2026-11-24 19:17:28 UTC)
 - Started by hand with the unchanged `dbg86/cycle.sh`, scope nfp-dbg86-1917; load 12.6 at launch. Cycle 20 is the last clean cycle needed for three in a row.
 - Counts from raw files via dbg86/fresh_series.py once cycle20.out has its "hang rate" line.
+
+## 80. Cycle 20 result: three clean cycles in a row (2026-11-24, checked 19:53 UTC from raw files)
+- Cycle 20 (20261124T191957): 20 episodes, 0 hangs, 0 restarts, 0 reset failures; controller EXIT 0.
+- Consecutive clean-cycle streak: 3 (cycles 18, 19, 20). This meets the three-in-a-row bar set in this log. Cycle 17 is not clean.
+- Series, cycles 17-20: 0 hangs in 80 episodes, Wilson 95% [0.000, 0.046].
+- What this does NOT establish: the es4 learning result is unchanged (generation 30 won 23 of 40, 0.575, no learning trend; the trained policy decided 1 of 7 against an idle opponent). The reset give-up fix has no owner. The pause fix is untested (arm dropped at the user's request). Cycles 18-20 ran with the unchanged debug copy, so the streak covers the reset path as it stands, not a fixed one.
