@@ -66,3 +66,7 @@
 - rex-f7 reports the request did not come from it; it appears to be Ruggero's own words, probably dictated and garbled. Its meaning is known only to him, so a Fable subagent cannot decide it.
 - **Decision:** parked. Change nothing. Ruggero restates it in plain words; that is the only route.
 - The Fable routing rule (D-2026-11-25-fable-routing) still covers the other open questions.
+
+## D-2026-11-25-cross-session-bound-resolved: the parked request is closed
+- rex-f7 reports Ruggero confirmed the meaning: the Claude Code setting crossSessionInbound = "accept" (messages from his other sessions delivered without waiting for approval), set for all sessions on the laptop.
+- This session made no change to settings or config; the setting was set by rex-f7 on Ruggero's word. Nothing for this project to act on, and it is not on my wait list.
