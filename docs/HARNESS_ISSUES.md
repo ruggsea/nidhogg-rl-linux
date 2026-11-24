@@ -316,3 +316,6 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 ## 43. Cycle 11 (run 20261124T032016, 03:20-03:30 UTC), checked from raw files
 - 20 trace files; no restart or abort text; the only launcher exit is the run's own stop at 03:30:47 (rc -15). Boot retries 0, reset-failure restarts 0, code-1 exits 0. Clean under the restart rule: 2 of 3 (cycles 10 and 11).
 - Hang rate over 220 traced episodes: 4/220 = 0.018 (Wilson 95% 0.007-0.046). No real hangs since cycle 3 (160 episodes). Hang code unchanged; not a fix.
+
+## 44. Cycle 8 boot failure, confirmed from raw output
+- ~/nf-p/dbg86/cycle8.out on pippi: "attempt 0: boot failed: full farm cleanup" at 02:30:29 UTC. This is the boot retry counted in section 35; it is no longer an open question.
