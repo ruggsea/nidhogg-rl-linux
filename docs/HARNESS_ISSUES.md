@@ -522,3 +522,7 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Consecutive clean-cycle streak: 2 (cycles 18 and 19). Cycle 17 is not clean.
 - Series, cycles 17-19: 0 hangs in 60 episodes, Wilson 95% [0.000, 0.060].
 - Needed for the goal: cycle 20 clean.
+
+## 79. Cycle 20 started (2026-11-24 19:17:28 UTC)
+- Started by hand with the unchanged `dbg86/cycle.sh`, scope nfp-dbg86-1917; load 12.6 at launch. Cycle 20 is the last clean cycle needed for three in a row.
+- Counts from raw files via dbg86/fresh_series.py once cycle20.out has its "hang rate" line.
