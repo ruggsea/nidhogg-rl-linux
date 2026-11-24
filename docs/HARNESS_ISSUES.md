@@ -415,3 +415,12 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Arm B: 0 completed episodes. Chunk 180 try 1 failed with "state file stopped updating (game hung or exited)"; try 2 running with no error at 16:09 UTC. Earlier chunks 0, 40, 140, 160 failed the same way.
 - Arm A (control): finished 300 episodes, 0 key-down-tick stops (section 59).
 - Pause fix: untested. The 2-tick wait is only exercised once arm B produces episodes.
+
+## 61. Record catch-up, 2026-11-24 16:50-17:07 UTC (verified from pippi logs at each check)
+- Arm B (2-tick pause): still 0 completed episodes. Chunk 220 try 1 failed with "state file stopped updating (game hung or exited)"; chunk 220 try 2 running with no error at 17:06 UTC. Earlier chunks 0, 40, 140, 160, 180, 200 failed the same way.
+- Arm A (control): finished 300 episodes at 14:20 UTC, 2 restarts, 0 hangs, 0 key-down-tick stops of 300 (section 59).
+- Hang count: 6 in 300 traced episodes (Wilson 95% 0.013-0.043 as stated earlier); not re-verified after cycle 16.
+- Clean-cycle streak: 1 of 3 (cycle 16 clean; cycle 15 hang broke the earlier run).
+- Open decision for the user: keep retrying arm B, or drop the pause arm and move to the hang diagnosis from tick-level traces.
+- VNC: tunnel to the pippi viewer restarted from the Mac at about 17:04 UTC; viewer answered on localhost:6085.
+- Goal: not met. es4 generation 30 won 23/40 (0.575), no learning trend; trained policy 1/7 vs idle opponent.
