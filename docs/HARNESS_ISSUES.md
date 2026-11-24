@@ -167,3 +167,13 @@ Raw check, read from pippi trace files: episodes 4, 8 and 9 each contain one res
 - **Episodes 4 and 8:** the last play-phase rows show P2 at x 0, y 0, animation 0 (record zeroed) during the P1 end check (tick 3950 and 5098). The restart reason logged is "state file stopped updating (game hung or exited)". Cause: P2's record was freed, and the spy's state file stopped updating in the same window. Not yet proven which came first.
 - **Episode 9:** restart reason "no record answers to P1's keys". P1's last record (object 445) was live at tick 3617; the re-identification found nothing. The respawn walk for P2 ran but P1's keys still went unanswered.
 - These restarts are not yet linked to the object-reuse problem seen in episodes 4 and 5; treat that link as a hypothesis.
+
+## 21. es4 fixed-reference evals, updated from the raw file (2026-11-24 01:23 UTC)
+Read from ~/nf-p/es4/evals.jsonl on pippi (decided episodes only, Wilson 95%):
+- Generation 0: 6/20 (0.30) P1; 9/20 (0.45) P2.
+- Generation 5: P1 12/20 (0.60, 0.39-0.78), walked 30 vs 27 frozen; P2 9/20 (0.45).
+- Generation 10: P1 10/20 (0.50, 0.30-0.70), walked 28 vs 28; P2 10/20 (0.50).
+- Generation 15: P1 12/20 (0.60, 0.39-0.78), walked 38 vs 32; P2 12/20 (0.60, 0.39-0.78), walked 31 vs 32.
+- Generation 20: P1 9/20 (0.45, 0.26-0.66), walked 39 vs 36; P2 9/20 (0.45), walked 34 vs 36.
+- Latest generation at this read: 22. Run not ended. 18 games running, load 53.
+Pattern: every eval sits near 0.5 and the intervals overlap. No measurable gain over the frozen checkpoint.
