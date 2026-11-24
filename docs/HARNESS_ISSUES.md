@@ -275,3 +275,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Workers restarted one at a time (farm1 02:52, farm2 02:55, farm3 02:58, farm4 03:01 UTC), same 8 cores and 16 GB each; all ready by 03:01 UTC.
 - TypeError aborts in generation 26 so far: 0 (no traceback log yet at 02:44 check on pippi, read before workers were restarted).
 - Watch: more than 3 per generation is reported before the next generation.
+
+## 37. Cycle 9 game exit (raw, 2026-11-24)
+- Run 20261124T024622: 20 trace files written. Launcher log (~/nf-p/dbg86/launcher_exits.jsonl): game exit with return code 1 at 02:52:31 UTC; alive 503 s; game pid 400738.
+- Last recorded state: tick 25096, P1 (1158, 192, anim 463), P2 (909, 173, anim 580), room 29.
+- Under the restart rule this breaks cycle 9's clean streak. Episode and trace of the last ticks requested from the pippi agent; no debug-farm relaunch until it reports.
+- Hang rate so far: 5 code-1 exits in 160+ traced episodes (see section 35); this is one more if it is counted at the agent's report.
