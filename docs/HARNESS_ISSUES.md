@@ -507,3 +507,8 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Cycle 18 (20261124T185443): 20 episodes, 0 hangs, 0 restarts, 0 reset failures, clean-cycle streak 1 (this cycle is clean).
 - Fresh series so far, cycles 17-18: 0 hangs in 40 episodes, Wilson 95% [0.000, 0.088]. Cycle 17 is not clean (1 restart, 1 reset failure), so the consecutive clean-cycle count is 1, not 2.
 - Goal still needs three clean cycles in a row; cycle 19 is the next one needed. Cycle 19 is not started. The cycle script was run by hand; no loop is scheduled to start it.
+
+## 76. Cycle 19 started (2026-11-24 19:05:05 UTC)
+- Started by hand with the existing `dbg86/cycle.sh`, unchanged, in scope nfp-dbg86-1905. Load was 5.3 at launch, so the load gate was not holding it.
+- Cycle 19 is the one needed for the streak: a clean cycle here makes the consecutive count 2 (cycle 18 clean, cycle 17 not). Three in a row needs cycle 20 as well.
+- Counts: read from raw files via dbg86/fresh_series.py after cycle19.out shows its "hang rate" line.
