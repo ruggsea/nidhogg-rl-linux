@@ -238,3 +238,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Hangs over 120 traced episodes: trace rule 4/120 (Wilson 95% 0.013-0.083); code-1 exits 5/120 (0.018-0.094).
 - No hangs in cycles 4-6 (60 episodes). The hang code has not changed, so this is not a fix; the interval still allows about 1 in 12 episodes.
 - Next: cycle 7 (started 02:07 UTC).
+
+## 31. es4 worker crash (second) and the decision on the episode catch
+- 02:06:01 UTC: the farm2 worker crashed on the same TypeError as at 16:12 (memory read returned nothing; nidobs.py line 126). Episode eval_g25_P1_022 re-queued; no data lost. Relaunched 02:09:28 as nfp-es4-farm2b, same limits (cores 8-15, 16 GB).
+- Two crashes from this bug in about 13 hours.
+- Decision (Fable, under the user's delegation): apply the one-line episode-level catch of TypeError to es4 at the next generation boundary. Only the crashing episode aborts; nothing else changes.
+- es4 fixed-reference evals (wins among decided, current vs frozen): gen 0 15/40 (0.375, 0.242-0.530); gen 5 21/40 (0.525, 0.375-0.671); gen 10 20/40 (0.50, 0.352-0.648); gen 15 24/40 (0.60, 0.446-0.737); gen 20 18/40 (0.45, 0.307-0.602). All intervals overlap: no trend yet.
