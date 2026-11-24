@@ -598,3 +598,9 @@ Plan, and what I have not yet done:
 - Code check: the fix copy (code_fix) matches code_dbg in nidlinux.py, nidmem.py and nidobs.py. The only difference is nidenv.py (the `_find` walk), which the boot path does not call. train/ is identical.
 - Load during these boots was 21–23 (cycles 19–20 booted at 5–12). Load is the leading candidate and is not proven.
 - Next: the next boot's result decides it. If it fails again at similar load, read the spy's state for the game on :86 before changing anything.
+
+## 90. Boot failures: load and code_fix both checked; neither explains them alone (2026-11-25)
+- Counted from raw controller logs on pippi: 22 debug-controller logs; boot failures in 3 (ctrl.024401, ctrl.234747 = the stalled cycle 21, ctrl.log = cycle 21b). The other 19 booted without a failure.
+- Load at cycle start: the failing cycles began at load 11.8 (cycle 21) and 21.4 (cycle 21b). Cycle 20 booted cleanly at 12.6, cycle 19 at 5.3. So load does not separate them. Load is no longer the leading candidate.
+- Code: ctrl.024401 failed once and predates code_fix (it ran on code_dbg). So the boot failure is not specific to code_fix either.
+- Current reading: an intermittent boot failure (about 1 in 7 cycles) that predates this session's changes; cause not found. Not yet a blocker for the acceptance count, since a failed boot still retries and logs nothing for episodes.
