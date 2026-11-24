@@ -221,3 +221,6 @@ Read from ~/nf-p/dbg86/launcher_exits.jsonl on pippi:
 - Hangs per 20 episodes: cycle 1: 1; cycle 2: 3; cycle 3: 1; cycle 4: 0. Total 5 in 80.
 - Not a fix. Cycle 4 changed only the room-index logging. At the earlier rate (5 in 60), a hang-free 20-episode run happens by chance about one time in five.
 - Plan: 20-episode cycles on the debug farm until a hang recurs or three clean cycles in a row.
+
+## 28. Cycle 4 outcome counts, corrected from the raw trace files
+Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 (the agent's report said P2 11, undecided 5). Tick range 496-1116 confirmed.
