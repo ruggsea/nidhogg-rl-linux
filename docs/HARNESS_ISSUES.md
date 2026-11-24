@@ -244,3 +244,8 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Two crashes from this bug in about 13 hours.
 - Decision (Fable, under the user's delegation): apply the one-line episode-level catch of TypeError to es4 at the next generation boundary. Only the crashing episode aborts; nothing else changes.
 - es4 fixed-reference evals (wins among decided, current vs frozen): gen 0 15/40 (0.375, 0.242-0.530); gen 5 21/40 (0.525, 0.375-0.671); gen 10 20/40 (0.50, 0.352-0.648); gen 15 24/40 (0.60, 0.446-0.737); gen 20 18/40 (0.45, 0.307-0.602). All intervals overlap: no trend yet.
+
+## 32. The es4 TypeError handler, checked in the code (2026-11-24)
+- The handler the change goes into (train/selfplay_env.py, step(), around line 153) is episode-level: its except branch calls _sp_abort, which ends the current episode as aborted. Adding TypeError there aborts only the crashing episode.
+- Still required before it lands: the full traceback of every caught TypeError is written to the es4 log, and more than 3 TypeError aborts in one generation is reported before the next generation.
+- Not yet applied to es4 at the time of this entry.
