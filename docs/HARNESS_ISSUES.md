@@ -578,3 +578,6 @@ Plan, and what I have not yet done:
 - Count question for Fable/Ruggero (not decided by me): "300 consecutive episodes over at least 3 cycles" is inconsistent at 20 episodes per cycle (300 = 15 cycles). Until answered, the run goes on and the count is kept per episode.
 - Pause arm: still dropped; not touched.
 - Learning: not run; no new generations until acceptance passes.
+
+## 86. Acceptance cycle 21 launched on code_fix (2026-11-24 23:32:11 UTC)
+- Scope nfp-dbg86-2332, running the unchanged cycle script pointed at code_fix. First acceptance cycle; it counts only if it and the next 14 cycles (300 episodes) finish with 0 hangs, 0 restarts, 0 reset failures, pending the count question in section 85.
