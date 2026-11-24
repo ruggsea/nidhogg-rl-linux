@@ -195,3 +195,14 @@ Reading: the game frees P2's record during P1's death check, and the spy stops p
 - A reset_start phase and the first attempt_start both fire at tick 17161. P2's record reads (0, 0) from tick 17182 onward, and the game stops publishing state at tick 18182.
 - P1 walks normally during that window (x 1092 to 1090), so the stall is on P2's side, from the reset.
 - Lead only, from one episode. Cycle 4 must log the reset's first writes for both fighters to confirm or reject it.
+
+## 25. Hang count and correction (agent report, review/hangs.md on pippi)
+Corrects sections 22-24. Five game hangs or exits in 60 traced episodes, not four (cycle 2 episode 9 also exited).
+- Cycle 1 ep 12: re-identifying P2 after the episode; P2 (0,0) vanished.
+- Cycle 2 ep 4: stepped approach inside the reset; the only hang in a reset. P2 at 1219.6, not vanished.
+- Cycle 2 ep 8: re-identifying after the episode; P2 (0,0) vanished.
+- Cycle 2 ep 9: exit; P1's keys not answered first.
+- Cycle 3 ep 8: death check on P2; P1 in death animation 297; P2 (0,0) vanished.
+Across 13 exits with return code 1 since 23:34Z: P2's record read (0,0) in 7 of 8 exits with a recorded state. The reset lead in section 24 covers one of five, so it is not the cause. The relaunch after each exit died again within about 3 minutes (5 of 5); the second relaunch worked.
+Open: why P2's record disappears before the exit. Hypothesis (unproven): a short gap between the master-record check and the write.
+Cycle 4 started 01:28:46Z (debug farm). Logs per launch: launchwatch last state, room index per sample, per-episode videos at 2 fps.
