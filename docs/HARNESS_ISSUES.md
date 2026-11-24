@@ -592,3 +592,9 @@ Plan, and what I have not yet done:
 - The stalled output is kept as cycle21.stalled.out. Nothing from it counts toward acceptance (no episodes logged).
 - Relaunched at 23:47:51 as cycle21b (same cycle script, same code_fix). Its first log line shows the same `game pid None` state, which is normal for the first seconds. Root cause of the earlier stall is not yet known: `_game_pid` matches on comm and DISPLAY, and the game for :86 was up, so the matching step is the place to look if this recurs.
 - Acceptance counts restart from cycle21b.
+
+## 89. Cycle21b boot failed again (2026-11-25, 23:56 UTC): not yet explained
+- Attempt 0 failed at 23:56:04 ("boot failed: full farm cleanup"), the same message as 23:40:22. The controller boots for up to 400 s waiting for the game's spy to answer a ping; neither boot answered.
+- Code check: the fix copy (code_fix) matches code_dbg in nidlinux.py, nidmem.py and nidobs.py. The only difference is nidenv.py (the `_find` walk), which the boot path does not call. train/ is identical.
+- Load during these boots was 21–23 (cycles 19–20 booted at 5–12). Load is the leading candidate and is not proven.
+- Next: the next boot's result decides it. If it fails again at similar load, read the spy's state for the game on :86 before changing anything.
