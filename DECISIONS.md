@@ -42,3 +42,10 @@
 - **Decided by:** the user, 2026-11-24 (message: "i said the second option, pause it").
 - **Done:** arm B's runner and its 10 farmB game processes stopped (owned by my user; environment checked for NIDFARM=farmB). All confirmed gone.
 - **Consequence:** the pause fix stays untested; the 2-tick pause decision (D-2026-11-24-fable-pause) is on hold. Next step is the hang diagnosis from tick-level traces, as the second option stated.
+
+## D-2026-11-25-own-decisions: Ruggero said "take every decision on your own"
+- **Owner of the reset give-up fix:** the main session (me). Fable's direction, under Ruggero's delegation.
+- **Acceptance count:** 300 consecutive episodes = 15 cycles of 20, with 0 hangs, 0 restarts, 0 reset failures. Fable's "at least 3 cycles" conflicts with 20 episodes per cycle, so I took the episode count as the rule.
+- **Flat learning:** does not count toward the goal (Fable). No new generations until the acceptance run passes. Next step after acceptance: a scripted player against the idle opponent, to test whether the episode machinery is at fault for "1 of 7".
+- **Pause arm:** stays dropped. Its fix stays on its own branch; main does not enter that path.
+- **Evidence and reasons:** docs/HARNESS_ISSUES.md sections 82, 84, 85, 86.
