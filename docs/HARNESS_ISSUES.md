@@ -301,3 +301,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Hang rate over 200 traced episodes: 4/200 = 0.020 (Wilson 95% 0.008-0.050).
 - Process miss: cycle 10 launched at a 1-minute load of 164.6, above the 150 gate. The debug launcher had no load check; the farm restart path does. Fixed in the debug launcher (waits while 1-minute load is above 150, logs each wait).
 - Context: load spike coincided with the es4 worker relaunches (02:49-03:01 UTC) and six debug games. Other users not checked.
+
+## 41. es4 generation 25 evaluation, read from the raw file (2026-11-24 03:19 UTC)
+- Generation 25 (01:59:59 UTC): P1 14/20 = 0.70 (Wilson 95% 0.48-0.86), walked 42 vs 42 frozen; P2 15/20 = 0.75 (0.53-0.89), walked 42 vs 43 frozen.
+- Previous: generation 20 at 0.45 (both seats); generations 0-15 between 0.375 and 0.60.
+- Read carefully: the highest point so far, but each seat has 20 counted episodes and the intervals still overlap the earlier ones. This is one evaluation, not a trend. Needs the next evaluations (generation 30) and a control check before any claim.
+- Walk counts equal to the frozen checkpoint, so the win is not from standing still.
