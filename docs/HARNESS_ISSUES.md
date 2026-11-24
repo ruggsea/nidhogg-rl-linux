@@ -281,3 +281,10 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Last recorded state: tick 25096, P1 (1158, 192, anim 463), P2 (909, 173, anim 580), room 29.
 - Under the restart rule this breaks cycle 9's clean streak. Episode and trace of the last ticks requested from the pippi agent; no debug-farm relaunch until it reports.
 - Hang rate so far: 5 code-1 exits in 160+ traced episodes (see section 35); this is one more if it is counted at the agent's report.
+
+## 38. Cycle 9 exit reclassified (pippi agent, raw checked)
+- The 02:52:31 UTC code-1 exit (run 20261124T024622) is not a game hang. It came after a reset failed five times in episode 5 (seed 90005; reset_failures.jsonl). The training env then restarted the game, and its stop sent SIGTERM to the launcher and to Nidhogg.exe, so the launcher returned 1.
+- Cause in the reset: attempts 1-4 re-identified P2 through the "unstuck" path, each time returning a non-body record (object 243, new instance each attempt); each search took about 49 s.
+- Hang classification unchanged: 4 real hangs (cycle 1 ep 12; cycle 2 ep 4 and ep 8; cycle 3 ep 8). Cycle 2 ep 9 exit was also our restart after a reset failure, not a hang.
+- New failure class: reset failures with restart (cycle 9 episode 5 is the first in this run; 1 in about 180 traced episodes).
+- Debug-copy fix approved (no retry of the same unstuck path after a failed search; wait for respawn). Cycle 10 to start once the fix is in.
