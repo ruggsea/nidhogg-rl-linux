@@ -442,3 +442,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Fix applied to the debug farm env only: trace dir now a symlink outside the viewer path. Not yet applied: clean_farm should match the exact NIDFARM= entry (approved for the debug copy).
 - Consequence: the 6-hang count over 300-320 episodes and the key-down-tick explanation are both superseded. Use a fresh series from cycle 17 (18:25 UTC onward).
 - Still open: the reset path that gives up ("no record answers to P2's keys"): about 5 on the viewer and about 10 across es4 farms in about 18 h. Each now costs one restart.
+
+## 65. Verified state at 18:27 UTC (2026-11-24)
+- Exact-match kill rule is in the debug copy: `~/nf-p/code_dbg/nidlinux.py` line 98 tests `NIDFARM=<farm>` as an exact env entry. Read on pippi; the staged test result is the pippi agent's (not re-run by me).
+- Cycle 17 launched 18:25:35Z in scope nfp-dbg86-1825; cycle17.out has no result line yet. No launcher exits and no cycle-17 trace files have been recorded since 18:25.
+- Reset give-up: 114 cases over about 36 h on viewer and es4 farms (pippi agent's count from each farm's diag.jsonl; not re-counted by me). Pattern split from its report: 54 with two fighter records, 20 with the missing fighter parked at x=1600, 34 with extra non-body records. Fix for the 54 case not applied; pippi agent proposed it for the debug copy only.
+- Cleanup-fix claim and the superseded hang counts are in section 64.
