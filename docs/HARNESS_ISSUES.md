@@ -410,3 +410,8 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 ## 59. Arm A final (control, no pause), 2026-11-24 15:07 UTC
 - Arm A: 300 episodes finished (14:20 UTC), 2 restarts, 0 hangs, 0 key-down-tick stops out of 300 (6,617 identify key-downs). Stop rate 0 (Wilson 95% 0-0.013).
 - Arm B (2-tick pause): still 0 completed episodes; chunk 140 try 1 failed with "state file stopped updating", try 2 running. Pause effect cannot be measured yet.
+
+## 60. Two-arm pause test: arm B still failing (2026-11-24 16:10 UTC)
+- Arm B: 0 completed episodes. Chunk 180 try 1 failed with "state file stopped updating (game hung or exited)"; try 2 running with no error at 16:09 UTC. Earlier chunks 0, 40, 140, 160 failed the same way.
+- Arm A (control): finished 300 episodes, 0 key-down-tick stops (section 59).
+- Pause fix: untested. The 2-tick wait is only exercised once arm B produces episodes.
