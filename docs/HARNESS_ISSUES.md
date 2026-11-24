@@ -586,3 +586,9 @@ Plan, and what I have not yet done:
 ## 87. Acceptance cycle 21: boot retry (2026-11-25 check, 23:47 UTC)
 - Attempt 0 failed at 23:40:22 ("boot failed: full farm cleanup"); the cycle retried. A new game process for DISPLAY :86 (pid 1778947, comm Nidhogg.exe) is up, so the launcher's `game pid None` should clear on its next check. The other Nidhogg.exe on :85 is the viewer's game, untouched.
 - No episode logged yet. Counts from raw files once the first episode is logged.
+
+## 88. Acceptance cycle 21 stalled and was relaunched (2026-11-25, 23:47 UTC)
+- The first cycle-21 controller (pid 1749841) stopped writing to ctrl.log at 23:40:46, seven minutes before the check, after "boot failed: full farm cleanup" at 23:40:22. It was waiting with `game pid None` while a game for :86 was up (pid 1778947). Its processes were owned by my user, with cwd in dbg86/code_fix. Stopped by pid; all four gone.
+- The stalled output is kept as cycle21.stalled.out. Nothing from it counts toward acceptance (no episodes logged).
+- Relaunched at 23:47:51 as cycle21b (same cycle script, same code_fix). Its first log line shows the same `game pid None` state, which is normal for the first seconds. Root cause of the earlier stall is not yet known: `_game_pid` matches on comm and DISPLAY, and the game for :86 was up, so the matching step is the place to look if this recurs.
+- Acceptance counts restart from cycle21b.
