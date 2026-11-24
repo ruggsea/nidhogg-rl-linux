@@ -206,3 +206,10 @@ Corrects sections 22-24. Five game hangs or exits in 60 traced episodes, not fou
 Across 13 exits with return code 1 since 23:34Z: P2's record read (0,0) in 7 of 8 exits with a recorded state. The reset lead in section 24 covers one of five, so it is not the cause. The relaunch after each exit died again within about 3 minutes (5 of 5); the second relaunch worked.
 Open: why P2's record disappears before the exit. Hypothesis (unproven): a short gap between the master-record check and the write.
 Cycle 4 started 01:28:46Z (debug farm). Logs per launch: launchwatch last state, room index per sample, per-episode videos at 2 fps.
+
+## 26. Verified from the raw launcher log (2026-11-24 01:4x UTC)
+Read from ~/nf-p/dbg86/launcher_exits.jsonl on pippi:
+- Game exits with return code 1 since 23:34 UTC: 13.
+- Of those, 8 have a recorded last state; in 7 of the 8, P2 reads (0, 0).
+- Example last state (2026-11-23 ~23:43 exit): tick 26112, P1 (1888, 160, anim 174), P2 (0, 0, anim 0), room 29.
+- Room index is 29 in every recorded last state: no room change registered before an exit.
