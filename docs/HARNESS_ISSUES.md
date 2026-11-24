@@ -532,3 +532,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Consecutive clean-cycle streak: 3 (cycles 18, 19, 20). This meets the three-in-a-row bar set in this log. Cycle 17 is not clean.
 - Series, cycles 17-20: 0 hangs in 80 episodes, Wilson 95% [0.000, 0.046].
 - What this does NOT establish: the es4 learning result is unchanged (generation 30 won 23 of 40, 0.575, no learning trend; the trained policy decided 1 of 7 against an idle opponent). The reset give-up fix has no owner. The pause fix is untested (arm dropped at the user's request). Cycles 18-20 ran with the unchanged debug copy, so the streak covers the reset path as it stands, not a fixed one.
+
+## 81. Generation 30 number, verified from raw es4 eval records (2026-11-24, 19:5x UTC)
+- `es4/evals.jsonl`, gen 30 (04:27:16 UTC): P1 current_wins 9, decided 20, attempted 37, undecided 13, win_rate 0.45 (Wilson 95% [0.258, 0.658]). P2 current_wins 14, decided 20, win_rate 0.70.
+- Combined: 9 + 14 = 23 wins of 40 decided. The 23/40 = 0.575 figure is correct as the sum of both seats.
+- Seat split is not in the 23/40 summary: the P1 seat won 9 of 20, the P2 seat won 14 of 20. Each seat alone has n = 20; the two intervals overlap, so the seat gap is not established either way.
+- Gen 25 for comparison (01:59:59): P1 14 of 20, P2 15 of 20. The series does not show a rising trend across these two checkpoints.
