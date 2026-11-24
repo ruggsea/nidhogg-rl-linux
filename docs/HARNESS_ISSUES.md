@@ -350,3 +350,11 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 ## 49. Cycle 15 in progress (run 20261124T042517; checked from raw files, 04:30 UTC)
 - 5 trace files so far: no restart or abort text; write_refused 0; put_back_skipped 0; no launcher exits since 04:25 UTC.
 - Pending: the rest of the run, the hang count, two clean cycles after it, and the generation 30 eval.
+
+## 50. Cycle 15 hang (sixth), es4 finished, next decision (2026-11-24 ~04:50 UTC)
+- Cycle 15 (run 20261124T042517): one real hang at episode 8 (state file stopped 04:31:08 UTC). P2 read (0,0) before the stop; P1 alive; the reset was in the probe phase sending only key presses. No position write was in progress, so the write guard (fix 1) could not stop it. Fix 1 never triggered (write_refused 0).
+- Seed check: passes on every episode including the restarted episode 8 (fix 2 works).
+- Hang count over 300 traced episodes: 6/300 = 0.020 (Wilson 95% 0.009-0.043). All six came with P2 vanished. cycle.sh printed 4/300 because it reads an old table; the 6/300 is from cycle_extra.py.
+- Decision (Fable, under the user's delegation): debug copy only. When a tracked fighter reads (0,0) in a reset, wait without input (cap 5 s) before probing; count each wait as vanish_wait. Then cycles 16 onward behind the load gate, reporting the hang count after each.
+- es4 finished at 04:44:36 UTC (30 generations). Counted wins (decided, current walked): gen 25 29/40 = 0.725 (0.572-0.839); gen 30 23/40 = 0.575 (0.422-0.715); earlier 0.375, 0.525, 0.50, 0.60, 0.45. No trend; intervals overlap. TypeError aborts 0 in generations 26-30.
+- es4 check cron (1c3344cb) cancelled. The four idle es4 worker scopes (nfp-es4-farm1..4-g26) are left alone pending a decision.
