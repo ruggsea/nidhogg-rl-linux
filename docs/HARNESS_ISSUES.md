@@ -401,3 +401,8 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Arm B: 0 episodes. Chunk 0 failed on try 1 and try 2 with "state file stopped updating (game hung or exited)" (farmB logs). Chunk 20 and 80 still retrying.
 - Read: the game stops publishing state during arm B's first episode, the hang signature. The pause fix has no working run yet, so it is untested.
 - Not yet diagnosed. Needs the first-tick trace of arm B's episode 0 before any change.
+
+## 58. Two-arm pause test status (2026-11-24 13:36 UTC)
+- Arm B: still 0 completed episodes (no files under arm B's trace folder). Latest run line: chunk 80, try 1, leftover-pid cleanup at 13:25 UTC. Earlier chunks failed with "state file stopped updating".
+- Arm A: last full read 12:40 UTC: 138 episodes, 2 restarts, 0 key-down stops. Not re-read since the SSH drop at 13:00 UTC.
+- Pause fix: untested (no arm B episodes).
