@@ -358,3 +358,8 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Decision (Fable, under the user's delegation): debug copy only. When a tracked fighter reads (0,0) in a reset, wait without input (cap 5 s) before probing; count each wait as vanish_wait. Then cycles 16 onward behind the load gate, reporting the hang count after each.
 - es4 finished at 04:44:36 UTC (30 generations). Counted wins (decided, current walked): gen 25 29/40 = 0.725 (0.572-0.839); gen 30 23/40 = 0.575 (0.422-0.715); earlier 0.375, 0.525, 0.50, 0.60, 0.45. No trend; intervals overlap. TypeError aborts 0 in generations 26-30.
 - es4 check cron (1c3344cb) cancelled. The four idle es4 worker scopes (nfp-es4-farm1..4-g26) are left alone pending a decision.
+
+## 51. Hang-count check: the signature search misses some hangs (2026-11-24)
+- Recount of all 300 traced episodes for the text "state file stopped": 4 files (cycle 1 ep 12 is not among them; cycle 2 ep 4 and ep 8; cycle 3 ep 8; cycle 1 ep 2 matches the signature but is a different event per the earlier review).
+- Not counted by the signature search: cycle 14 ep 13 and cycle 15 ep 8, both logged under a different restart reason.
+- Use 6/300 (the count including restarts from cycle_extra.py), not 4/300 from the old table in cycle.sh.
