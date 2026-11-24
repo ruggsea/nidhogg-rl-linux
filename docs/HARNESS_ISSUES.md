@@ -496,3 +496,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Lines containing "no record answers" in each farm's diag.jsonl on pippi: farm1 29, viz85 25, farm4 25, farm3 20, farm2 15, dbg86 2, arms/farmB 0. Total 116.
 - The pippi agent reported 114. My count is 116 on the same files; the 2-line gap is not explained (likely a different match on P1/P2 wording or a file it excluded). Use 116 from this count, and note it is a line count, not a count of distinct resets.
 - Caveat: these lines span about 36 h and include the cross-kill period, so they are not all independent give-ups under the current code.
+
+## 74. Cycle 18 started (2026-11-24 18:52:28 UTC)
+- Nothing was running on pippi when I checked at 18:52 (no cycle process; the pippi agent is no longer in the session list). I started `dbg86/cycle.sh` myself with the existing script, unchanged. The 20-episode cycle runs in scope nfp-dbg86-1852; the load gate in run_ctrl applies. 6 game processes were up at the check.
+- Load was 19.35 when cycle 18 launched, so the gate may hold it before its first episode.
+- The cycle runs with the debug copy as it stood at 18:52 (exact-match kill rule, caller log in stop_id). The reset give-up fix is not in it.
+- Not done: the reset give-up fix and the cycle 18 count. Counts come from `dbg86/fresh_series.py` once cycle18.out has its "hang rate" line.
