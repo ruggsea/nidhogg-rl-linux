@@ -406,3 +406,7 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Arm B: still 0 completed episodes (no files under arm B's trace folder). Latest run line: chunk 80, try 1, leftover-pid cleanup at 13:25 UTC. Earlier chunks failed with "state file stopped updating".
 - Arm A: last full read 12:40 UTC: 138 episodes, 2 restarts, 0 key-down stops. Not re-read since the SSH drop at 13:00 UTC.
 - Pause fix: untested (no arm B episodes).
+
+## 59. Arm A final (control, no pause), 2026-11-24 15:07 UTC
+- Arm A: 300 episodes finished (14:20 UTC), 2 restarts, 0 hangs, 0 key-down-tick stops out of 300 (6,617 identify key-downs). Stop rate 0 (Wilson 95% 0-0.013).
+- Arm B (2-tick pause): still 0 completed episodes; chunk 140 try 1 failed with "state file stopped updating", try 2 running. Pause effect cannot be measured yet.
