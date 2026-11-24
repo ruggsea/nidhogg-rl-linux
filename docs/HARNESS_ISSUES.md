@@ -319,3 +319,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 
 ## 44. Cycle 8 boot failure, confirmed from raw output
 - ~/nf-p/dbg86/cycle8.out on pippi: "attempt 0: boot failed: full farm cleanup" at 02:30:29 UTC. This is the boot retry counted in section 35; it is no longer an open question.
+
+## 45. Cycle 12 (run 20261124T033435): not clean (raw check, 2026-11-24 03:47 UTC)
+- Episode 11: restart with reason "spy did not run the batch" (trace file 20261124T033435-961469_ep0011).
+- Code-1 game exit at 03:38:20 UTC (launcher log, pid 961562, game pid 968445, alive 357 s). Last recorded state: tick 16386, game still responding (state age 0.1 s). Not the known hang signature.
+- Cause of "spy did not run the batch": not yet confirmed.
+- Effect: cycle 12 is not clean; the three-in-a-row count restarts after it.
