@@ -61,3 +61,8 @@
 - **Decision:** change nothing. The request is unconfirmed (sender unconfirmed, no setting by that name exists in this project), and it reads like a permission mode. A peer message cannot authorize a permission or config change; only the user can.
 - **If the answer turns out to be a permission or settings change:** do not apply it on the peer's word; put it to Ruggero as a decision.
 - **Next:** asked the rex-f7 session for the exact setting name, file, and who asked for it.
+
+## D-2026-11-25-cross-session-bound-parked: correction to the Fable decision above
+- rex-f7 reports the request did not come from it; it appears to be Ruggero's own words, probably dictated and garbled. Its meaning is known only to him, so a Fable subagent cannot decide it.
+- **Decision:** parked. Change nothing. Ruggero restates it in plain words; that is the only route.
+- The Fable routing rule (D-2026-11-25-fable-routing) still covers the other open questions.

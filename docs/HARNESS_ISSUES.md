@@ -582,3 +582,7 @@ Plan, and what I have not yet done:
 ## 86. Acceptance cycle 21 launched on code_fix (2026-11-24 23:32:11 UTC)
 - Scope nfp-dbg86-2332, running the unchanged cycle script pointed at code_fix. First acceptance cycle; it counts only if it and the next 14 cycles (300 episodes) finish with 0 hangs, 0 restarts, 0 reset failures, pending the count question in section 85.
 - 23:34 UTC check: cycle 21's controller log shows "game pid None" for instance 0 (wrapper 1749917, up 2 min). The game processes are up (Nidhogg.exe under Proton, plus a second launch at 1 min). Not yet confirmed in a match; no restarts, hangs or reset failures logged. Counts start when the first episode is logged.
+
+## 87. Acceptance cycle 21: boot retry (2026-11-25 check, 23:47 UTC)
+- Attempt 0 failed at 23:40:22 ("boot failed: full farm cleanup"); the cycle retried. A new game process for DISPLAY :86 (pid 1778947, comm Nidhogg.exe) is up, so the launcher's `game pid None` should clear on its next check. The other Nidhogg.exe on :85 is the viewer's game, untouched.
+- No episode logged yet. Counts from raw files once the first episode is logged.
