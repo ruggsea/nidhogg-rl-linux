@@ -512,3 +512,7 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Started by hand with the existing `dbg86/cycle.sh`, unchanged, in scope nfp-dbg86-1905. Load was 5.3 at launch, so the load gate was not holding it.
 - Cycle 19 is the one needed for the streak: a clean cycle here makes the consecutive count 2 (cycle 18 clean, cycle 17 not). Three in a row needs cycle 20 as well.
 - Counts: read from raw files via dbg86/fresh_series.py after cycle19.out shows its "hang rate" line.
+
+## 77. The stop_id caller log confirms the end-of-cycle stop (2026-11-24)
+- First entry in dbg86/stop_id_callers.log: 19:04:19Z, instance 0, pids [1175168, 1179004], caller `dbg86_ctrl.py` line 104 (`n.stop()`), which is the end of cycle 18. Matches section 71 (the end-of-cycle stop, not a crash).
+- Cycle 19 has not yet reached its own end; no second entry yet. The log is the only stop record that proves the caller, so keep it for the next SIGTERM.
