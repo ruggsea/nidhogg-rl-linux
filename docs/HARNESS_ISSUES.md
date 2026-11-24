@@ -382,3 +382,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Sections 48-51 quoting 5/280 or 4/300 or 4/260 are superseded: the 4/300 figure comes from the signature search in cycle.sh, which misses two hangs (cycle 14 ep 13, cycle 15 ep 8).
 - Cause: unproven. Four of the six follow a key press during identify-by-input.
 - Cycle 16: result not read (SSH to pippi timed out at 10:36 UTC). Clean-cycle streak: 0.
+
+## 55. Fable decisions (2026-11-24), not yet applied or tested
+- Identify-by-input: apply only a 2-tick pause between the track command and the key-down (debug copy). Check: two interleaved arms of 300 episodes each, pause and no pause, same seeds. Worked if the pause arm has no key-down-tick stops and the no-pause arm still shows some. Baseline: 4 stops in 6,786 presses. Skip-non-body filter and room logging wait.
+- Reward: kill always +1 with no walk penalty; walk penalty -0.25 only in episodes without a kill; death -1. Check: unit test on the reward function first (show it failing on current code), then retrain and compare the idle-opponent decided rate (now 1 of 7) on at least 50 episodes x 3 seeds, against a rerun of the baseline at the same size.
+- Validity: decided kills kept (earlier decision, not changed here).
+- Wilson checks of the cited numbers: gen 30 23/40 = 0.575 (0.422-0.715); cycle B 1/7 = 0.143 (0.026-0.513); 6/300 = 0.020 (0.009-0.043).
