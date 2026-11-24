@@ -49,3 +49,9 @@
 - **Flat learning:** does not count toward the goal (Fable). No new generations until the acceptance run passes. Next step after acceptance: a scripted player against the idle opponent, to test whether the episode machinery is at fault for "1 of 7".
 - **Pause arm:** stays dropped. Its fix stays on its own branch; main does not enter that path.
 - **Evidence and reasons:** docs/HARNESS_ISSUES.md sections 82, 84, 85, 86.
+
+## D-2026-11-25-fable-routing: decisions go to a Fable subagent, not to Ruggero
+- **Rule (relayed by the rex-f7 session, Ruggero's words 2026-11-25):** "they should talk to a Fable sub agent to take those decisions, not me. It should all be autonomous. Make sure that they get tutored into asking Fable for things, not to me."
+- **Practice:** for each decision I would otherwise put to Ruggero, spawn a subagent on the fable model with the facts and options, take its decision, and write the decision and its reason here.
+- **Stays with Ruggero:** logins, passwords and access; spending money or paid models; messages to other people; machines and databases that are not ours; deleting data. Checks and permissions are never skipped.
+- **Survives a restart:** this file is the project note for the rule.
