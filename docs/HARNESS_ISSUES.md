@@ -538,3 +538,16 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Combined: 9 + 14 = 23 wins of 40 decided. The 23/40 = 0.575 figure is correct as the sum of both seats.
 - Seat split is not in the 23/40 summary: the P1 seat won 9 of 20, the P2 seat won 14 of 20. Each seat alone has n = 20; the two intervals overlap, so the seat gap is not established either way.
 - Gen 25 for comparison (01:59:59): P1 14 of 20, P2 15 of 20. The series does not show a rising trend across these two checkpoints.
+
+## 82. Decisions waiting on Ruggero (written 2026-11-24, for the next reader)
+Context: the debug farm has three clean cycles in a row (18-20, 0 hangs in 80 episodes) on the reset path as it stands. The learning result is flat: generation 30 won 23 of 40 (0.575), no trend across gen 25 and 30, the trained policy decided 1 of 7 against an idle opponent. The pause arm was dropped at Ruggero's request.
+
+Decision 1: who fixes the reset give-up ("no record answers to P2's keys", 116 lines in the diag files; the 54-case pattern is two fighter records, one of them the missing fighter's dead record).
+- Option A: re-engage the pippi agent (it has left the session list) to write the 54-case fix in the debug copy, test it on staged states, then run cycles.
+- Option B: the main session takes it on, same debug-copy rule, staged test first.
+- Recommendation: B, because it needs no agent to be revived and the fix is small enough to stage. Reason: the pippi agent's own proposal (walk the other fighter in the GO direction, re-check every second) is untested.
+
+Decision 2: does the flat generation-30 learning result count toward "fully controllable, reliable and robust"?
+- Option A: yes, the goal needs a learning gain before it can be called met; the next step is an ES run that moves the idle-opponent decided rate above 1 of 7.
+- Option B: no, the goal is the environment's reliability; learning is a separate experiment that can run after.
+- Recommendation: A, because the goal's wording is "training episodes", and training that does not learn is not yet robust training. This is a judgement; Ruggero decides.
