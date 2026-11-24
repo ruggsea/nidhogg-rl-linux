@@ -516,3 +516,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 ## 77. The stop_id caller log confirms the end-of-cycle stop (2026-11-24)
 - First entry in dbg86/stop_id_callers.log: 19:04:19Z, instance 0, pids [1175168, 1179004], caller `dbg86_ctrl.py` line 104 (`n.stop()`), which is the end of cycle 18. Matches section 71 (the end-of-cycle stop, not a crash).
 - Cycle 19 has not yet reached its own end; no second entry yet. The log is the only stop record that proves the caller, so keep it for the next SIGTERM.
+
+## 78. Cycle 19 result (2026-11-24, checked 19:17 UTC from raw files)
+- Cycle 19 (20261124T190720): 20 episodes, 0 hangs, 0 restarts, 0 reset failures; clean. Controller ended with EXIT 0.
+- Consecutive clean-cycle streak: 2 (cycles 18 and 19). Cycle 17 is not clean.
+- Series, cycles 17-19: 0 hangs in 60 episodes, Wilson 95% [0.000, 0.060].
+- Needed for the goal: cycle 20 clean.
