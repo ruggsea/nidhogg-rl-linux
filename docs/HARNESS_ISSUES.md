@@ -472,3 +472,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - `dbg86/dbg86_ctrl.py:67` calls `rec.terminate()`, but that is the ffmpeg recorder, not the game.
 - So the 18:40:45 SIGTERM came most likely from a `stop_id()` call in the debug farm's restart path during an episode. That call is what a give-up or an abort triggers. Which caller hit it at 18:40:45 is not in the logs I read.
 - To prove it: have `stop_id()` log its caller (traceback) to a file before the kill, and let the next cycle run. Not applied; it is a debug-copy change that needs the pippi agent or an approval to make.
+
+## 70. Cycle 17 result, fresh series (2026-11-24, from raw files via dbg86/fresh_series.py)
+- Cycle 17 (20261124T182750): 20 episodes, 0 hangs, 1 restart, 1 reset failure, clean-cycle streak 0 (the cycle is not clean because of the restart and the reset failure).
+- Series hangs: 0/20 = 0.000, Wilson 95% [0.000, 0.161]. Counted over one cycle only; the clean-cycle requirement is three in a row, so the goal is still not met.
+- Read-only check: the script has no kill, unlink or write calls on its own (grep before running).
+- The 18:35:33 reset exit (code 1) and the 18:40:45 SIGTERM are both inside this cycle; the 18:40:45 one is still unexplained (section 69).
