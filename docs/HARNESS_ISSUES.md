@@ -557,3 +557,14 @@ Decision 2: does the flat generation-30 learning result count toward "fully cont
 - `code_dbg/nidenv.py` `reset()` (about line 317–336): five attempts; the assertion at line 336 (`no record answers to {who}'s keys`) fires when `_find` returns nothing for a fighter on every attempt.
 - Candidate fix for the 54-case (not applied): change the walk so the other fighter walks in the on-screen GO direction for longer, re-checking every second for a record that answers, and treat a dead record that answers again as alive. The change is confined to `_find()`; a staged test would call `_find` on a recorded state with the other fighter's record present and no answer.
 - Owner still open (section 82, decision 1).
+
+## 84. Fable's direction (2026-11-25, relayed by the fable consultant session) and the plan I am taking
+Advice only, from the Fable consultant under Ruggero's standing delegation. Not a grant of anything; permissions are unchanged.
+1. Reset give-up: I own it now. Order: (a) a test that replays the failure from the diagnostic lines and fails on the current code; (b) the change in `_find()`; (c) the test passes; (d) an acceptance run fixed before it starts: 0 hangs, 0 restarts, 0 reset failures in 300 consecutive episodes over at least 3 cycles. The count restarts after the fix.
+2. Flat learning does not count toward the goal; the goal is about the episodes. 23 of 40 against 29 of 40 is noise at n=40. "1 of 7 against an idle opponent" points at the episode machinery: run a simple scripted player against the idle opponent; if it cannot win nearly every game, the fault is in the episodes. No new generations until the acceptance run passes; earlier training is labelled as made before the fix.
+3. Pause path stays dropped. Its untested fix stays on its own branch; main must not be able to enter that path by accident.
+
+Plan, and what I have not yet done:
+- Not yet started: the replay test. The engine's `identify` and `answers` need a fake memory with `scan`, `answers`, `_is_body`, `track`, `send`, `release_all`, `rec`, `dead`, `otypes`. Read so far: `identify` at nidmem.py:156, `_find` at nidenv.py ~139. The diag record for the give-up (farm1, 2026-11-22 23:45:14) shows both fighters alive, on screen, and both records present, yet no answer to P1's keys. A fake that only fails every answer would test the loop, not the condition, so the replay must reproduce the state.
+- To keep the viewer untouched, the fix goes in a separate copy `~/nf-p/code_fix` (copied from `code_dbg`), and only the debug controller's `sys.path` (dbg86_ctrl.py lines 11-12) is pointed at it. The viewer loads `code_dbg` and is not changed.
+- Decision that remains with Ruggero: none of the three above needs him under the standing delegation, but the acceptance numbers in 1(d) are Fable's proposal and he may want to set them.
