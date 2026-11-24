@@ -435,3 +435,10 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Launcher record at 04:31 UTC (dbg86/launcher_exits.jsonl): wine_tail and fault_lines show only ordinary Wine noise (openxr, ALSA, process fixme lines). No fault address, no crash line.
 - Read: the game gave no crash signal of its own, which points to the stop being our restart after the failed reset (reset_failures: "no record answers to P2's keys", 04:31:05 UTC). Likely, not proven: a stop signal from our side would not necessarily leave a Wine error line.
 - Still open: a confirmed cause needs the process's exit signal, which the launcher record does not capture.
+
+## 64. Correction: most debug-farm "hangs" were our own setup error (2026-11-24 18:25 UTC)
+- Mechanism: when a reset gives up, the env restarts its game and runs clean_farm, which SIGKILLs every Nidhogg/wine process whose environment contains the farm path as a substring. The debug farm's trace dir was set to the viewer's folder, so every viewer give-up also killed the debug farm's game.
+- Evidence: each of the 12 debug-farm game exits while live falls within 0-3 s of a viewer give-up or an es4 restart. Arm A (control, trace dir outside viz85) finished 300/300 with 0 hangs, 0 key-down-tick stops, 2 deliberate restarts, 0 seed mismatches.
+- Fix applied to the debug farm env only: trace dir now a symlink outside the viewer path. Not yet applied: clean_farm should match the exact NIDFARM= entry (approved for the debug copy).
+- Consequence: the 6-hang count over 300-320 episodes and the key-down-tick explanation are both superseded. Use a fresh series from cycle 17 (18:25 UTC onward).
+- Still open: the reset path that gives up ("no record answers to P2's keys"): about 5 on the viewer and about 10 across es4 farms in about 18 h. Each now costs one restart.
