@@ -388,3 +388,10 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Reward: kill always +1 with no walk penalty; walk penalty -0.25 only in episodes without a kill; death -1. Check: unit test on the reward function first (show it failing on current code), then retrain and compare the idle-opponent decided rate (now 1 of 7) on at least 50 episodes x 3 seeds, against a rerun of the baseline at the same size.
 - Validity: decided kills kept (earlier decision, not changed here).
 - Wilson checks of the cited numbers: gen 30 23/40 = 0.575 (0.422-0.715); cycle B 1/7 = 0.143 (0.026-0.513); 6/300 = 0.020 (0.009-0.043).
+
+## 56. Two-arm pause test, interim (2026-11-24 ~11:35 UTC)
+- Design: arm A = debug copy (no pause), arm B = code_pause (2-tick wait in dx_on). Same 300 seeds (90000+e), current es4 policy vs frozen. Running on displays :87 and :88 under the load gate; started 11:10 UTC; expected about 2.5-3 h.
+- Diff check: the arms differ by one line (self.ticks(2) in nidmem.dx_on); nidenv.py and selfplay_env.py identical.
+- Interim, read from pippi with arm_report.py: arm A 26 episodes, 0 restarts, 0 hangs, 642 identify key-downs, 0 key-down-tick stops (0/26, Wilson 95% 0-0.129). Arm B: no traced episodes yet. No comparison possible yet.
+- Earlier first-chunk boot on both displays showed "game pid None"; later chunks ran. Cause of the first failure not identified.
+- Not yet a result. Stop counts per arm and intervals to be reported at run end.
