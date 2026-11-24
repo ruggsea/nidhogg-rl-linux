@@ -551,3 +551,9 @@ Decision 2: does the flat generation-30 learning result count toward "fully cont
 - Option A: yes, the goal needs a learning gain before it can be called met; the next step is an ES run that moves the idle-opponent decided rate above 1 of 7.
 - Option B: no, the goal is the environment's reliability; learning is a separate experiment that can run after.
 - Recommendation: A, because the goal's wording is "training episodes", and training that does not learn is not yet robust training. This is a judgement; Ruggero decides.
+
+## 83. Where the reset give-up is decided in the debug copy (read-only, 2026-11-24)
+- `code_dbg/nidenv.py` `_find()` (about line 139): waits and walks the other fighter in the fixed sequence (wait 3 s; right 1.5 s; left 3 s), calling `identify` after each step. A walk that leaves the other fighter 1.5 s to the right of its start is the path the 54-case pattern takes; the pippi agent's reading is that this does not bring a dead fighter back.
+- `code_dbg/nidenv.py` `reset()` (about line 317–336): five attempts; the assertion at line 336 (`no record answers to {who}'s keys`) fires when `_find` returns nothing for a fighter on every attempt.
+- Candidate fix for the 54-case (not applied): change the walk so the other fighter walks in the on-screen GO direction for longer, re-checking every second for a record that answers, and treat a dead record that answers again as alive. The change is confined to `_find()`; a staged test would call `_find` on a recorded state with the other fighter's record present and no answer.
+- Owner still open (section 82, decision 1).
