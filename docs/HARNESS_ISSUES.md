@@ -256,3 +256,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Diff: 1 line changed, 1 added (tested on a temporary copy; compiles). Original kept as selfplay_env.py.pre_typeerror.
 - Landing: workers restarted one at a time under the cap (8 cores, 16 GB each). Nothing else in es4 changes.
 - Watch: more than 3 TypeError aborts in one generation is reported before the next generation.
+
+## 34. Trace cycle 7 (run 20261124T021118, 02:11-02:22 UTC)
+- 20 of 20 episodes clean, no game hang, no code-1 exit. Streak 20 (second of three clean cycles in a row).
+- Hangs over 140 traced episodes: trace rule 4/140 (Wilson 95% 0.011-0.071); code-1 exits 5/140 (0.015-0.081).
+- No hangs in cycles 4-7 (80 episodes). Not a fix: the hang code has not changed.
+- The es4 TypeError change is still armed for the generation-25 boundary.
