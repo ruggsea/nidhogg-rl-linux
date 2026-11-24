@@ -190,3 +190,8 @@ Reading: the game frees P2's record during P1's death check, and the spy stops p
 - P2's record first reads (0, 0) at tick 17182. The game then stops publishing state at tick 18182, a thousand ticks later. P1 stays frozen in death animation 297 at x 1127.2 for the whole window.
 - So the hang does not start when P2's record is freed. Something earlier stalls the game, and P2's record going to zero is a symptom in the same window.
 - Section 22's reading ("the game frees P2's record during P1's death check, and the state stops") is wrong for this episode. Cycle 4 must log from the start of the death check, not only the last rows.
+
+## 24. Lead: the hang may start at a reset (cycle 3, episode 8)
+- A reset_start phase and the first attempt_start both fire at tick 17161. P2's record reads (0, 0) from tick 17182 onward, and the game stops publishing state at tick 18182.
+- P1 walks normally during that window (x 1092 to 1090), so the stall is on P2's side, from the reset.
+- Lead only, from one episode. Cycle 4 must log the reset's first writes for both fighters to confirm or reject it.
