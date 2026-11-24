@@ -249,3 +249,10 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - The handler the change goes into (train/selfplay_env.py, step(), around line 153) is episode-level: its except branch calls _sp_abort, which ends the current episode as aborted. Adding TypeError there aborts only the crashing episode.
 - Still required before it lands: the full traceback of every caught TypeError is written to the es4 log, and more than 3 TypeError aborts in one generation is reported before the next generation.
 - Not yet applied to es4 at the time of this entry.
+
+## 33. The es4 TypeError change, as specified (lands after the generation-25 line; applies from generation 26)
+- Handler: train/selfplay_env.py step(), line 153 (episode-level). Line 153 adds TypeError to the except list; a new line 154 writes the UTC timestamp and full traceback to ~/nf-p/es4/typeerror_tracebacks.log for TypeError only; line 155 is unchanged.
+- Effect: a TypeError aborts only the crashing episode (logged aborted, both rewards 0, valid False). More than 5 aborts in a row stops the worker.
+- Diff: 1 line changed, 1 added (tested on a temporary copy; compiles). Original kept as selfplay_env.py.pre_typeerror.
+- Landing: workers restarted one at a time under the cap (8 cores, 16 GB each). Nothing else in es4 changes.
+- Watch: more than 3 TypeError aborts in one generation is reported before the next generation.
