@@ -213,3 +213,11 @@ Read from ~/nf-p/dbg86/launcher_exits.jsonl on pippi:
 - Of those, 8 have a recorded last state; in 7 of the 8, P2 reads (0, 0).
 - Example last state (2026-11-23 ~23:43 exit): tick 26112, P1 (1888, 160, anim 174), P2 (0, 0, anim 0), room 29.
 - Room index is 29 in every recorded last state: no room change registered before an exit.
+
+## 27. Trace cycle 4 (run 20261124T013102, 2026-11-24 01:31-01:40 UTC)
+- 20 of 20 episodes: no unexplained event, no game hang, no code-1 exit. Streak 20.
+- The only game exit is the runner's own stop at 01:40:12 (return code -15).
+- Outcomes: P2 11, P1 4, undecided 5; episodes 496-1116 ticks.
+- Hangs per 20 episodes: cycle 1: 1; cycle 2: 3; cycle 3: 1; cycle 4: 0. Total 5 in 80.
+- Not a fix. Cycle 4 changed only the room-index logging. At the earlier rate (5 in 60), a hang-free 20-episode run happens by chance about one time in five.
+- Plan: 20-episode cycles on the debug farm until a hang recurs or three clean cycles in a row.
