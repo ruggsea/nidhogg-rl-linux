@@ -19,3 +19,20 @@
 - **Why:** P2 walks ±45 px per 0.45 s hold on Right/Left, reproduced in two fresh processes (n=5 per direction per process, 40 of 40 presses, P1 0 px on P2 keys) by an independent worker (~/nf-verify/REPLAY.md on artemis). Netplay joins and syncs, but net mode ignores keyboard input (~/nf-net/NET_RESULT.md).
 - **Still provisional:** P2 jump (n=3) and attack (n=1 sweep); Up showed no change; only the 0.45 s hold was tested.
 - **Change if:** P2 stops responding to arrow keys in a fresh process, or a CPU route opens (then the CPU match becomes step 25).
+
+## D-2026-11-24-fable-rewards: kill always +1; walking penalty only in episodes without a kill
+- **Chosen:** a kill always scores +1 (victim -1); the not-walking penalty (-0.25) applies only to episodes with no kill. Implemented in debug copy train/selfplay_env.py (rewards()).
+- **Alternatives:** keep the old rule (a kill while not walking scored 0 against the -1 walk penalty); penalty on all episodes.
+- **Why:** under the old rule a real kill could score 0, the same as doing nothing. Risk removed: the policy gets no reward for the kills it makes.
+- **Decided by:** Fable oracle, under Ruggero's delegation ("decisions are Fable's until the goal is met", 2026-11-24).
+- **Change if:** the decided-rate against an idle opponent does not rise above the current 1 of 7 at 50 episodes x 3 seeds.
+- **Evidence:** reward unit test on the debug copy's code: 4/4 cases pass; with the penalty overridden to the old -0.05, the test fails (checked). Not yet retrained.
+
+## D-2026-11-24-fable-pause: 2-tick pause between track and key-down (identify-by-input)
+- **Chosen:** wait 2 ticks between the track command and the key-down in dx_on; no skip-non-body filter and no room logging yet.
+- **Alternatives:** skip records whose reading is not a body before pressing; log the room in the tracer.
+- **Why:** 4 of 5 traced real hangs stop on a key-down during identify; the pause is the only option that changes that moment.
+- **Decided by:** Fable oracle, under the same delegation.
+- **Change if:** arm B (pause) shows no fewer key-down-tick stops than arm A (control) at the same episode count.
+- **Evidence:** arm A (control) finished 300 episodes, 0 key-down-tick stops. Arm B has 0 completed episodes: its first episode fails with "state file stopped updating" repeatedly, so this decision is not yet tested.
+- **Status:** open. Needs the user's call on whether to keep retrying arm B or drop the pause arm.
