@@ -502,3 +502,8 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Load was 19.35 when cycle 18 launched, so the gate may hold it before its first episode.
 - The cycle runs with the debug copy as it stood at 18:52 (exact-match kill rule, caller log in stop_id). The reset give-up fix is not in it.
 - Not done: the reset give-up fix and the cycle 18 count. Counts come from `dbg86/fresh_series.py` once cycle18.out has its "hang rate" line.
+
+## 75. Cycle 18 result (2026-11-24, checked 19:04 UTC from raw files via dbg86/fresh_series.py)
+- Cycle 18 (20261124T185443): 20 episodes, 0 hangs, 0 restarts, 0 reset failures, clean-cycle streak 1 (this cycle is clean).
+- Fresh series so far, cycles 17-18: 0 hangs in 40 episodes, Wilson 95% [0.000, 0.088]. Cycle 17 is not clean (1 restart, 1 reset failure), so the consecutive clean-cycle count is 1, not 2.
+- Goal still needs three clean cycles in a row; cycle 19 is the next one needed. Cycle 19 is not started. The cycle script was run by hand; no loop is scheduled to start it.
