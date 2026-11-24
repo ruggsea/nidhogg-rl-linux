@@ -484,3 +484,10 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - So this was a normal end-of-cycle shutdown, not an unexplained kill. Section 69's "not proven" is now settled by this reading.
 - Caller log: `stop_id()` in `code_dbg/nidlinux.py` now writes its stack to `$NIDFARM/stop_id_callers.log` (line 168). The debug farm's file is `dbg86/stop_id_callers.log`. It takes effect from cycle 18; cycle 17 had loaded the old module.
 - Cycle 17's one restart was episode 11, the reset give-up at 18:35:32 (the 18:35:33 exit, code 1). Clean-cycle streak 0.
+
+## 72. Cycle 15 stop (04:31 UTC): explained as the cross-kill, not a game crash
+- Timestamps I read on pippi: viewer reset give-up "no record answers to P2's keys" at 04:31:05 (viz85 reset_failures.jsonl, diag.jsonl); debug-farm launcher exit at 04:31:08, returncode 1, phase reset, alive 485 s (dbg86 launcher_exits.jsonl); game Wine tail has no crash or fault line.
+- The pippi agent's account: the give-up runs clean_farm, which killed every Nidhogg/wine process whose environment contained the farm path as a substring. The debug farm's trace dir sat inside the viewer's folder, so the viewer's give-up killed the debug game 3 s later.
+- So the cycle 15 stop is the cross-kill (fixed by the exact NIDFARM= match and the moved trace dir), not an unexplained game exit. Section 69's and 63's "likely our restart" reading is superseded by this.
+- The cycle 15 hang count (6 in 300) belongs to the contaminated runs and is not used.
+- Still open: the reset give-up itself (the viewer's own resets), which costs a restart each time.
