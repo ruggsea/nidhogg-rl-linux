@@ -346,3 +346,7 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Fix 1 (debug copy, nidenv): refuse any position write while a tracked fighter reads (0, 0) or a record is not a body; skip put-back ("write_refused", "put_back_skipped" counted).
 - Fix 2 (debug copy, selfplay_env.reset): episode seed kept across reset retries. Found: episode 13 after a restart ran with seed 13 instead of 90013.
 - Cycle 15 pending behind the load gate. es4 at generation 29, no TypeError aborts.
+
+## 49. Cycle 15 in progress (run 20261124T042517; checked from raw files, 04:30 UTC)
+- 5 trace files so far: no restart or abort text; write_refused 0; put_back_skipped 0; no launcher exits since 04:25 UTC.
+- Pending: the rest of the run, the hang count, two clean cycles after it, and the generation 30 eval.
