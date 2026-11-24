@@ -162,3 +162,8 @@ Raw check, read from pippi trace files: episodes 4, 8 and 9 each contain one res
 - Episode 5 (outcome P1, 1056 ticks, valid_v3 False): the end record shows P2 dead on the corpse branch (freeze tick 8360, no respawn). P1's tracked record changed from object 74 to 243 at tick 8119 while P2 was dying. Not yet explained: could be P1 dying, or a reused record. The video (dbg86_ep5.mp4) is needed to settle it.
 - Streak: 10 episodes (10-19) with no unexplained events by the checker's rules. The checker rules were relaxed in cycle 1; treat the streak as provisional until the restarts in 4, 8 and 9 are explained.
 - Open: game hang or exit in 4 and 8; missing key answer in 9; episode 5's object change. Cycle 3 adds an object-change check in play.
+
+## 20. Cycle 2 restarts: raw trace lines (episodes 4, 8, 9)
+- **Episodes 4 and 8:** the last play-phase rows show P2 at x 0, y 0, animation 0 (record zeroed) during the P1 end check (tick 3950 and 5098). The restart reason logged is "state file stopped updating (game hung or exited)". Cause: P2's record was freed, and the spy's state file stopped updating in the same window. Not yet proven which came first.
+- **Episode 9:** restart reason "no record answers to P1's keys". P1's last record (object 445) was live at tick 3617; the re-identification found nothing. The respawn walk for P2 ran but P1's keys still went unanswered.
+- These restarts are not yet linked to the object-reuse problem seen in episodes 4 and 5; treat that link as a hypothesis.
