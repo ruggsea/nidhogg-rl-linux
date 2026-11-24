@@ -295,3 +295,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Hang rate over 180 traced episodes: 4/180 = 0.022 (Wilson 95% 0.009-0.056).
 - Fix in the debug copy (nidmem.py): identify() and unstick() accept a record only if its live object index is 74. Non-body records are skipped and counted (guard "skip_not_body"). No address blacklist (the game reuses addresses). File parses and imports.
 - Cycle 10 started 03:05:13 UTC. Reset-failure restarts per cycle now printed by the cycle report.
+
+## 40. Cycle 10 (run 20261124T030736, 03:07-03:17 UTC), checked from raw files
+- 20 trace files; no restart or abort text; the only launcher exit is the run's own stop at 03:17:05 (rc -15). Boot retries 0, reset-failure restarts 0, code-1 exits 0. Clean under the restart rule: 1 of 3.
+- Hang rate over 200 traced episodes: 4/200 = 0.020 (Wilson 95% 0.008-0.050).
+- Process miss: cycle 10 launched at a 1-minute load of 164.6, above the 150 gate. The debug launcher had no load check; the farm restart path does. Fixed in the debug launcher (waits while 1-minute load is above 150, logs each wait).
+- Context: load spike coincided with the es4 worker relaunches (02:49-03:01 UTC) and six debug games. Other users not checked.
