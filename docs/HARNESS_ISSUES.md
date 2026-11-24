@@ -224,3 +224,11 @@ Read from ~/nf-p/dbg86/launcher_exits.jsonl on pippi:
 
 ## 28. Cycle 4 outcome counts, corrected from the raw trace files
 Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 (the agent's report said P2 11, undecided 5). Tick range 496-1116 confirmed.
+
+## 29. Trace cycle 5 (run 20261124T014409, 01:44-01:52 UTC) and the death-list fix
+- No game hang, no code-1 exit. One unexplained episode: episode 7. P2 was in death animations 327, 323 and then 243 (from tick 16920); the episode ended at the 600-tick cap at 16925 as undecided, with P2 penalised for walking.
+- Cause: the death check only accepts animations in its death list, and 243 was not in it.
+- Fix (debug copy): 243 and 247 added to the death animations. This also changes the in-play death check, so it affects training labels. Checked by the agent: in 20 episodes where 243 appears, every case falls within 60 ticks after a listed death animation (36 of 36 occurrences).
+- Hang rate, 100 traced episodes: 4/100 by the trace rule (Wilson 95% 0.016-0.098); 5/100 counting code-1 exits (0.022-0.112).
+- Streak: 12 (episodes 8-19 of cycle 5). Reset from 20.
+- Next: cycle 6 with the widened death list.
