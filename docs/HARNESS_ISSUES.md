@@ -466,3 +466,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - 18:40:45, returncode -15 (SIGTERM), phase episode, alive 309 s. Cycle log line 18:40:45 is an end-of-episode step and "done" at 18:40:47. Who sent the SIGTERM is not in the logs I read. Not explained yet.
 - Cycle 17 still running at 18:49; 20 new trace files since 18:25 in dtrace.
 - Counts for the fresh series are not yet computed; the 18:35 exit is in the fresh series and counts as a reset-phase exit.
+
+## 69. Who sends SIGTERM to the game (candidates for the 18:40:45 exit, not proven)
+- Read on pippi: the only code in the debug copy that sends SIGTERM to a game process is `stop_id()` in `code_dbg/nidlinux.py:168`. It kills the instance's wrapper and game pid, and is the restart-your-own-instance path.
+- `dbg86/dbg86_ctrl.py:67` calls `rec.terminate()`, but that is the ffmpeg recorder, not the game.
+- So the 18:40:45 SIGTERM came most likely from a `stop_id()` call in the debug farm's restart path during an episode. That call is what a give-up or an abort triggers. Which caller hit it at 18:40:45 is not in the logs I read.
+- To prove it: have `stop_id()` log its caller (traceback) to a file before the kill, and let the next cycle run. Not applied; it is a debug-copy change that needs the pippi agent or an approval to make.
