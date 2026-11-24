@@ -336,3 +336,13 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - 20 trace files; no restart or abort text; the only launcher exit is the run's own stop at 04:01:26 (rc -15). Boot retries 0, reset-failure restarts 0, code-1 exits 0.
 - spy_late 0 in the run: no batch needed the extra 8 s wait. Clean under the restart rule: 1 of 3 (cycle 12 reset the count).
 - Hang rate over 260 traced episodes: 4/260 = 0.015 (Wilson 95% 0.006-0.039). No real hang since cycle 3.
+
+## 48. Cycle 14 (run 20261124T040553): real hang, fifth (checked from raw logs, 04:10 UTC)
+- Launcher: code-1 exit at 04:10:56 UTC, alive 435 s. Reset log: episode 13, RuntimeError "state file stopped updating (game hung or exited)".
+- Before the stop: P2's record read (0, 0) (vanished); P1's tracked record at (656, 192), animation 164, facing 9.5 (not a valid facing; not a body). Last key line "kd d".
+- Pattern across all 5 real hangs: P2's record vanished shortly before. In 3 of 5 the code was writing positions or pressing keys during re-identification or approach. Consistent with our writes during a respawn, not proven.
+- Streak: best 13 in cycle 14 (eps 0-12); clean since episode 14 (6 episodes). Clean cycles in a row: 0.
+- Hang rate over 280 traced episodes: 5/280 = 0.018 (Wilson 95% 0.008-0.041). The cycle script printed 4/280 because the trace rule matched only the "state file stopped" reason logged; treat 5 as the count.
+- Fix 1 (debug copy, nidenv): refuse any position write while a tracked fighter reads (0, 0) or a record is not a body; skip put-back ("write_refused", "put_back_skipped" counted).
+- Fix 2 (debug copy, selfplay_env.reset): episode seed kept across reset retries. Found: episode 13 after a restart ran with seed 13 instead of 90013.
+- Cycle 15 pending behind the load gate. es4 at generation 29, no TypeError aborts.
