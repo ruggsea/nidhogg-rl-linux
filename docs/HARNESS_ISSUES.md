@@ -325,3 +325,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Code-1 game exit at 03:38:20 UTC (launcher log, pid 961562, game pid 968445, alive 357 s). Last recorded state: tick 16386, game still responding (state age 0.1 s). Not the known hang signature.
 - Cause of "spy did not run the batch": not yet confirmed.
 - Effect: cycle 12 is not clean; the three-in-a-row count restarts after it.
+
+## 46. Late-batch fix in the debug copy (checked 2026-11-24 03:48 UTC)
+- Cause of cycle 12's restart: the in-game spy had not finished a command batch within 2 s; the code then failed the reset, the training env restarted the game, and the stop gave the code-1 exit. The game was still running and updating (state age 0.1 s): a slow spy, not a hang.
+- Fix in debug copy nidmem.py (lines 72-76): if a batch is not done after 2 s, wait up to 8 s more without resending keys; each late batch is counted as spy_late with its wait time. Read from pippi: the 8 s wait and the counter are present; the file parses.
+- Not yet validated: cycle 13 with the fix is pending; the count of spy_late events per cycle is the measure.
+- Real hangs over 240 traced episodes: 4 (Wilson 95% 0.006-0.042), none since cycle 3.
