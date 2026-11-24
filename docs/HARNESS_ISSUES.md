@@ -156,3 +156,9 @@ Controls (first policy's wins among decided episodes, Wilson 95%):
 - C, frozen vs frozen (n=40): 10/23 = 0.43 [0.26, 0.63]; P1 won 7/23 = 0.30 [0.16, 0.51]. The 0.5 check holds; the seat split is too small to call bias.
 
 Conclusion: no learning signal yet. The training design is the open question.
+
+## 19. Trace cycle 2 (run 20261124T004755, 20 episodes, es4 generation 20-23)
+Raw check, read from pippi trace files: episodes 4, 8 and 9 each contain one restart, exit or no-record line (game hung or exited in 4 and 8; no record answered P1's keys in 9). Episodes 10-19 contain none.
+- Episode 5 (outcome P1, 1056 ticks, valid_v3 False): the end record shows P2 dead on the corpse branch (freeze tick 8360, no respawn). P1's tracked record changed from object 74 to 243 at tick 8119 while P2 was dying. Not yet explained: could be P1 dying, or a reused record. The video (dbg86_ep5.mp4) is needed to settle it.
+- Streak: 10 episodes (10-19) with no unexplained events by the checker's rules. The checker rules were relaxed in cycle 1; treat the streak as provisional until the restarts in 4, 8 and 9 are explained.
+- Open: game hang or exit in 4 and 8; missing key answer in 9; episode 5's object change. Cycle 3 adds an object-change check in play.
