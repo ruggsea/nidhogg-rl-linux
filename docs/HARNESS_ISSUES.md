@@ -491,3 +491,8 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - So the cycle 15 stop is the cross-kill (fixed by the exact NIDFARM= match and the moved trace dir), not an unexplained game exit. Section 69's and 63's "likely our restart" reading is superseded by this.
 - The cycle 15 hang count (6 in 300) belongs to the contaminated runs and is not used.
 - Still open: the reset give-up itself (the viewer's own resets), which costs a restart each time.
+
+## 73. Reset give-up count, re-counted from the raw diag files (2026-11-24)
+- Lines containing "no record answers" in each farm's diag.jsonl on pippi: farm1 29, viz85 25, farm4 25, farm3 20, farm2 15, dbg86 2, arms/farmB 0. Total 116.
+- The pippi agent reported 114. My count is 116 on the same files; the 2-line gap is not explained (likely a different match on P1/P2 wording or a file it excluded). Use 116 from this count, and note it is a line count, not a count of distinct resets.
+- Caveat: these lines span about 36 h and include the cross-kill period, so they are not all independent give-ups under the current code.
