@@ -424,3 +424,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Open decision for the user: keep retrying arm B, or drop the pause arm and move to the hang diagnosis from tick-level traces.
 - VNC: tunnel to the pippi viewer restarted from the Mac at about 17:04 UTC; viewer answered on localhost:6085.
 - Goal: not met. es4 generation 30 won 23/40 (0.575), no learning trend; trained policy 1/7 vs idle opponent.
+
+## 62. Cycle 15 stop, launcher record (2026-11-24 04:31 UTC), not yet explained
+- Launcher exit: returncode 1, alive 485 s, phase "reset", state age 0.12 s at exit, 2.5 s since last write. Last state: tick 24003, P1 (1195.2, 192, anim 465), P2 (0, 0, anim 0), room 29.
+- The two follow-up relaunches (04:34 and 04:36 UTC) exited within minutes with no state.
+- Traces of that episode and the next reset show normal play and a clean reset; the stop is only in the launcher record.
+- Open: whether our reset writes or the game's own exit caused it. Next step: the game's own log for 04:31 UTC on pippi.
