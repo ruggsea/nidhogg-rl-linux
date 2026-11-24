@@ -185,3 +185,8 @@ Compared the last rows before each hang in the trace files (cycle 1 ep 12; cycle
 - In all four, the episode records the outcome P2 or an abort, and the next line is the restart.
 - Last key sends before the hang are key-up lines only ("ku ..."), no new key press.
 Reading: the game frees P2's record during P1's death check, and the spy stops publishing state in the same window. Cause order is not yet proven. Cycle 4 logs the game's last state at each hang to test it.
+
+## 23. Correction to section 22 (cycle 3, episode 8, tick by tick)
+- P2's record first reads (0, 0) at tick 17182. The game then stops publishing state at tick 18182, a thousand ticks later. P1 stays frozen in death animation 297 at x 1127.2 for the whole window.
+- So the hang does not start when P2's record is freed. Something earlier stalls the game, and P2's record going to zero is a symptom in the same window.
+- Section 22's reading ("the game frees P2's record during P1's death check, and the state stops") is wrong for this episode. Cycle 4 must log from the start of the death check, not only the last rows.
