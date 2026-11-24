@@ -36,3 +36,9 @@
 - **Change if:** arm B (pause) shows no fewer key-down-tick stops than arm A (control) at the same episode count.
 - **Evidence:** arm A (control) finished 300 episodes, 0 key-down-tick stops. Arm B has 0 completed episodes: its first episode fails with "state file stopped updating" repeatedly, so this decision is not yet tested.
 - **Status:** open. Needs the user's call on whether to keep retrying arm B or drop the pause arm.
+
+## D-2026-11-24-pause-dropped: user chose to pause (drop) the pause arm (arm B)
+- **Chosen:** stop arm B (2-tick pause, code_pause). Arm A (control) is kept as finished.
+- **Decided by:** the user, 2026-11-24 (message: "i said the second option, pause it").
+- **Done:** arm B's runner and its 10 farmB game processes stopped (owned by my user; environment checked for NIDFARM=farmB). All confirmed gone.
+- **Consequence:** the pause fix stays untested; the 2-tick pause decision (D-2026-11-24-fable-pause) is on hold. Next step is the hang diagnosis from tick-level traces, as the second option stated.
