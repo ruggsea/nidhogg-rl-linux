@@ -395,3 +395,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Interim, read from pippi with arm_report.py: arm A 26 episodes, 0 restarts, 0 hangs, 642 identify key-downs, 0 key-down-tick stops (0/26, Wilson 95% 0-0.129). Arm B: no traced episodes yet. No comparison possible yet.
 - Earlier first-chunk boot on both displays showed "game pid None"; later chunks ran. Cause of the first failure not identified.
 - Not yet a result. Stop counts per arm and intervals to be reported at run end.
+
+## 57. Two-arm pause test: arm B failing on its first episodes (2026-11-24 ~12:12 UTC)
+- Arm A: 87 episodes, 1 restart (reset failed 5 times), 0 key-down-tick stops (0/87, Wilson 95% 0-0.042).
+- Arm B: 0 episodes. Chunk 0 failed on try 1 and try 2 with "state file stopped updating (game hung or exited)" (farmB logs). Chunk 20 and 80 still retrying.
+- Read: the game stops publishing state during arm B's first episode, the hang signature. The pause fix has no working run yet, so it is untested.
+- Not yet diagnosed. Needs the first-tick trace of arm B's episode 0 before any change.
