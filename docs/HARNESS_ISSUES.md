@@ -288,3 +288,10 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Hang classification unchanged: 4 real hangs (cycle 1 ep 12; cycle 2 ep 4 and ep 8; cycle 3 ep 8). Cycle 2 ep 9 exit was also our restart after a reset failure, not a hang.
 - New failure class: reset failures with restart (cycle 9 episode 5 is the first in this run; 1 in about 180 traced episodes).
 - Debug-copy fix approved (no retry of the same unstuck path after a failed search; wait for respawn). Cycle 10 to start once the fix is in.
+
+## 39. Cycle 9 result and the reset-retry fix (pippi agent; exit timing checked)
+- The 02:52:31 UTC exit is the first game of run 20261124T024622 (pid 400738), stopped by our restart after the reset before episode 5 failed five times. Episode 16 was played in the second game; no exit there (the second game was stopped at 03:02:36 by the run's end, rc -15).
+- Cycle 9: 20 episodes, 0 boot retries, 1 reset-failure restart (episode 5), 0 real hangs. Streak broken at episode 5; 14 clean after it.
+- Hang rate over 180 traced episodes: 4/180 = 0.022 (Wilson 95% 0.009-0.056).
+- Fix in the debug copy (nidmem.py): identify() and unstick() accept a record only if its live object index is 74. Non-body records are skipped and counted (guard "skip_not_body"). No address blacklist (the game reuses addresses). File parses and imports.
+- Cycle 10 started 03:05:13 UTC. Reset-failure restarts per cycle now printed by the cycle report.
