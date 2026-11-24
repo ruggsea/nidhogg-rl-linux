@@ -448,3 +448,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Cycle 17 launched 18:25:35Z in scope nfp-dbg86-1825; cycle17.out has no result line yet. No launcher exits and no cycle-17 trace files have been recorded since 18:25.
 - Reset give-up: 114 cases over about 36 h on viewer and es4 farms (pippi agent's count from each farm's diag.jsonl; not re-counted by me). Pattern split from its report: 54 with two fighter records, 20 with the missing fighter parked at x=1600, 34 with extra non-body records. Fix for the 54 case not applied; pippi agent proposed it for the debug copy only.
 - Cleanup-fix claim and the superseded hang counts are in section 64.
+
+## 66. The staged clean_farm test checks a copy of the rule, not the function
+- I read `~/nf-p/viz85/review/test_cleanfarm.py` on pippi. It compares two string expressions on four made-up environments (viewer game, debug game old env, debug game new env, prefix-sharing farm). It never calls `clean_farm` and sends no signal.
+- What it shows: the substring rule matches the prefix-sharing farm (`viz85x`) and the new exact rule does not. That is the right behaviour, but it is evidence about the expression, not about `clean_farm`.
+- Still to prove: a call to `clean_farm` against a harmless stand-in process with a staged environment, showing the old rule would have killed it and the new rule does not. Not yet done.
+- The code line is `code_dbg/nidlinux.py:98`; the test's last check only confirms that the same expression text appears there.
