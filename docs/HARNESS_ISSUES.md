@@ -177,3 +177,11 @@ Read from ~/nf-p/es4/evals.jsonl on pippi (decided episodes only, Wilson 95%):
 - Generation 20: P1 9/20 (0.45, 0.26-0.66), walked 39 vs 36; P2 9/20 (0.45), walked 34 vs 36.
 - Latest generation at this read: 22. Run not ended. 18 games running, load 53.
 Pattern: every eval sits near 0.5 and the intervals overlap. No measurable gain over the frozen checkpoint.
+
+## 22. The four game hangs: raw comparison (2026-11-24)
+Compared the last rows before each hang in the trace files (cycle 1 ep 12; cycle 2 ep 4 and ep 8; cycle 3 ep 8):
+- In all four, P2's record reads (0, 0, 0, 0) on the last tick, during an end check (end_check_P1 in three, end_check_P2 in one).
+- In all four, the other fighter (P1) is either in a death animation (297, 311) or a hang animation (580) at that moment.
+- In all four, the episode records the outcome P2 or an abort, and the next line is the restart.
+- Last key sends before the hang are key-up lines only ("ku ..."), no new key press.
+Reading: the game frees P2's record during P1's death check, and the spy stops publishing state in the same window. Cause order is not yet proven. Cycle 4 logs the game's last state at each hang to test it.
