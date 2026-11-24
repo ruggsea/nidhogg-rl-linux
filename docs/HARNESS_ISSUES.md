@@ -307,3 +307,8 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Previous: generation 20 at 0.45 (both seats); generations 0-15 between 0.375 and 0.60.
 - Read carefully: the highest point so far, but each seat has 20 counted episodes and the intervals still overlap the earlier ones. This is one evaluation, not a trend. Needs the next evaluations (generation 30) and a control check before any claim.
 - Walk counts equal to the frozen checkpoint, so the win is not from standing still.
+
+## 42. Load gate for the debug cycles, verified from the file (2026-11-24 03:28 UTC)
+- cycle.sh calls run_ctrl.sh; run_ctrl.sh waits while the 1-minute load (from /proc/loadavg) is above 150, logging each wait (dbg86/run_ctrl.sh, line 6). Read from pippi.
+- Cycle 11 (run 20261124T032016) in progress: 11 episodes written at 03:27 UTC, no restart or abort text so far.
+- Still open: the cycle 8 boot retry at 02:30 UTC has no matching log on pippi (checked against the four boot-failure logs, all from 23 Nov).
