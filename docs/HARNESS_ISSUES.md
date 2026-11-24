@@ -269,3 +269,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Clean cycles in a row: 2 (cycles 6 and 7). Current run from cycle 8: 0. Cycle 9 (started 02:44:01 UTC) is clean cycle 1 if no restart occurs.
 - Boot failure logs found on pippi: ~/nf-p/dbg86/run.fail1.log, run.fail2.log, logs/py_0.fail2.log, logs/py_0.fail4.log. Not yet matched to the 02:30 timestamp.
 - Hang rate over 160 traced episodes: trace rule 4/160 (Wilson 95% 0.010-0.063); code-1 exits 5/160 (0.013-0.071). Hang code unchanged; not a fix.
+
+## 36. es4 TypeError change is live (generation 26)
+- Applied 02:49:47 UTC, after generation 25 finished at 02:49:42. Diff checked on pippi: line 153 adds TypeError to the episode-level catch; line 154 writes each TypeError traceback to ~/nf-p/es4/typeerror_tracebacks.log. Compiles. Original kept as selfplay_env.py.pre_typeerror.
+- Workers restarted one at a time (farm1 02:52, farm2 02:55, farm3 02:58, farm4 03:01 UTC), same 8 cores and 16 GB each; all ready by 03:01 UTC.
+- TypeError aborts in generation 26 so far: 0 (no traceback log yet at 02:44 check on pippi, read before workers were restarted).
+- Watch: more than 3 per generation is reported before the next generation.
