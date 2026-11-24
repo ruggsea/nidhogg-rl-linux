@@ -312,3 +312,7 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - cycle.sh calls run_ctrl.sh; run_ctrl.sh waits while the 1-minute load (from /proc/loadavg) is above 150, logging each wait (dbg86/run_ctrl.sh, line 6). Read from pippi.
 - Cycle 11 (run 20261124T032016) in progress: 11 episodes written at 03:27 UTC, no restart or abort text so far.
 - Still open: the cycle 8 boot retry at 02:30 UTC has no matching log on pippi (checked against the four boot-failure logs, all from 23 Nov).
+
+## 43. Cycle 11 (run 20261124T032016, 03:20-03:30 UTC), checked from raw files
+- 20 trace files; no restart or abort text; the only launcher exit is the run's own stop at 03:30:47 (rc -15). Boot retries 0, reset-failure restarts 0, code-1 exits 0. Clean under the restart rule: 2 of 3 (cycles 10 and 11).
+- Hang rate over 220 traced episodes: 4/220 = 0.018 (Wilson 95% 0.007-0.046). No real hangs since cycle 3 (160 episodes). Hang code unchanged; not a fix.
