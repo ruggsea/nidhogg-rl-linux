@@ -376,3 +376,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Denominator (300 traced episodes): 4 stops in 6,786 dx_on key-downs (0.06%); 2 in 1,340 presses on a non-body reading (0.15%, Wilson 95% 0.04-0.54%); 2 in 5,446 on a body reading (0.04%, 0.01-0.13%). Intervals overlap: not enough data to tell.
 - Not applied, needs a decision: skip non-body records before a dx_on press; pause 1-2 ticks between track and key-down; log the room in the tracer (room is None in the traces now).
 - Cycle 16 (launched 04:48 UTC): result pending in ~/nf-p/dbg86/cycle16.out.
+
+## 54. Single hang count (supersedes the counts in sections 46-53)
+- Real hangs: 6 in 300 traced episodes (Wilson 95% 0.009-0.043). This is the only count to use.
+- Sections 48-51 quoting 5/280 or 4/300 or 4/260 are superseded: the 4/300 figure comes from the signature search in cycle.sh, which misses two hangs (cycle 14 ep 13, cycle 15 ep 8).
+- Cause: unproven. Four of the six follow a key press during identify-by-input.
+- Cycle 16: result not read (SSH to pippi timed out at 10:36 UTC). Clean-cycle streak: 0.
