@@ -430,3 +430,8 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - The two follow-up relaunches (04:34 and 04:36 UTC) exited within minutes with no state.
 - Traces of that episode and the next reset show normal play and a clean reset; the stop is only in the launcher record.
 - Open: whether our reset writes or the game's own exit caused it. Next step: the game's own log for 04:31 UTC on pippi.
+
+## 63. Cycle 15 stop: the game's own Wine tail (2026-11-24, checked)
+- Launcher record at 04:31 UTC (dbg86/launcher_exits.jsonl): wine_tail and fault_lines show only ordinary Wine noise (openxr, ALSA, process fixme lines). No fault address, no crash line.
+- Read: the game gave no crash signal of its own, which points to the stop being our restart after the failed reset (reset_failures: "no record answers to P2's keys", 04:31:05 UTC). Likely, not proven: a stop signal from our side would not necessarily leave a Wine error line.
+- Still open: a confirmed cause needs the process's exit signal, which the launcher record does not capture.
