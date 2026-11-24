@@ -369,3 +369,10 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Of 8 traced restarts with a P2 (0,0) reading, 6 happened during the find/identify phase while dx_on key presses were being sent (includes cycle 15 ep 8 and cycle 1 ep 12). Cycle 14 ep 13 is labelled approach but shows the same keys. Cycle 2 ep 4 was in approach with no zero reading.
 - Vanish-wait (5 s, debug copy) is implemented as specified; expect few or no vanish_wait events and no drop in hangs.
 - Next (debug copy only): list the game state (animations, facings, room, last 10 key presses) before each dx_on press in the six hangs, to find what precedes each stop.
+
+## 53. Hang pattern and identify-by-input (checked against raw traces, 2026-11-24)
+- Last key sends before the five traced real hangs (cycle 1 ep 12; cycle 2 ep 8; cycle 14 ep 13; cycle 15 ep 8; cycle 2 ep 4): four of five stop on the same tick as a key-down during dx_on (identify-by-input). Cycle 2 ep 4 stopped 4 ticks after an approach poke, not a key press.
+- Checked by reading the last sends myself: the restart files of cycle 2 ep 4, ep 8 and cycle 3 ep 8 end with "ku" lines in end checks; cycle 14 ep 13 and cycle 15 ep 8 end with dx_on key presses. Matches the agent's table.
+- Denominator (300 traced episodes): 4 stops in 6,786 dx_on key-downs (0.06%); 2 in 1,340 presses on a non-body reading (0.15%, Wilson 95% 0.04-0.54%); 2 in 5,446 on a body reading (0.04%, 0.01-0.13%). Intervals overlap: not enough data to tell.
+- Not applied, needs a decision: skip non-body records before a dx_on press; pause 1-2 ticks between track and key-down; log the room in the tracer (room is None in the traces now).
+- Cycle 16 (launched 04:48 UTC): result pending in ~/nf-p/dbg86/cycle16.out.
