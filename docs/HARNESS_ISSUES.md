@@ -454,3 +454,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - What it shows: the substring rule matches the prefix-sharing farm (`viz85x`) and the new exact rule does not. That is the right behaviour, but it is evidence about the expression, not about `clean_farm`.
 - Still to prove: a call to `clean_farm` against a harmless stand-in process with a staged environment, showing the old rule would have killed it and the new rule does not. Not yet done.
 - The code line is `code_dbg/nidlinux.py:98`; the test's last check only confirms that the same expression text appears there.
+
+## 67. clean_farm run on stub processes (2026-11-24, pippi)
+- Stubs: two copies of /bin/sleep named Nidhogg.exe, started by the test, owned by my uid. One with NIDFARM=/home/ruggsea/nf-p/teststub_cf (the farm), one with NIDFARM=/home/ruggsea/nf-p/teststub_cfx (prefix-sharing). FARM was pointed at the stub path, so the stop and lock steps had nothing of the real farm to touch.
+- Result: clean_farm killed the exact-match stub (exited = True) and left the prefix-sharing stub alive (exited = False). That is the intended behaviour of the exact-match rule, shown by running the function, not a string copy.
+- Real game processes: the two real Nidhogg.exe pids (1014336, 1095278) were present before and after. The script's "unchanged: False" is a bug in my check, not a kill: it counted the stub pids in the before list, and the surviving sibling stub was then killed by the script's own cleanup. Nothing else was signalled.
+- Script kept at ~/nf-p/viz85/review/cf_stub_test.py on pippi.
