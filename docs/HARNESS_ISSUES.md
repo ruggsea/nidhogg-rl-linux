@@ -460,3 +460,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Result: clean_farm killed the exact-match stub (exited = True) and left the prefix-sharing stub alive (exited = False). That is the intended behaviour of the exact-match rule, shown by running the function, not a string copy.
 - Real game processes: the two real Nidhogg.exe pids (1014336, 1095278) were present before and after. The script's "unchanged: False" is a bug in my check, not a kill: it counted the stub pids in the before list, and the surviving sibling stub was then killed by the script's own cleanup. Nothing else was signalled.
 - Script kept at ~/nf-p/viz85/review/cf_stub_test.py on pippi.
+
+## 68. Cycle 17 launcher exits, first two (2026-11-24, checked 18:49 UTC)
+- 18:35:33, returncode 1, phase reset, alive 595 s. Wine tail: ordinary RPC/fixme lines, no fault.
+- 18:40:45, returncode -15 (SIGTERM), phase episode, alive 309 s. Cycle log line 18:40:45 is an end-of-episode step and "done" at 18:40:47. Who sent the SIGTERM is not in the logs I read. Not explained yet.
+- Cycle 17 still running at 18:49; 20 new trace files since 18:25 in dtrace.
+- Counts for the fresh series are not yet computed; the 18:35 exit is in the fresh series and counts as a reset-phase exit.
