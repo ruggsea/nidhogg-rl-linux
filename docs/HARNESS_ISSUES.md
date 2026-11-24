@@ -568,3 +568,13 @@ Plan, and what I have not yet done:
 - Not yet started: the replay test. The engine's `identify` and `answers` need a fake memory with `scan`, `answers`, `_is_body`, `track`, `send`, `release_all`, `rec`, `dead`, `otypes`. Read so far: `identify` at nidmem.py:156, `_find` at nidenv.py ~139. The diag record for the give-up (farm1, 2026-11-22 23:45:14) shows both fighters alive, on screen, and both records present, yet no answer to P1's keys. A fake that only fails every answer would test the loop, not the condition, so the replay must reproduce the state.
 - To keep the viewer untouched, the fix goes in a separate copy `~/nf-p/code_fix` (copied from `code_dbg`), and only the debug controller's `sys.path` (dbg86_ctrl.py lines 11-12) is pointed at it. The viewer loads `code_dbg` and is not changed.
 - Decision that remains with Ruggero: none of the three above needs him under the standing delegation, but the acceptance numbers in 1(d) are Fable's proposal and he may want to set them.
+
+## 85. Reset give-up fix: replay test, change, and acceptance start (2026-11-25)
+- Fix copy: `~/nf-p/code_fix` (copy of code_dbg). The viewer and es4 still load code_dbg, unchanged.
+- Replay test: `~/nf-p/code_fix/test_giveup_replay.py` (copy in tests/). A MECHANISM MODEL: the fake memory assumes the dead fighter's record answers its keys only after the other fighter has walked left at least 200 px. This is my hypothesis, not a game recording. It is not proof the fix works in the game.
+  - On the code before the change: FAIL. The walk nets -150 px (right 1.5 s, left 3 s); `respawn_walk` = ['P2 right 1.5s', 'P2 left 3s']; no respawn. Reproduces the give-up shape.
+- Change (fix copy only, backup nidenv.py.pre_giveup): the left walk is four 1-second steps, each followed by a re-identify, so the other fighter nets -250 px. After the change: PASS.
+- Acceptance, per Fable: the debug controller and launcher now point at code_fix (dbg86_ctrl.py and run_ctrl.sh, backups *.pre_codefix). Cycle 21 is the first acceptance cycle.
+- Count question for Fable/Ruggero (not decided by me): "300 consecutive episodes over at least 3 cycles" is inconsistent at 20 episodes per cycle (300 = 15 cycles). Until answered, the run goes on and the count is kept per episode.
+- Pause arm: still dropped; not touched.
+- Learning: not run; no new generations until acceptance passes.
