@@ -363,3 +363,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Recount of all 300 traced episodes for the text "state file stopped": 4 files (cycle 1 ep 12 is not among them; cycle 2 ep 4 and ep 8; cycle 3 ep 8; cycle 1 ep 2 matches the signature but is a different event per the earlier review).
 - Not counted by the signature search: cycle 14 ep 13 and cycle 15 ep 8, both logged under a different restart reason.
 - Use 6/300 (the count including restarts from cycle_extra.py), not 4/300 from the old table in cycle.sh.
+
+## 52. Correction: the (0,0) readings are our tracking, not vanished fighters (pippi agent, 2026-11-24)
+- identify-by-input (Mem.dx_on) tracks one body as P1 and leaves the P2 slot at 0, so P2 reads (0,0) by construction. The earlier "P2 vanished" reading was partly our own tracking artefact.
+- Of 8 traced restarts with a P2 (0,0) reading, 6 happened during the find/identify phase while dx_on key presses were being sent (includes cycle 15 ep 8 and cycle 1 ep 12). Cycle 14 ep 13 is labelled approach but shows the same keys. Cycle 2 ep 4 was in approach with no zero reading.
+- Vanish-wait (5 s, debug copy) is implemented as specified; expect few or no vanish_wait events and no drop in hangs.
+- Next (debug copy only): list the game state (animations, facings, room, last 10 key presses) before each dx_on press in the six hangs, to find what precedes each stop.
