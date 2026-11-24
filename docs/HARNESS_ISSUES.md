@@ -478,3 +478,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Series hangs: 0/20 = 0.000, Wilson 95% [0.000, 0.161]. Counted over one cycle only; the clean-cycle requirement is three in a row, so the goal is still not met.
 - Read-only check: the script has no kill, unlink or write calls on its own (grep before running).
 - The 18:35:33 reset exit (code 1) and the 18:40:45 SIGTERM are both inside this cycle; the 18:40:45 one is still unexplained (section 69).
+
+## 71. Correction to section 69: the 18:40:45 SIGTERM was the end-of-cycle stop
+- Verified on pippi: `dbg86/dbg86_ctrl.py` line 104 calls `n.stop()` and then logs "done"; ctrl.log shows the episode at 18:40:45 ("A_current_vs_frozen 19 ... undecided", the 20th and last episode) followed by "done" at 18:40:47. The launcher's -15 at 18:40:45 is that stop, which goes through `stop_id()`.
+- So this was a normal end-of-cycle shutdown, not an unexplained kill. Section 69's "not proven" is now settled by this reading.
+- Caller log: `stop_id()` in `code_dbg/nidlinux.py` now writes its stack to `$NIDFARM/stop_id_callers.log` (line 168). The debug farm's file is `dbg86/stop_id_callers.log`. It takes effect from cycle 18; cycle 17 had loaded the old module.
+- Cycle 17's one restart was episode 11, the reset give-up at 18:35:32 (the 18:35:33 exit, code 1). Clean-cycle streak 0.
