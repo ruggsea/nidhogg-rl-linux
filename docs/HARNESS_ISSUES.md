@@ -232,3 +232,9 @@ Recount of the 20 cycle 4 files (run 20261124T013102): P1 4, P2 10, undecided 6 
 - Hang rate, 100 traced episodes: 4/100 by the trace rule (Wilson 95% 0.016-0.098); 5/100 counting code-1 exits (0.022-0.112).
 - Streak: 12 (episodes 8-19 of cycle 5). Reset from 20.
 - Next: cycle 6 with the widened death list.
+
+## 30. Trace cycle 6 (run 20261124T015656, 01:56-02:07 UTC), death list widened
+- 20 of 20 episodes clean: no unexplained event, no game hang, no code-1 exit. Streak 20 (first of three clean cycles in a row).
+- Hangs over 120 traced episodes: trace rule 4/120 (Wilson 95% 0.013-0.083); code-1 exits 5/120 (0.018-0.094).
+- No hangs in cycles 4-6 (60 episodes). The hang code has not changed, so this is not a fix; the interval still allows about 1 in 12 episodes.
+- Next: cycle 7 (started 02:07 UTC).
