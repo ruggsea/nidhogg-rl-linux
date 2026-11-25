@@ -770,3 +770,9 @@ Differences: episode boundary, reward, validity, and acceptance all differ. Fabl
 - One frame captured from the test farm (instance 0) with his `nidlinux.frame`: the title screen ("nidhogg" wordmark, "press ENTER"), two small figures on the right, no fighters in a match. So the game is on the menu after his reset test ended, not in a round.
 - Implication for B5: the winner screen must be sampled from a real round end before the threshold can be set. Not yet done.
 - The frame is kept at pau86/frame_now.png on pippi; a local copy is in the job folder, not in the repo.
+
+## 120. B5 measurement written and staged-tested; thresholds still uncalibrated (2026-11-25, 02:09 UTC)
+- `winner_check.py` (scratch, in the job folder, not in the repo): measures brightness, centre bright fraction, yellow and orange fractions of a frame; `is_winner` returns "uncalibrated" and False until thresholds come from a real winner-screen frame.
+- Menu frame (the only one available) measures: mean 88.4, centre bright 0.0023, yellow 0.0521, orange 0.0050. Not used as a winner sample.
+- Staged test: PASS (uncalibrated never says winner; calibrated bounds decide both ways).
+- Needs: one real round-end frame from a match, captured by his frame(). That requires a finished round on the test farm; not yet available.
