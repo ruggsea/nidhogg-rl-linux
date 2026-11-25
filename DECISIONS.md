@@ -115,3 +115,9 @@
 - **Ruggero's words:** "u have to use his exact definitions of everything. the goal is to have robust working training according to his definitions and lab."
 - **Consequence:** our own definitions (outcome-bounded episode, our reset path, our reward and validity rules) are provisional until each is replaced by his. Acceptance counts on our definition do not count toward this goal until his definitions are in place.
 - **Next:** list his definitions of episode, round, reset, reward, validity and the lab's terms from his docs (read-only), then map each to our code, and decide with Fable what changes and whether acceptance pauses.
+
+## D-2026-11-25-pause-acceptance: pause the acceptance count (Fable decision b)
+- **Decided by:** Fable subagent (model fable), 2026-11-25. Option (b).
+- **Reason:** Ruggero said to use Pau's exact definitions of everything, so 300 clean episodes on our episode, reset and reward would prove nothing he accepts. A mapping table or a parallel copy would spend machine time on a count that gets thrown away.
+- **Done:** cycle 26 stopped by pid at 2 of 20 episodes (controller and script owned by this farm, cwd checked). Its count is not carried anywhere. The code_fix place() with read-back stays, since it is reusable for Pau's reset.
+- **Next (Fable's three actions):** (1) locate the round phase, so the driver emits kind:"round"; (2) run reset_test.py as a routine (write both fighters' x/y, survival check, 8 of 8); (3) implement reward as ΔORANGE − ΔYELLOW per round, and check its sign on a scripted episode. Redefine acceptance on his terms before restarting any count.

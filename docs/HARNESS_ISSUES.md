@@ -733,3 +733,8 @@ Pau's, from origin/main (read-only):
 - Done: lanes with two-of-two acceptance; kind:"round" rounds; scripted reward traces with correct sign; rounds won per hour with claim and falsifier.
 Ours: episode = outcome from death animations (undecided on timeout); reset = place() with read-back; reward = kill +1 / victim -1 with a walking penalty; validity = 5 walk steps, 40 px; acceptance = 300 consecutive clean episodes on code_fix.
 Differences: episode boundary, reward, validity, and acceptance all differ. Fable asked to choose between keeping acceptance, pausing it, or building his terms in parallel.
+
+## 113. Acceptance paused (2026-11-25, 02:10 UTC)
+- Fable: pause (D-2026-11-25-pause-acceptance). Cycle 26 stopped by pid at 3 of 20 episodes (0 hangs, 0 restarts, 0 reset failures); not counted.
+- Acceptance count on our definitions stops here. Restart only on Pau's terms.
+- Next work, per Fable: round phase (kind:"round"), reset_test.py as a routine, reward as ΔORANGE − ΔYELLOW per round with a sign check.
