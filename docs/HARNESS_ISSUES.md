@@ -753,3 +753,9 @@ Differences: episode boundary, reward, validity, and acceptance all differ. Fabl
 - My boot script waited 60 s and printed "game pid None"; the launcher's own boot wait is up to 400 s. Wine on :88 is up and its services log normal startup lines (fixme/err lines from wine's service startup), so the game may still have been starting.
 - A detached wait (wait_game.py, up to 7 minutes, polls for the game pid, then one spy ping) is running on pau86, output in pau86/wait.log. It touches only that farm.
 - The reset test waits on that result.
+
+## 117. Pau's own reset test on his code: writes snap back (partial, 2026-11-25 02:05 UTC)
+- `scripts/reset_test.py 0 --trials 8` on code_pau (his main, unmodified), instance 0 on the test farm (:88), game pid 2172646.
+- Trials 0–3 so far: every trial is "SNAPPED". Each write moves the fighter by its target, but at the next frames the fighter is back within 1 to 5 px... more precisely: 0.35 s after the write it has moved again by 76, 86, 96 and 119 px from the written position (the test's own Δ), with the animation unchanged. His PASS criterion requires the write to survive; none of the first four trials does.
+- So on his code the reset-by-write does not hold, which is the premise of his lane D. Our place() with read-back is not Pau's routine, and his test is the falsifier for his own plan, not yet passed.
+- The remaining four trials are running; the final count goes here.
