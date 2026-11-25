@@ -616,3 +616,7 @@ Plan, and what I have not yet done:
 - This is why cycle 21 stalled and cycle 21b failed: my copy, not the game and not the load. The earlier "intermittent" reading in section 90 was wrong for these failures; the failures predating code_fix (ctrl.024401) are not explained by this and are still open.
 - Fix: `spy/` copied from code_dbg into code_fix (cmp: identical). Relaunched as cycle21c. Acceptance count restarts from cycle21c's first episode.
 - Lesson for this copy: copy the whole tree, not only *.py.
+
+## 93. Acceptance cycle21c booted and is running episodes (2026-11-25, 00:34 UTC)
+- Launch at 00:31:24 (pid 1878348, enter_match_v2 and in_match True). Episodes are being logged from 00:33 (ctrl.log, episodes 3–6 of this cycle at 00:34).
+- Counts for acceptance come from raw files once the cycle completes. Acceptance needs 15 consecutive cycles of 20 with 0 hangs, 0 restarts and 0 reset failures (section 85).
