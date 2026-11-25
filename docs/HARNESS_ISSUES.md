@@ -661,3 +661,8 @@ Order: env_iface and nidtrain_env first (so the import shapes agree), then train
 - New `code_multi/train/policy6.py`: MLP obs -> H tanh -> 6 logits, one per button; `sample_bits` draws each button independently (p = sigmoid, pressed when U < p); `greedy_bits` presses where logit > 0.
 - Staged test `code_multi/tests/test_policy6.py`: PASS. Checks shapes of the unpacked weights, that the greedy output is six bits, that sampled frequencies match the sigmoid probabilities (tolerance 0.03 over 4000 draws), and that some samples press two or more buttons at once.
 - Not yet wired in: train.py's SHAPES and act(), selfplay.py's act_sample and episode, selfplay_env.py's step, nidtrain_env.py. The list and order are in section 99. code_fix (acceptance) is untouched.
+
+## 101. Self-play sampling switched to six outputs in code_multi; trainer shapes not yet (2026-11-25)
+- `train/selfplay.py`: `act_sample` now calls `policy6.sample_bits` (six independent buttons); `episode()` counts presses per button (six counters per fighter). Backup: selfplay.py.pre_policy6. Compiles.
+- Not yet consistent: `train/train.py` still builds the 7-output shapes (`SHAPES` from N_ACTIONS = 7), so a 6-output theta from self-play would not match the trainer's `act()` and the parameter vector. `train.py` and `env_iface.py` must change together; `nidtrain_env.py` also depends on the 7-entry table.
+- So code_multi is not yet runnable end to end. Wiring the trainer shapes is the next step; then the selfplay_env step and the key probe.
