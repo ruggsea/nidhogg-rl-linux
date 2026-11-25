@@ -748,3 +748,8 @@ Differences: episode boundary, reward, validity, and acceptance all differ. Fabl
 - Own farm `~/nf-p/pau86` with its own env (derived from dbg86's, NIDFARM and display changed). The first boot failed on a missing prefix template; the template was copied from ours (reflink) and the boot retried. The wrapper for :88 is up (2168383); no game process for :88 yet at 02:02.
 - Other farms untouched: viz85 (:85) and dbg86's leftover game (:86) show as before.
 - Not yet run: Pau's reset_test.py. It starts only once the :88 game answers.
+
+## 116. Pau's test farm: the first boot check ended too early (2026-11-25, 02:04 UTC)
+- My boot script waited 60 s and printed "game pid None"; the launcher's own boot wait is up to 400 s. Wine on :88 is up and its services log normal startup lines (fixme/err lines from wine's service startup), so the game may still have been starting.
+- A detached wait (wait_game.py, up to 7 minutes, polls for the game pid, then one spy ping) is running on pau86, output in pau86/wait.log. It touches only that farm.
+- The reset test waits on that result.
