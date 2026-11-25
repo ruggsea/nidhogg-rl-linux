@@ -712,3 +712,9 @@ Purpose (Fable, 2026-11-24 direction): "1 of 7 against an idle opponent" points 
 - Cycle 26 launched by hand on code_fix (cycle26.out), the first cycle of the restarted count.
 - Fable (DECISIONS: D-2026-11-25-no-live-master): keep the "no live master for P1" failure loud and counted, no retry. Trigger for a stop and replay build: a second occurrence before 300 clean episodes.
 - Honest caveat: with one occurrence in about 180 episodes, 300 clean in a row has roughly 19% odds. The acceptance may not pass on this code.
+
+## 110. Are we using Pau's episode definition? (question from Ruggero, 2026-11-25)
+- Pau's upstream docs (origin/main: README, docs/NEXT_STEPS.md, docs/PLAN_SWARM.md lane D) define an episode as a round, bounded by the game's round phase. He has not located the round phase yet ("round phase is the last missing field"). His plan for resets writes both fighters' x/y in a live match (lane D), with acceptance "20 consecutive resets, 0 crashes, round still live".
+- So the answer is: not the same definition. We bound an episode by our own outcome detection (death animations; undecided on timeout), not by his round phase, and we have no round phase. Our reset also writes x/y (nidmem.place), which his plan also does. The "teleport" word in his notes (docs/MEMORY.md) refers to identity records jumping between reads, which is a different problem from the reset.
+- I have checked his docs, not his code files for the reset path; that check is still open.
+- Fable is deciding whether to keep our definition with a label or adopt his round boundary (see the Fable decision recorded in DECISIONS.md once it returns).
