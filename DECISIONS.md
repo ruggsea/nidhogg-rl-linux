@@ -121,3 +121,9 @@
 - **Reason:** Ruggero said to use Pau's exact definitions of everything, so 300 clean episodes on our episode, reset and reward would prove nothing he accepts. A mapping table or a parallel copy would spend machine time on a count that gets thrown away.
 - **Done:** cycle 26 stopped by pid at 2 of 20 episodes (controller and script owned by this farm, cwd checked). Its count is not carried anywhere. The code_fix place() with read-back stays, since it is reusable for Pau's reset.
 - **Next (Fable's three actions):** (1) locate the round phase, so the driver emits kind:"round"; (2) run reset_test.py as a routine (write both fighters' x/y, survival check, 8 of 8); (3) implement reward as ΔORANGE − ΔYELLOW per round, and check its sign on a scripted episode. Redefine acceptance on his terms before restarting any count.
+
+## D-2026-11-25-reset-falsified: reset by writing x/y is not a reset on Pau's definitions (Fable decision a, with c as a labelled stopgap)
+- **Decided by:** Fable subagent (model fable), 2026-11-25.
+- **Facts:** Pau's `scripts/reset_test.py` on his unmodified main, instance 0 (test farm :88): FAIL, 8 of 8 trials snapped back within 0.35 s (76 to 342 px). Final line: "after 0/8 resets: walking moves P1 +5.9px".
+- **Decision:** writing x/y is not a reset on his definitions. Searching for other writable fields would repeat a premise his test has just falsified, and our place() also writes x/y, so it is neither his method nor shown to hold.
+- **Next:** record the FAIL in LIMITATIONS.md too; label our place() runs "not Pau's reset"; locate his round phase so the game's own round restart can serve as the reset.
