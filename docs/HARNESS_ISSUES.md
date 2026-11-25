@@ -610,3 +610,9 @@ Plan, and what I have not yet done:
 - Decision (taken by me, no retry): no SSH to pippi until the 01:07 UTC check, then one check at a time. Retry loops would extend any ban.
 - Acceptance state at the last good read (23:57 UTC): cycle21b still in its boot window (game pid None, wrapper 1811440). No episodes logged. Counts not yet started.
 - Pending on the next good read: the controller's boot result, then the acceptance count per the rule in section 85 (300 consecutive episodes, 0 hangs, 0 restarts, 0 reset failures).
+
+## 92. Cause of the boot failures on code_fix: my copy was missing the spy folder (2026-11-25, 00:29 UTC)
+- The launcher loads the spy from `spy/nidspy.so` next to its own code (nidlinux.py line 42). `code_fix` was copied with only the `*.py` files and `train/`, so the folder `spy/` was absent. The game ran, but the spy never came up: "game/spy did not come up; game alive True", twice per attempt, then the controller exited with "two sessions lost before the first episode" (ctrl.233207b.log).
+- This is why cycle 21 stalled and cycle 21b failed: my copy, not the game and not the load. The earlier "intermittent" reading in section 90 was wrong for these failures; the failures predating code_fix (ctrl.024401) are not explained by this and are still open.
+- Fix: `spy/` copied from code_dbg into code_fix (cmp: identical). Relaunched as cycle21c. Acceptance count restarts from cycle21c's first episode.
+- Lesson for this copy: copy the whole tree, not only *.py.
