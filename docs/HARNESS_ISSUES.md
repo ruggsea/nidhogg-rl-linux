@@ -684,3 +684,7 @@ Order: env_iface and nidtrain_env first (so the import shapes agree), then train
 - Acceptance count toward 300 consecutive: 60 clean episodes, 3 of 15 cycles (21c, 22, 23).
 - Next: start cycle 24 by hand on code_fix, with the same unchanged script, and keep recording counts from raw files.
 - Cycle 24 launched 01:24:59 UTC by hand (cycle24.out), same unchanged script on code_fix, load 13.6 at launch. The only other cycle script on pippi is the one that just finished (2 min old at check); confirmed by exact command fields.
+
+## 105. Single-agent integer env decided and guarded in code_multi (2026-11-25)
+- See DECISIONS.md (D-2026-11-25-nidtrain-single-agent). `train/nidtrain_env.py` step keeps integers 0..6 and now rejects a tuple at its boundary. Not used by es4 or the six-button self-play path. Compiles.
+- Next on code_multi: one episode end to end with a fake game through nidenv.step and key_transition (not run yet).

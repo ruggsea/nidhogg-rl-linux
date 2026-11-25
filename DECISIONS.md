@@ -84,3 +84,9 @@
 - **3. Acceptance:** no restart for code_fix. The new step() is a new feature, so code_multi needs its own count from zero.
 - **4. Where:** new copy code_multi; code_fix untouched (a running job invokes it).
 - **5. Separate bug:** N_ACTIONS = 7 means left+attack and right+attack are never sampled (see section 97). Replaced by the new head in code_multi; record it for code_fix.
+
+## D-2026-11-25-nidtrain-single-agent: the integer single-agent env stays, marked unused by six-button self-play
+- **Decided by:** Fable subagent (model fable), 2026-11-25. Option (a).
+- **Decision:** leave `train/nidtrain_env.py` step(a) as integer 0..6 in code_multi, marked as not used by the six-button path, with a guard that rejects a tuple.
+- **Reason:** es4 never calls it; converting it would change untested code for no result, and removing it could break helpers that `selfplay_env` imports from the same module.
+- **Done in code_multi:** note and `assert not isinstance(a, (tuple, list))` added to step (backup nidtrain_env.py.pre_note). Compiles.
