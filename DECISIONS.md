@@ -70,3 +70,9 @@
 ## D-2026-11-25-cross-session-bound-resolved: the parked request is closed
 - rex-f7 reports Ruggero confirmed the meaning: the Claude Code setting crossSessionInbound = "accept" (messages from his other sessions delivered without waiting for approval), set for all sessions on the laptop.
 - This session made no change to settings or config; the setting was set by rex-f7 on Ruggero's word. Nothing for this project to act on, and it is not on my wait list.
+
+## D-2026-11-25-action-space: Ruggero asks for a non-discrete action space
+- **Request (Ruggero, 2026-11-25):** "make the action space non discrete like that, an agent should be able to press or not press any of its buttons at any time."
+- **Current:** one of 9 combined actions per fighter per step (nidenv.py ACTIONS), sampled from 7 logits (train/env_iface.py N_ACTIONS = 7; the table has 9 entries, a mismatch to check).
+- **Plan:** a new copy code_multi with one independent on/off per button (left, right, jump, attack, up, down), sampled per step; the current acceptance run on code_fix stays unchanged.
+- **Open semantics:** held-until-changed versus tap for jump/attack/up/down; whether the acceptance count restarts. Sent to a Fable subagent (decisions go there); its answer will be recorded here.
