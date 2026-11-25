@@ -697,3 +697,8 @@ Purpose (Fable, 2026-11-24 direction): "1 of 7 against an idle opponent" points 
 - Pass rule written before running: at least 30 of 40 decided games won by the scripted player (75%), with no undecided or aborted games from machinery faults (a game that ends for a machinery reason is a fault, counted and labelled).
 - Output: one table per seat; the raw per-episode file kept on pippi; the summary written here.
 - Not yet decided: whether the scripted player may use the six-button key form (waits on the code_multi work); for code_fix it uses the current action table.
+
+## 107. Acceptance cycle 24 finished clean (2026-11-25, 01:38 UTC, from raw files)
+- Cycle 24 (20261125T012728): 20 of 20 episodes, 0 hangs, 0 restarts, 0 reset failures; no restart, lost-game or boot-failure line in the controller log.
+- Acceptance count toward 300 consecutive: 80 clean episodes, 4 of 15 cycles (21c, 22, 23, 24).
+- Next: cycle 25 by hand on code_fix, same script, unchanged.
