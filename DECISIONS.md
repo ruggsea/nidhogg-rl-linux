@@ -96,3 +96,10 @@
 - **Facts:** cycle 25 (20261125T014119) logged a reset failure at 01:46:26: "place: no live master for P1 after 3 re-identifications" (RuntimeError, reset_failures.jsonl). It is a different reset failure from the give-up ("no record answers"); the fix did not cover it. The cycle's own count shows 1 restart and 1 reset failure.
 - **Decision:** the consecutive clean count goes back to 0 from the failure on. The 80 episodes of cycles 21c–24 stay on record but do not carry forward. Acceptance counts from cycle 26 onward.
 - **Next:** a new reset weakness ("no live master for P1") is open and needs its own record and a fix in code_fix's reset path, tested on a replay like the give-up. Recorded in section 108.
+
+## D-2026-11-25-no-live-master: Fable's decision on "place: no live master for P1"
+- **Decided by:** Fable subagent (model fable), 2026-11-25. Option (a): keep it a loud failure and count it; no retry.
+- **Reason:** the cause is unknown, and a retry would hide a failure the acceptance rule exists to count. Stopping the run would throw away the only source of more occurrences.
+- **Caveat recorded:** at about one in 180 episodes, 300 clean in a row has roughly a 19% chance (e^(-300/180)). The rate comes from one event, so this may not pass.
+- **Trigger for option (c):** a second occurrence before 300 clean episodes. Then stop acceptance and build a replay test from the diagnostics first.
+- **Next action:** read the cycle 25 diagnostics to see why the P1 master record was not re-found in three tries.

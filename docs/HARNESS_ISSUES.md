@@ -707,3 +707,8 @@ Purpose (Fable, 2026-11-24 direction): "1 of 7 against an idle opponent" points 
 - Cycle 25 (20261125T014119): 20 episodes logged; one reset failure at 01:46:26: "place: no live master for P1 after 3 re-identifications" (RuntimeError). Counted as restart 1 / reset failure 1 by fresh_series.py. Not clean.
 - Per DECISIONS (D-2026-11-25-acceptance-reset) the consecutive clean count restarts at 0. Cycles 21c–24 (80 episodes) stay on record only.
 - New open weakness: "place: no live master for P1" (a different path from the give-up). Needs its own record from the raw reset diagnostics and a fix with a replay test, as the give-up had.
+
+## 109. Acceptance cycle 26 started; "no live master" decided as a counted failure (2026-11-25, 02:00 UTC)
+- Cycle 26 launched by hand on code_fix (cycle26.out), the first cycle of the restarted count.
+- Fable (DECISIONS: D-2026-11-25-no-live-master): keep the "no live master for P1" failure loud and counted, no retry. Trigger for a stop and replay build: a second occurrence before 300 clean episodes.
+- Honest caveat: with one occurrence in about 180 episodes, 300 clean in a row has roughly 19% odds. The acceptance may not pass on this code.
