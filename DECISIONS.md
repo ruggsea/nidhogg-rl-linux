@@ -110,3 +110,8 @@
 - **Reason:** his boundary cannot be adopted yet because the round-phase field is not found; stopping acceptance now would gain nothing. Resetting by writing x/y is his own plan (PLAN_SWARM lane D), not yet in his code.
 - **Facts to keep in view:** our episodes are not his rounds. The 300-episode acceptance does not yet test his falsifier "a round silently ends on reset".
 - **My check still open:** his reset path in code files (grep on origin/main found only poke/capability code so far, no reset routine).
+
+## D-2026-11-25-his-definitions: use Pau's exact definitions of everything (Ruggero, direct, 2026-11-25)
+- **Ruggero's words:** "u have to use his exact definitions of everything. the goal is to have robust working training according to his definitions and lab."
+- **Consequence:** our own definitions (outcome-bounded episode, our reset path, our reward and validity rules) are provisional until each is replaced by his. Acceptance counts on our definition do not count toward this goal until his definitions are in place.
+- **Next:** list his definitions of episode, round, reset, reward, validity and the lab's terms from his docs (read-only), then map each to our code, and decide with Fable what changes and whether acceptance pauses.
