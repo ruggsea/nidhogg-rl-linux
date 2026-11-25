@@ -624,3 +624,8 @@ Plan, and what I have not yet done:
 ## 94. Acceptance count so far (2026-11-25, 00:35 UTC, from raw files)
 - Cycle 21c (20261125T003128): 9 of 20 episodes logged; 0 hangs, 0 restarts, 0 reset failures so far; controller log shows 0 restart, lost-game or boot-failure lines.
 - Acceptance count toward 300: 9 episodes, all clean so far. The "clean-cycle streak 4" that fresh_series.py prints includes this unfinished cycle and is provisional; count it only when the cycle finishes.
+
+## 95. Acceptance cycle 21c finished clean; cycle 22 started (2026-11-25, 00:55 UTC)
+- Cycle 21c (20261125T003128): 20 of 20 episodes, 0 hangs, 0 restarts, 0 reset failures. Controller finished. Acceptance count toward 300: 20 clean episodes (1 cycle of 15).
+- Cycle 22 started by hand with the unchanged cycle script, now on code_fix (cycle22.out). Counts from raw files once its controller finishes.
+- The fresh_series.py "clean-cycle streak 4" still counts the pre-fix cycles 18–20 and is not the acceptance count; acceptance starts at cycle 21c.
