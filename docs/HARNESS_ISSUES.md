@@ -634,3 +634,9 @@ Plan, and what I have not yet done:
 - Cycle 22 (20261125T005729): 20 of 20 episodes, 0 hangs, 0 restarts, 0 reset failures; controller EXIT 0.
 - Acceptance count toward 300 consecutive: 40 clean episodes (cycles 21c and 22), 2 of 15 cycles.
 - Next cycle (23) needs starting by hand; the wake-up stays on the acceptance count.
+
+## 97. Correction: the policy can never press two keys at once (found 2026-11-25, read-only)
+- The action table `ACTIONS` in nidenv.py has 9 entries; the two combined ones are indices 7 (left+attack) and 8 (right+attack).
+- The policy's output size is `N_ACTIONS = 7` (train/env_iface.py; used by train/train.py for the layer shapes), and actions are sampled from those 7 logits, so indices 0–6 only.
+- Result: indices 7 and 8 are unreachable. The current policy never presses two keys together, and "left+attack" / "right+attack" never happen. My earlier answer ("only those two pairs press two keys") was wrong about reachability and is corrected here.
+- This is one of the reasons for the per-button action change (D-2026-11-25-action-space). Written in code_multi only; code_fix (the acceptance run) is unchanged.
