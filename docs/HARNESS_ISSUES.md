@@ -702,3 +702,8 @@ Purpose (Fable, 2026-11-24 direction): "1 of 7 against an idle opponent" points 
 - Cycle 24 (20261125T012728): 20 of 20 episodes, 0 hangs, 0 restarts, 0 reset failures; no restart, lost-game or boot-failure line in the controller log.
 - Acceptance count toward 300 consecutive: 80 clean episodes, 4 of 15 cycles (21c, 22, 23, 24).
 - Next: cycle 25 by hand on code_fix, same script, unchanged.
+
+## 108. Acceptance cycle 25: reset failure (no live master), count restarts (2026-11-25, 01:55 UTC)
+- Cycle 25 (20261125T014119): 20 episodes logged; one reset failure at 01:46:26: "place: no live master for P1 after 3 re-identifications" (RuntimeError). Counted as restart 1 / reset failure 1 by fresh_series.py. Not clean.
+- Per DECISIONS (D-2026-11-25-acceptance-reset) the consecutive clean count restarts at 0. Cycles 21c–24 (80 episodes) stay on record only.
+- New open weakness: "place: no live master for P1" (a different path from the give-up). Needs its own record from the raw reset diagnostics and a fix with a replay test, as the give-up had.

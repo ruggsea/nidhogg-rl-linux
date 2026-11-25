@@ -90,3 +90,9 @@
 - **Decision:** leave `train/nidtrain_env.py` step(a) as integer 0..6 in code_multi, marked as not used by the six-button path, with a guard that rejects a tuple.
 - **Reason:** es4 never calls it; converting it would change untested code for no result, and removing it could break helpers that `selfplay_env` imports from the same module.
 - **Done in code_multi:** note and `assert not isinstance(a, (tuple, list))` added to step (backup nidtrain_env.py.pre_note). Compiles.
+
+## D-2026-11-25-acceptance-reset: acceptance count restarts after a reset failure in cycle 25
+- **Decided by:** the main session, under the standing rule (Fable direction 2026-11-24: "300 consecutive episodes with 0 hangs, 0 restarts, 0 reset failures"; the count restarts after any fix).
+- **Facts:** cycle 25 (20261125T014119) logged a reset failure at 01:46:26: "place: no live master for P1 after 3 re-identifications" (RuntimeError, reset_failures.jsonl). It is a different reset failure from the give-up ("no record answers"); the fix did not cover it. The cycle's own count shows 1 restart and 1 reset failure.
+- **Decision:** the consecutive clean count goes back to 0 from the failure on. The 80 episodes of cycles 21c–24 stay on record but do not carry forward. Acceptance counts from cycle 26 onward.
+- **Next:** a new reset weakness ("no live master for P1") is open and needs its own record and a fix in code_fix's reset path, tested on a replay like the give-up. Recorded in section 108.
