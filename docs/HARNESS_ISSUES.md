@@ -672,3 +672,9 @@ Order: env_iface and nidtrain_env first (so the import shapes agree), then train
 - Staged test `code_multi/tests/test_train_shapes.py`: PASS. The parameter vector has the six-output size, and the greedy action is six 0/1 values.
 - Still not runnable end to end: `train/nidtrain_env.py` (single-agent env, step takes an int) and `train/selfplay_env.py` (step(a1, a2) forwards to nidenv) still pass integer actions into nidenv. They must pass six-bit tuples to nidenv.step, which uses key_transition. That is the next edit, then a staged test of one episode with a fake game.
 - `train/selfplay.py` imports SIZES and act from train.py, so it now uses the six-output shapes too.
+
+## 103. Self-play environment takes six-button tuples in code_multi (2026-11-25)
+- `train/selfplay_env.py`: `step(a1, a2)` now takes six-bit tuples and passes P1's to nidenv.step directly. P2's tuple goes through `mirror_bits`, which swaps its left and right buttons (indices 0 and 1) for its mirrored frame. The old integer `SWAP` table is no longer used on this path. Backup selfplay_env.py.pre_bits. Compiles.
+- Staged test `code_multi/tests/test_mirror.py`: PASS (only left and right swap; other buttons unchanged).
+- Still integer: `train/nidtrain_env.py` (single-agent env, step takes int and its partner returns an int). Left as is for now; the self-play path is the one es4 uses. Decide with Fable whether the single-agent path is kept or dropped in code_multi.
+- Not yet run: one episode end to end with a fake game through nidenv.step and key_transition. That is the next test.
