@@ -688,3 +688,12 @@ Order: env_iface and nidtrain_env first (so the import shapes agree), then train
 ## 105. Single-agent integer env decided and guarded in code_multi (2026-11-25)
 - See DECISIONS.md (D-2026-11-25-nidtrain-single-agent). `train/nidtrain_env.py` step keeps integers 0..6 and now rejects a tuple at its boundary. Not used by es4 or the six-button self-play path. Compiles.
 - Next on code_multi: one episode end to end with a fake game through nidenv.step and key_transition (not run yet).
+
+## 106. Plan: scripted-player check against the idle opponent (prepared, not run)
+Purpose (Fable, 2026-11-24 direction): "1 of 7 against an idle opponent" points at the episode machinery. A scripted player that is not learned should beat an idle opponent nearly every game if the episodes are sound. If it cannot, the fault is in the machinery, not in learning.
+- Player: a fixed script (walk toward the opponent, then attack when in range; no policy, no learning). Run on the acceptance-clean code_fix path only after the acceptance run is done, so it does not share the farm with acceptance cycles.
+- Opponent: idle (no keys). Same arena, same seeds as the trained runs.
+- Count: 40 games minimum, fixed seeds, per seat (P1 and P2 both). Report decided, wins, draws, undecided, aborted, with Wilson 95% and the seed count.
+- Pass rule written before running: at least 30 of 40 decided games won by the scripted player (75%), with no undecided or aborted games from machinery faults (a game that ends for a machinery reason is a fault, counted and labelled).
+- Output: one table per seat; the raw per-episode file kept on pippi; the summary written here.
+- Not yet decided: whether the scripted player may use the six-button key form (waits on the code_multi work); for code_fix it uses the current action table.
