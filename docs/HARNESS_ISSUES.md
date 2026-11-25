@@ -743,3 +743,8 @@ Differences: episode boundary, reward, validity, and acceptance all differ. Fabl
 - `git archive origin/main` (his main branch as it is) unpacked to `~/nf-p/code_pau` on pippi: 13 entries, `scripts/reset_test.py` present. Nothing of ours is in it, and it changes none of our code.
 - Next (Fable's action 2): run his `reset_test.py` as a routine on his code, 8 of 8 trials, from the same live-match state his script expects. Needs a live match on a farm instance; the debug farm's leftover game (wrapper 2146820) is still up from cycle 26 and will be cleaned by the farm's own cleanup before a new run.
 - Not yet run. Running it writes to game memory on a debug-farm instance; it is our own game on our farm, so no outside permission is needed.
+
+## 115. Pau's test farm (pau86, display :88): boot in progress (2026-11-25, 02:02 UTC)
+- Own farm `~/nf-p/pau86` with its own env (derived from dbg86's, NIDFARM and display changed). The first boot failed on a missing prefix template; the template was copied from ours (reflink) and the boot retried. The wrapper for :88 is up (2168383); no game process for :88 yet at 02:02.
+- Other farms untouched: viz85 (:85) and dbg86's leftover game (:86) show as before.
+- Not yet run: Pau's reset_test.py. It starts only once the :88 game answers.
