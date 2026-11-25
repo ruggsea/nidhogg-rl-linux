@@ -127,3 +127,8 @@
 - **Facts:** Pau's `scripts/reset_test.py` on his unmodified main, instance 0 (test farm :88): FAIL, 8 of 8 trials snapped back within 0.35 s (76 to 342 px). Final line: "after 0/8 resets: walking moves P1 +5.9px".
 - **Decision:** writing x/y is not a reset on his definitions. Searching for other writable fields would repeat a premise his test has just falsified, and our place() also writes x/y, so it is neither his method nor shown to hold.
 - **Next:** record the FAIL in LIMITATIONS.md too; label our place() runs "not Pau's reset"; locate his round phase so the game's own round restart can serve as the reset.
+
+## D-2026-11-25-interim-round-screen: use Pau's interim round-end detector (B5) until his round phase is found
+- **Basis:** Pau's own plan (origin/main docs/PLAN_memory_remaining.md, item B5): "Detect the round end from the frame: the winner screen is a full-screen state with a bright centred wordmark and no fighters. A 5 Hz check costs ~75 ms/s... Ship this if B1–B4 overrun." His docs state no round-phase field is proven (docs/TMP_CURRENT_STATE.md line 225), so B5 applies.
+- **Decision:** adopt B5 as the interim round boundary, on his definitions (per Ruggero's direction to use his exact definitions), labelled "interim, B5". Our outcome-bounded episodes stop being the boundary.
+- **Next:** write a B5 detector on the test farm using his frame() (nidlinux.py line 320), and check it on a live round end before using it for any reward.
