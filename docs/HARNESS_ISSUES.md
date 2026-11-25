@@ -640,3 +640,9 @@ Plan, and what I have not yet done:
 - The policy's output size is `N_ACTIONS = 7` (train/env_iface.py; used by train/train.py for the layer shapes), and actions are sampled from those 7 logits, so indices 0–6 only.
 - Result: indices 7 and 8 are unreachable. The current policy never presses two keys together, and "left+attack" / "right+attack" never happen. My earlier answer ("only those two pairs press two keys") was wrong about reachability and is corrected here.
 - This is one of the reasons for the per-button action change (D-2026-11-25-action-space). Written in code_multi only; code_fix (the acceptance run) is unchanged.
+
+## 98. Per-button key transition written and tested in code_multi (2026-11-25)
+- `key_transition(held, bits1, bits2)` in code_multi nidenv.py: six on/off values per fighter in the order left, right, jump, attack, up, down; held until changed; returns the ku/kd lines and the new held set. `step()` now uses it, and the separate tap path is gone.
+- Staged test `code_multi/tests/test_keys.py`: PASS. Checks: one key on gives one kd; holding does not re-fire; a changed key gives a single kd; all off gives ku for each held key; two fighters with two keys each give the right kd set.
+- Not yet done: the policy head (16 -> 6 sigmoid outputs, Bernoulli sampling) in train/, the callers that pass bit tuples instead of action ints, and a key probe in the real game to see whether jump and attack read the press edge or the held level (Fable's decision 2).
+- The original file is nidenv.py.pre_multi. code_fix (acceptance) is untouched.
