@@ -103,3 +103,10 @@
 - **Caveat recorded:** at about one in 180 episodes, 300 clean in a row has roughly a 19% chance (e^(-300/180)). The rate comes from one event, so this may not pass.
 - **Trigger for option (c):** a second occurrence before 300 clean episodes. Then stop acceptance and build a replay test from the diagnostics first.
 - **Next action:** read the cycle 25 diagnostics to see why the P1 master record was not re-found in three tries.
+
+## D-2026-11-25-episode-definition: keep our episode, labelled provisional (Ruggero's question, verbatim: "are u following puas' elead? are u using the same definition he and his lab used for an episoed? ifeel like hter was no teletransportantio nof the players in his code")
+- **Decided by:** Fable subagent (model fable), 2026-11-25. Option (b).
+- **Decision:** keep our episode (one match-play run; outcome from death animations; undecided on timeout), labelled provisional. Switch to Pau's round-phase boundary once that field is located.
+- **Reason:** his boundary cannot be adopted yet because the round-phase field is not found; stopping acceptance now would gain nothing. Resetting by writing x/y is his own plan (PLAN_SWARM lane D), not yet in his code.
+- **Facts to keep in view:** our episodes are not his rounds. The 300-episode acceptance does not yet test his falsifier "a round silently ends on reset".
+- **My check still open:** his reset path in code files (grep on origin/main found only poke/capability code so far, no reset routine).
