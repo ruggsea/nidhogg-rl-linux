@@ -683,3 +683,4 @@ Order: env_iface and nidtrain_env first (so the import shapes agree), then train
 - Cycle 23 (20261125T011326): 20 of 20 episodes, 0 hangs, 0 restarts, 0 reset failures; the controller's log has no restart, lost-game or boot-failure line.
 - Acceptance count toward 300 consecutive: 60 clean episodes, 3 of 15 cycles (21c, 22, 23).
 - Next: start cycle 24 by hand on code_fix, with the same unchanged script, and keep recording counts from raw files.
+- Cycle 24 launched 01:24:59 UTC by hand (cycle24.out), same unchanged script on code_fix, load 13.6 at launch. The only other cycle script on pippi is the one that just finished (2 min old at check); confirmed by exact command fields.
