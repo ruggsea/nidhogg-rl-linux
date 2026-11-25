@@ -629,3 +629,8 @@ Plan, and what I have not yet done:
 - Cycle 21c (20261125T003128): 20 of 20 episodes, 0 hangs, 0 restarts, 0 reset failures. Controller finished. Acceptance count toward 300: 20 clean episodes (1 cycle of 15).
 - Cycle 22 started by hand with the unchanged cycle script, now on code_fix (cycle22.out). Counts from raw files once its controller finishes.
 - The fresh_series.py "clean-cycle streak 4" still counts the pre-fix cycles 18–20 and is not the acceptance count; acceptance starts at cycle 21c.
+
+## 96. Acceptance cycle 22 finished clean (2026-11-25, 01:10 UTC, from raw files)
+- Cycle 22 (20261125T005729): 20 of 20 episodes, 0 hangs, 0 restarts, 0 reset failures; controller EXIT 0.
+- Acceptance count toward 300 consecutive: 40 clean episodes (cycles 21c and 22), 2 of 15 cycles.
+- Next cycle (23) needs starting by hand; the wake-up stays on the acceptance count.
