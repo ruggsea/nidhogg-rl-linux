@@ -666,3 +666,9 @@ Order: env_iface and nidtrain_env first (so the import shapes agree), then train
 - `train/selfplay.py`: `act_sample` now calls `policy6.sample_bits` (six independent buttons); `episode()` counts presses per button (six counters per fighter). Backup: selfplay.py.pre_policy6. Compiles.
 - Not yet consistent: `train/train.py` still builds the 7-output shapes (`SHAPES` from N_ACTIONS = 7), so a 6-output theta from self-play would not match the trainer's `act()` and the parameter vector. `train.py` and `env_iface.py` must change together; `nidtrain_env.py` also depends on the 7-entry table.
 - So code_multi is not yet runnable end to end. Wiring the trainer shapes is the next step; then the selfplay_env step and the key probe.
+
+## 102. Trainer shapes and greedy action wired to six buttons in code_multi (2026-11-25)
+- `train/train.py`: SHAPES use N_BUTTONS = 6 (not N_ACTIONS = 7); `act()` returns the greedy six-button tuple from policy6.greedy_bits. Backup train.py.pre_policy6. Compiles.
+- Staged test `code_multi/tests/test_train_shapes.py`: PASS. The parameter vector has the six-output size, and the greedy action is six 0/1 values.
+- Still not runnable end to end: `train/nidtrain_env.py` (single-agent env, step takes an int) and `train/selfplay_env.py` (step(a1, a2) forwards to nidenv) still pass integer actions into nidenv. They must pass six-bit tuples to nidenv.step, which uses key_transition. That is the next edit, then a staged test of one episode with a fake game.
+- `train/selfplay.py` imports SIZES and act from train.py, so it now uses the six-output shapes too.
