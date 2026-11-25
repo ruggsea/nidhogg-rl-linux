@@ -646,3 +646,13 @@ Plan, and what I have not yet done:
 - Staged test `code_multi/tests/test_keys.py`: PASS. Checks: one key on gives one kd; holding does not re-fire; a changed key gives a single kd; all off gives ku for each held key; two fighters with two keys each give the right kd set.
 - Not yet done: the policy head (16 -> 6 sigmoid outputs, Bernoulli sampling) in train/, the callers that pass bit tuples instead of action ints, and a key probe in the real game to see whether jump and attack read the press edge or the held level (Fable's decision 2).
 - The original file is nidenv.py.pre_multi. code_fix (acceptance) is untouched.
+
+## 99. Work list for the six-output policy in code_multi (2026-11-25, read-only check)
+Callers of the discrete action that must change, found by grep in code_multi (not yet edited):
+- `train/env_iface.py`: N_ACTIONS = 7, and the `step(self, action: int)` signature. Becomes 6 outputs; the step takes a bit tuple per fighter.
+- `train/train.py`: SHAPES use N_ACTIONS (layer 16 -> 6), and `act()` takes argmax; becomes `z > 0` per key.
+- `train/selfplay.py`: `act_sample()` samples one categorical action (softmax + rng.choice). Becomes sigmoid per key with `rng.random(6) < p`. `episode()` counts `acts` over 7 indices; becomes counts per button.
+- `train/selfplay_env.py`: `step(self, a1, a2)` forwards to nidenv `step`; the bit tuples pass straight through.
+- `train/nidtrain_env.py`: single-agent `step(self, a)` maps `nidenv.ACTIONS[a]`; this is the trainer's own env and needs the same six-bit form or must stay on the old action table.
+- `train/replay_stub.py`: a stub step; check whether it is used by any run.
+Order: env_iface and nidtrain_env first (so the import shapes agree), then train.py, selfplay.py, selfplay_env.py. Each change gets a staged test before the next. The code_fix run is not touched.
