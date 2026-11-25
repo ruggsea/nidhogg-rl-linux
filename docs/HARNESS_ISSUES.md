@@ -678,3 +678,8 @@ Order: env_iface and nidtrain_env first (so the import shapes agree), then train
 - Staged test `code_multi/tests/test_mirror.py`: PASS (only left and right swap; other buttons unchanged).
 - Still integer: `train/nidtrain_env.py` (single-agent env, step takes int and its partner returns an int). Left as is for now; the self-play path is the one es4 uses. Decide with Fable whether the single-agent path is kept or dropped in code_multi.
 - Not yet run: one episode end to end with a fake game through nidenv.step and key_transition. That is the next test.
+
+## 104. Acceptance cycle 23 finished clean (2026-11-25, 01:24 UTC, from raw files)
+- Cycle 23 (20261125T011326): 20 of 20 episodes, 0 hangs, 0 restarts, 0 reset failures; the controller's log has no restart, lost-game or boot-failure line.
+- Acceptance count toward 300 consecutive: 60 clean episodes, 3 of 15 cycles (21c, 22, 23).
+- Next: start cycle 24 by hand on code_fix, with the same unchanged script, and keep recording counts from raw files.
