@@ -738,3 +738,8 @@ Differences: episode boundary, reward, validity, and acceptance all differ. Fabl
 - Fable: pause (D-2026-11-25-pause-acceptance). Cycle 26 stopped by pid at 3 of 20 episodes (0 hangs, 0 restarts, 0 reset failures); not counted.
 - Acceptance count on our definitions stops here. Restart only on Pau's terms.
 - Next work, per Fable: round phase (kind:"round"), reset_test.py as a routine, reward as ΔORANGE − ΔYELLOW per round with a sign check.
+
+## 114. Pau's code placed unmodified on pippi for his own tests (2026-11-25, 03:01 UTC)
+- `git archive origin/main` (his main branch as it is) unpacked to `~/nf-p/code_pau` on pippi: 13 entries, `scripts/reset_test.py` present. Nothing of ours is in it, and it changes none of our code.
+- Next (Fable's action 2): run his `reset_test.py` as a routine on his code, 8 of 8 trials, from the same live-match state his script expects. Needs a live match on a farm instance; the debug farm's leftover game (wrapper 2146820) is still up from cycle 26 and will be cleaned by the farm's own cleanup before a new run.
+- Not yet run. Running it writes to game memory on a debug-farm instance; it is our own game on our farm, so no outside permission is needed.
