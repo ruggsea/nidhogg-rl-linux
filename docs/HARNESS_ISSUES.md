@@ -620,3 +620,7 @@ Plan, and what I have not yet done:
 ## 93. Acceptance cycle21c booted and is running episodes (2026-11-25, 00:34 UTC)
 - Launch at 00:31:24 (pid 1878348, enter_match_v2 and in_match True). Episodes are being logged from 00:33 (ctrl.log, episodes 3–6 of this cycle at 00:34).
 - Counts for acceptance come from raw files once the cycle completes. Acceptance needs 15 consecutive cycles of 20 with 0 hangs, 0 restarts and 0 reset failures (section 85).
+
+## 94. Acceptance count so far (2026-11-25, 00:35 UTC, from raw files)
+- Cycle 21c (20261125T003128): 9 of 20 episodes logged; 0 hangs, 0 restarts, 0 reset failures so far; controller log shows 0 restart, lost-game or boot-failure lines.
+- Acceptance count toward 300: 9 episodes, all clean so far. The "clean-cycle streak 4" that fresh_series.py prints includes this unfinished cycle and is provisional; count it only when the cycle finishes.
