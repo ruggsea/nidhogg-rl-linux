@@ -656,3 +656,8 @@ Callers of the discrete action that must change, found by grep in code_multi (no
 - `train/nidtrain_env.py`: single-agent `step(self, a)` maps `nidenv.ACTIONS[a]`; this is the trainer's own env and needs the same six-bit form or must stay on the old action table.
 - `train/replay_stub.py`: a stub step; check whether it is used by any run.
 Order: env_iface and nidtrain_env first (so the import shapes agree), then train.py, selfplay.py, selfplay_env.py. Each change gets a staged test before the next. The code_fix run is not touched.
+
+## 100. Six-output policy module written and tested in code_multi (2026-11-25)
+- New `code_multi/train/policy6.py`: MLP obs -> H tanh -> 6 logits, one per button; `sample_bits` draws each button independently (p = sigmoid, pressed when U < p); `greedy_bits` presses where logit > 0.
+- Staged test `code_multi/tests/test_policy6.py`: PASS. Checks shapes of the unpacked weights, that the greedy output is six bits, that sampled frequencies match the sigmoid probabilities (tolerance 0.03 over 4000 draws), and that some samples press two or more buttons at once.
+- Not yet wired in: train.py's SHAPES and act(), selfplay.py's act_sample and episode, selfplay_env.py's step, nidtrain_env.py. The list and order are in section 99. code_fix (acceptance) is untouched.
