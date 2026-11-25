@@ -76,3 +76,11 @@
 - **Current:** one of 9 combined actions per fighter per step (nidenv.py ACTIONS), sampled from 7 logits (train/env_iface.py N_ACTIONS = 7; the table has 9 entries, a mismatch to check).
 - **Plan:** a new copy code_multi with one independent on/off per button (left, right, jump, attack, up, down), sampled per step; the current acceptance run on code_fix stays unchanged.
 - **Open semantics:** held-until-changed versus tap for jump/attack/up/down; whether the acceptance count restarts. Sent to a Fable subagent (decisions go there); its answer will be recorded here.
+
+## D-2026-11-25-action-space-decided: Fable's decisions on the per-button action space (code_multi only)
+- **Decided by:** Fable subagent (model fable), 2026-11-25. Read-only; changed nothing.
+- **1. Output:** six independent on/off outputs (left, right, jump, attack, up, down), sigmoid per key, Bernoulli sample; policy head 16 -> 6. Reason: "any button, any time, independently"; 64 combinations instead of 9.
+- **2. Key semantics:** held-until-changed for all six keys. Reason: a tap is a fixed macro, which the request removes. Effect: attack and jump fire on the off-to-on change, so repeating needs an off step in between. Unverified: whether the game reads the press edge or the held level for jump and attack. Measure with a short key probe before training.
+- **3. Acceptance:** no restart for code_fix. The new step() is a new feature, so code_multi needs its own count from zero.
+- **4. Where:** new copy code_multi; code_fix untouched (a running job invokes it).
+- **5. Separate bug:** N_ACTIONS = 7 means left+attack and right+attack are never sampled (see section 97). Replaced by the new head in code_multi; record it for code_fix.
