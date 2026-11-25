@@ -723,3 +723,13 @@ Purpose (Fable, 2026-11-24 direction): "1 of 7 against an idle opponent" points 
 - `scripts/reset_test.py` is his only reset code: it captures both fighters' x/y at a live round start, walks them, writes x/y back, and checks the write survives the next frames and the game keeps running. PASS = 8 of 8 trials, no crash, control still works. Offsets +0xEC / +0xF0; its own docstring calls it the "last open item" and says it is not read-only.
 - No round-phase field in his state or spy code (nidstate.py, nidlinux.py): the round boundary he wants is not implemented.
 - So his reset is an experiment still to run (8 trials), not a working routine. Our reset (nidmem.place, with a read-back and up to 3 corrections) is further along on this point. The two definitions still differ: his round boundary is missing; ours is outcome-bounded and labelled provisional (D-2026-11-25-episode-definition).
+
+## 112. Pau's exact definitions versus ours (Ruggero's direction, 2026-11-25)
+Pau's, from origin/main (read-only):
+- Round/episode: kind:"round" from the driver, bounded by the game's round phase (PLAN_SWARM DoD 2). Round phase not located yet.
+- Reset: write both fighters' x/y in a live match, then the write must survive the next frames (CONTROL_GATE G2; reset_test.py 8 of 8).
+- Reward: Δ(ORANGE score) − Δ(YELLOW score) per round, plus shaped terms (PLAN_SWARM 75).
+- Drivable: a write must survive into the simulation (PLAN_SWARM 39).
+- Done: lanes with two-of-two acceptance; kind:"round" rounds; scripted reward traces with correct sign; rounds won per hour with claim and falsifier.
+Ours: episode = outcome from death animations (undecided on timeout); reset = place() with read-back; reward = kill +1 / victim -1 with a walking penalty; validity = 5 walk steps, 40 px; acceptance = 300 consecutive clean episodes on code_fix.
+Differences: episode boundary, reward, validity, and acceptance all differ. Fable asked to choose between keeping acceptance, pausing it, or building his terms in parallel.
