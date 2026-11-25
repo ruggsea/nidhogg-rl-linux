@@ -765,3 +765,8 @@ Differences: episode boundary, reward, validity, and acceptance all differ. Fabl
 - `scripts/reset_test.py 0 --trials 8` on his unmodified code (code_pau), test farm :88. Log ends "FAIL". Every trial: the write moved the fighter again within 0.35 s. Δ after write and 0.35 s later: trial 0 50 / 76 px; trial 1 81 / 86; trial 2 70 / 96; trial 3 84 / 119; trial 4 11 / 11; trial 5 4 / 347; trial 6 328.4 / 323.3; trial 7 305.9 / 301.2. Animation mostly unchanged.
 - This falsifies the premise of his lane D (reset by writing x/y) on his own test. His PASS rule was 8 of 8 without snap-back, so the test is a fail as written.
 - Fable asked to choose the next step (decision recorded in DECISIONS.md when it returns). Our place() path is a separate routine and is not his.
+
+## 119. B5 round-end detector: first screenshot is the main menu, not a match (2026-11-25, 02:07 UTC)
+- One frame captured from the test farm (instance 0) with his `nidlinux.frame`: the title screen ("nidhogg" wordmark, "press ENTER"), two small figures on the right, no fighters in a match. So the game is on the menu after his reset test ended, not in a round.
+- Implication for B5: the winner screen must be sampled from a real round end before the threshold can be set. Not yet done.
+- The frame is kept at pau86/frame_now.png on pippi; a local copy is in the job folder, not in the repo.
