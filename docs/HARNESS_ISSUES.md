@@ -604,3 +604,9 @@ Plan, and what I have not yet done:
 - Load at cycle start: the failing cycles began at load 11.8 (cycle 21) and 21.4 (cycle 21b). Cycle 20 booted cleanly at 12.6, cycle 19 at 5.3. So load does not separate them. Load is no longer the leading candidate.
 - Code: ctrl.024401 failed once and predates code_fix (it ran on code_dbg). So the boot failure is not specific to code_fix either.
 - Current reading: an intermittent boot failure (about 1 in 7 cycles) that predates this session's changes; cause not found. Not yet a blocker for the acceptance count, since a failed boot still retries and logs nothing for episodes.
+
+## 91. SSH to pippi timed out at the banner exchange (2026-11-25, 00:08 UTC); backing off
+- The check at 00:08 UTC failed with "Connection timed out during banner exchange", the signature of a self-imposed rate-limit (see the SSH self-ban rule in CLAUDE.md memory). The earlier one-minute Monitor loop (15 SSH checks in a row, 23:50–23:56) is the likely cause.
+- Decision (taken by me, no retry): no SSH to pippi until the 01:07 UTC check, then one check at a time. Retry loops would extend any ban.
+- Acceptance state at the last good read (23:57 UTC): cycle21b still in its boot window (game pid None, wrapper 1811440). No episodes logged. Counts not yet started.
+- Pending on the next good read: the controller's boot result, then the acceptance count per the rule in section 85 (300 consecutive episodes, 0 hangs, 0 restarts, 0 reset failures).
