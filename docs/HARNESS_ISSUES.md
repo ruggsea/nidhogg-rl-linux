@@ -718,3 +718,8 @@ Purpose (Fable, 2026-11-24 direction): "1 of 7 against an idle opponent" points 
 - So the answer is: not the same definition. We bound an episode by our own outcome detection (death animations; undecided on timeout), not by his round phase, and we have no round phase. Our reset also writes x/y (nidmem.place), which his plan also does. The "teleport" word in his notes (docs/MEMORY.md) refers to identity records jumping between reads, which is a different problem from the reset.
 - I have checked his docs, not his code files for the reset path; that check is still open.
 - Fable is deciding whether to keep our definition with a label or adopt his round boundary (see the Fable decision recorded in DECISIONS.md once it returns).
+
+## 111. Pau's reset path, checked in his code (origin/main, 2026-11-25)
+- `scripts/reset_test.py` is his only reset code: it captures both fighters' x/y at a live round start, walks them, writes x/y back, and checks the write survives the next frames and the game keeps running. PASS = 8 of 8 trials, no crash, control still works. Offsets +0xEC / +0xF0; its own docstring calls it the "last open item" and says it is not read-only.
+- No round-phase field in his state or spy code (nidstate.py, nidlinux.py): the round boundary he wants is not implemented.
+- So his reset is an experiment still to run (8 trials), not a working routine. Our reset (nidmem.place, with a read-back and up to 3 corrections) is further along on this point. The two definitions still differ: his round boundary is missing; ours is outcome-bounded and labelled provisional (D-2026-11-25-episode-definition).
