@@ -776,3 +776,12 @@ Differences: episode boundary, reward, validity, and acceptance all differ. Fabl
 - Menu frame (the only one available) measures: mean 88.4, centre bright 0.0023, yellow 0.0521, orange 0.0050. Not used as a winner sample.
 - Staged test: PASS (uncalibrated never says winner; calibrated bounds decide both ways).
 - Needs: one real round-end frame from a match, captured by his frame(). That requires a finished round on the test farm; not yet available.
+
+## 121. Status summary (2026-11-25, 02:30 UTC, written while SSH to pippi is blocked)
+- Goal: fully controllable, reliable, robust training episodes, on Pau's definitions (Ruggero, 2026-11-25).
+- Learning: generation 30 won 23 of 40 (0.575; seats P1 9 of 20, P2 14 of 20); generation 25 was 29 of 40; no trend. Trained policy decided 1 of 7 against an idle opponent.
+- Acceptance on our definitions: paused at 3 of 20 episodes in cycle 26 (DECISIONS: D-2026-11-25-pause-acceptance). Earlier count 80 clean episodes (cycles 21c–24) carried no weight after the restart and the pause.
+- Reset: our place() path is labelled "not Pau's reset". Pau's own reset_test.py on his unmodified code: FAIL, 8 of 8 trials snapped back (section 118).
+- Round boundary: Pau's round phase is not located. Interim B5 (winner screen) is measured and staged-tested (section 120), thresholds wait for a real winner frame. Sampling run on the test farm (pau86) was saving frames at 02:11 UTC; SSH has been blocked since 02:26 UTC.
+- Reward: not implemented on Pau's definition (Δ ORANGE − Δ YELLOW per round). Ours is kills with a walking penalty.
+- Action space: code_multi has the six-button key transition (tested), the policy head (tested), trainer shapes, self-play sampling and environment (mirror tested). Not runnable end to end: the one-episode test with a fake game is not written.
