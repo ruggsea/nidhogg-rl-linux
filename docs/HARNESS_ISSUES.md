@@ -760,3 +760,8 @@ Differences: episode boundary, reward, validity, and acceptance all differ. Fabl
 - So on his code the reset-by-write does not hold, which is the premise of his lane D. Our place() with read-back is not Pau's routine, and his test is the falsifier for his own plan, not yet passed.
 - The remaining four trials are running; the final count goes here.
 - Correction to the line above: it contains a stray "1 to 5 px" fragment that does not match the log. The log's numbers are the ones to use: after each write the fighter's position changes again by 76, 86, 96 and 119 px within 0.35 s (trials 0–3), animation unchanged. Those are the figures to cite.
+
+## 118. Pau's reset test: FAIL, 8 of 8 trials snapped back (2026-11-25, 02:06 UTC, from his log)
+- `scripts/reset_test.py 0 --trials 8` on his unmodified code (code_pau), test farm :88. Log ends "FAIL". Every trial: the write moved the fighter again within 0.35 s. Δ after write and 0.35 s later: trial 0 50 / 76 px; trial 1 81 / 86; trial 2 70 / 96; trial 3 84 / 119; trial 4 11 / 11; trial 5 4 / 347; trial 6 328.4 / 323.3; trial 7 305.9 / 301.2. Animation mostly unchanged.
+- This falsifies the premise of his lane D (reset by writing x/y) on his own test. His PASS rule was 8 of 8 without snap-back, so the test is a fail as written.
+- Fable asked to choose the next step (decision recorded in DECISIONS.md when it returns). Our place() path is a separate routine and is not his.
