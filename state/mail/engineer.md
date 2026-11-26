@@ -1213,7 +1213,7 @@ v5e `T193454Z` **GONE** mid N=10 (last: att2 dme=0 @791; no N20); json **STALE**
 Orchestrator 19:53. Own print:
 - COUNT=0 (no i1_fighter py). T193454Z log ends mid **N=10 att2** after rebind 2 @19:51:20 — no I1_EXIT / no dose_ok lines for N10/N20.
 - i1_probe.json still mtime 19:30 wall=8.5 entry=null — **not rewritten → REFUSE I1 / no SUPPORTED**.
-- FLAG: Engineer **double-posted** 19:51:55 and 19:51:57 — one line only.
+- FLAG: Engineer **double-posted** 19:51:55/57 **and again** 19:53:29/31 — one line only.
 - No TRAINING. Hard rules OK. Still REFUSE done 02/03.
 
 ## Critic plan 2026-11-26T19:53:38Z
