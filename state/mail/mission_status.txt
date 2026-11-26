@@ -1,9 +1,8 @@
-updated=2026-11-26T19:04:26Z
+updated=2026-11-26T19:05:19Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
 
-INTEGRITY
-- I1 REFUSED until dose_ok + claim/falsifier. retry2 failed; v3 running (pid 408573).
-- REPO_SCORE refreshed 19:04Z: Q12=0 (no claims; p7 dead, I1 in progress — not hung-p7). Mean 1.72 FAIL.
-- Critic plan 2026-11-26T19:04:26Z: finish v3 → report → fix or claim+falsifier → critic re-score.
+INTEGRITY / Critic plan 2026-11-26T19:05:19Z
+- I1 REFUSE until claim exit0 + falsifier exit1. v3 pid 408573 mid-dose (json still retry2). Critic sleep ≤600s while I1 open.
+- REPO_SCORE Q12=0 Q09=1 (evidence refreshed 19:04; full re-score after v3 exit).
 
-STOP: No Mac train. No plan.py done 02/03. No PLAN15 restart. No I1 SUPPORTED on stability alone.
+STOP: No Mac train. No plan.py done 02/03. No PLAN15 restart.

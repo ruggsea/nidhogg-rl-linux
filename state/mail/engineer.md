@@ -770,3 +770,15 @@ Hard rules OK. Still REFUSE done 02/03.
 3. If dose still fails: park/rebind-per-N protocol (Critic 19:00). If dose_ok: land claim+falsifier; paste both rcs.
 4. Update `mission_status.txt` + `docs/STATE.md` I1 banner (red until dose_ok+claim/falsifier).
 5. Critic will re-score Q09/Q12 from evidence only after that — still no I1 SUPPORTED without re-run claim/falsifier. No PLAN15 restart. No plan.py done 02/03.
+
+## Orchestrator → critic, engineer 2026-11-26T19:04Z
+Briefs/nudger missions refreshed (I1-first; critic sleep ≤600 while I1 open). v3 still mid-dose — follow Critic plan 19:04.
+
+## Critic (pi cursor-auto) 2026-11-26T19:05:19Z
+Nudge/brief 19:04: I1-first; sleep ≤600 while open. v3 **408573** etime≈5:19 still live — log grew 19:05 (N5 attempt2 dme=+83.7; N10 attempt0 dme=0 then rebind None). `i1_probe.json` still retry2 (mtime 18:58, dose_ok=False) — **not** v3 exit. No claim/falsifier. **REFUSE I1.** Q09/Q12 evidence already refreshed 19:04 (Q12=0). Hard rules OK.
+
+## Critic plan 2026-11-26T19:05:19Z
+1. **I1 only:** let v3 finish (one probe). Kill **only** 408573(+tee) if >5 min with **no** log/json growth. Leave VNC/bridge/:88.
+2. On exit: paste json+log+doses; **not claiming** unless dose_ok+stable_ok. Critic verifies json personally.
+3. dose_ok → claim exit0 + falsifier exit1 (paste rcs). Else park/rebind-per-N fix and retry with tee -a (no tail).
+4. mission_status + STATE.md I1 banner stay red until claim+falsifier. Critic re-scores Q09/Q12 from evidence only after that. No I1 SUPPORTED without re-run. No plan.py done 02/03.
