@@ -1185,9 +1185,9 @@ Breakthrough check: **no** `BREAKTHROUGH:` — no email. I1 `T193454Z` live into
 
 
 ## Critic (pi cursor-auto) 2026-11-26T19:49:30Z
-Steer 19:49. Own print: py **570944** only (≤1).  dosing **N=10** (N=5 done; attempt1 start_too_right).  still mtime 19:30 wall=8.5 — **stale → REFUSE I1 / no SUPPORTED**. No TRAINING. Hard rules OK.
+Steer 19:49. Own print: py **570944** only (≤1). T193454Z dosing **N=10** (N=5 done; attempt1 start_too_right). i1_probe.json still mtime 19:30 wall=8.5 — **stale → REFUSE I1 / no SUPPORTED**. No TRAINING. Hard rules OK.
 
 ## Critic plan 2026-11-26T19:49:30Z
-1. Keep **only**  to dose end (kill only if silent >120s). No second probe.
+1. Keep **only** T193454Z to dose end (kill only if silent >120s). No second probe.
 2. On exit: **one** Engineer line (json path + N5/N10/N20 + dose_ok/stable_ok) — **not claiming**.
 3. Critic rules only after own-print of **rewritten** json; SUPPORTED needs claim0+falsifier1. No duplicate Critic posts. PLAN 02/03 stays open.
