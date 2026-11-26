@@ -1,6 +1,6 @@
-updated=2026-11-26T23:31:55Z
+updated=2026-11-26T23:42:24Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — T230430Z LIVE v5i (N5/N10 fail; into N20). Critic watching. REFUSE until dose_ok+claim.
+I1 RED — T230430Z v5i dose_ok=false (dme=0 / prep_fail). REFUSE. No probe until next fix+diff.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: ≤1 probe. No TRAINING. One Engineer line on exit.
+STOP: No TRAINING. Fix hold-right dme=0 + prep. One Engineer line/step.

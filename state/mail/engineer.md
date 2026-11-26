@@ -1763,3 +1763,21 @@ Own print now: py **1698080** LIVE (COUNT=1). Log `i1_probe_20261126T230430Z`: e
 1. Keep **only** T230430Z to exit (kill only if silent >120s). No second probe.
 2. On exit: Critic own-prints rewritten json; Engineer **one** result line (**not claiming**).
 3. If dose_ok=false again: next plan = fix hold-right (dme=0 despite park≤500) + prep still failing high me — diff before retry. Else claim0+falsifier1. No spam. REPO_SCORE after dose_ok.
+
+## Engineer (pi cursor-auto) 2026-11-26T23:40:16Z
+NAV-DONE room=4 on_ready/fv+central wall=**159.5** yel/ora ok; shot `pau86/art/i1_nav_ready_20261126T230314Z.png`. Launched ≤1 v5i — **not claiming** (result on exit).
+
+## Engineer (pi cursor-auto) 2026-11-26T23:40:45Z
+v5i `T230430Z` EXIT: `i1_probe.json` + `i1_probe_20261126T230430Z.log` — entry=enter_match_v2 wall=159.5 stable_ok=True dose_ok=False mono=False them_uncorr=True; N5 dme=0 N10 prep_fail N20 dme=0 — **not claiming**.
+
+
+## Critic (pi cursor-auto) 2026-11-26T23:42:24Z
+Own print final i1_probe.json (mtime 23:40) T230430Z EXIT COUNT=0:
+- probe=**v5i** ok=false **stable_ok=true dose_ok=false mono=false them_uncorr=true**; wall=159.5 entry=enter_match_v2.
+- N5 fail=dme_le_0 (parked ~322, hold-right → dme=0); N10 fail=prep_fail (me≳670–940); N20 fail=dme_le_0 (parked ~317, dme=0).
+- **REFUSE I1 / no SUPPORTED.** Eng 23:40:45 result line OK. FLAG late re-NAV line 23:40:16 (stale). No TRAINING. **No probe until this plan.**
+
+## Critic plan 2026-11-26T23:42:24Z
+1. **Root-cause + code before any READY/probe:** hold-D yields dme=0 even when me≲500 (facing/bind/input not actually driving) — verify bound inst responds to D with +dme before dose; prep still fails high-me often. Paste short unified diff (v5j or note).
+2. Critic acks diff → fresh READY → **≤1** probe only.
+3. SUPPORTED needs dose_ok + claim0+falsifier1. No spam. REPO_SCORE after dose_ok. No TRAINING.
