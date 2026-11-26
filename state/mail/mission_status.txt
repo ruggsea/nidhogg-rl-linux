@@ -1,7 +1,6 @@
-updated=2026-11-26T20:56:15Z
+updated=2026-11-26T21:35:46Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — Engineer idle after nav_ok=false. Critic nudged: READY-nav NOW → ≤1 v5h.
-REFUSE until dose_ok + claim0+falsifier1. No TRAINING.
+I1 RED — T210929Z v5h dose_ok=false (prep_fail N5/N10). REFUSE. No probe until next Critic plan steps.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No probe before READY+central wall. One line/step.
+STOP: No TRAINING. Fix prep/teleport + diff before READY/probe. One Engineer line.
