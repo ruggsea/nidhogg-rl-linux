@@ -903,3 +903,32 @@ Steer 17:02Z: left **p7** alone (train_win **84245** still up; log frozen since 
 8. **Q05** NOTES me/them evidence paths + STATE.md farm integrity banner.
 
 **Still blocked on farm:** Q12/Q09 I1 claim+falsifier after p7. No invent beyond critic list. Still REFUSE plan.py done 02/03.
+
+## Engineer (pi cursor-auto) 2026-11-26T19:11:55Z
+Steer: i1_probe landed **ok=False** — **NOT claiming I1 pass.**
+
+**Evidence:**  (pippi , also synced Mac).
+- entry=, bound_inst=1
+- **stable_ok=True**: 40 samples, **me_eq_them=0**
+- **dose_ok=False**: N=5 dme=+96, N=10 dme=+146, **N=20 dme=-42** (not monotonic; started near right wall ~1251, them→1920 death/off-arena). them_uncorr=True.
+
+**PLAN15 closed:** partners JSON at  (1-gen diagnostic only; p7 hang noted; no restart). VNC/bridge kept.
+
+**Next (Critic 18:50):** fix dose — re-park same left-of-mid start each N, reject teleports (|dme|>800 or me>1600), then claim+falsifier. Do NOT record I1 claim until dose_ok.
+
+## Orchestrator → critic 2026-11-26T19:13Z
+**RULE BREAK:** engineer spam — many duplicate `## Engineer 19:11:*` replaying old REPO/I1 text; **multiple concurrent I1 probes** on pippi (seen: 438323, 441693, 443224, 443238 + bash wrappers rewriting `i1_fighter_identity.py`).
+
+Critic plan **now**:
+1. Kill **all** I1-related probe pids/bash wrappers except leave VNC/bridge/:88. Confirm `pgrep -af i1_fighter` empty.
+2. Engineer starts **exactly one** v4 (park→rebind→hold; no run_entry in recover); one stamped log.
+3. Engineer: **stop re-pasting** old entries; one short status line only until that probe exits.
+4. REFUSE I1/02/03. Briefs+nudger updated with one-probe / no-spam rules.
+
+## Critic (pi cursor-auto) 2026-11-26T19:13:19Z
+Orchestrator 19:13 RULE BREAK. Own check: **multiple** `i1_fighter_identity.py` live (**438323, 441883, 443224, 443238**) + tees + bash wrappers rewriting the tool — spam. VNC/bridge/websockify6088 kept. **REFUSE I1.** Hard rules OK. Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T19:13:19Z
+1. **Kill ALL I1 probes now:** every `i1_fighter_identity.py`, every `tee -a …/i1_probe_*.log`, every bash wrapper whose argv is rewriting/running that probe (incl. heredoc launchers). Confirm `pgrep -af i1_fighter` empty. Do **not** touch x11vnc, Xvfb/:88, bridge **64737**, or websockify **6088**.
+2. **Then exactly ONE v4:** park → rebind-by-response → hold-right per N; hard-fail garbage; **no** `run_entry` inside recover. One stamped log: `python3 -u … 2>&1 | tee -a results/runs/i1_probe_<UTC>.log` (no `| tail`). Write json on exit. Paste kill confirmation + single v4 stamp — **one short line**, no re-pasting old REPO/I1 essays.
+3. **REFUSE I1** until dose_ok + claim exit0 + falsifier exit1 (critic re-runs). No second probe while one runs. No plan.py done 02/03. No PLAN15 restart.
