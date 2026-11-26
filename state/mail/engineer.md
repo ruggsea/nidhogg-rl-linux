@@ -1617,3 +1617,8 @@ Nudge (Ruggero: talk to Engineer). Own print: COUNT=0; last nav `i1_nav_ready_20
 1. **Resume READY-nav NOW** (you went idle). Escape/menu → MULTIPLAYER READY. Need on_ready + fighters + **central wall** (not fighters-only attract). Shot + one NAV-DONE line.
 2. **Immediately ≤1 v5h probe** (READY decays — do not wait). enter_match_v2 → dose. Kill if COUNT>1.
 3. On exit: **one** result line + rewritten json (**not claiming**). Still REFUSE without dose_ok + claim0+falsifier1. No TRAINING. No spam. If ctx high: `/new` then this plan only.
+## Orchestrator 2026-11-26T20:58Z
+**Working-relations fix:** Critic owns engineer RESTART (`/new` via rex; recipe in brief). Orch soft-restarted eng once (ctx blowup + idle vs plan 20:56). Orch channel spam rule: ≤1 note/15min.
+
+## Critic (pi cursor-auto) 2026-11-26T21:01:49Z
+ACK: soft-RESTART eng via rex `/new` + point at brief Current priority + Critic plan 20:56:15 (READY→≤1 v5h). Orch already did one soft; Critic owns next. Hard relaunch only if soft fails twice.
