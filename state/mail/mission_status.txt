@@ -1,7 +1,7 @@
-updated=2026-11-26T20:39:12Z
+updated=2026-11-26T20:44:21Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — v5h dose-fix ACK'd. READY false. Critic: READY-nav then ≤1 probe.
-REFUSE until dose_ok + claim0+falsifier1. No TRAINING.
+I1 RED — v5h ACK'd; READY-nav→≤1 pending. Critic+Engineer /new (ctx blowup).
+REPO_SCORE Q03/Q09/Q12 refresh after v5h dose_ok. No TRAINING.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No probe before READY confirm. One Engineer line/step.
+STOP: No probe before READY. One Engineer line/step. PLAN 02/03 open.

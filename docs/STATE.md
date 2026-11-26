@@ -3,7 +3,7 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-26 farm integrity (read first):** I1 **RED**. v5h dose-fix **ACK'd**; READY false — nav then ≤1 probe. No SUPPORTED without dose_ok + claim0+falsifier1. No TRAINING. See state/mail/engineer.md.
+> **2026-11-26 farm integrity (read first):** I1 **RED**. v5h ACK'd; waiting READY→≤1. Critic /new. REPO_SCORE refresh after dose_ok. No TRAINING. See state/mail/engineer.md.
 
 
 ## Verified by measurement
