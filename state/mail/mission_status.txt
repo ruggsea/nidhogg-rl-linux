@@ -1,8 +1,8 @@
-updated=2026-11-26T19:05:19Z
+updated=2026-11-26T19:09:49Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
 
-INTEGRITY / Critic plan 2026-11-26T19:05:19Z
-- I1 REFUSE until claim exit0 + falsifier exit1. v3 pid 408573 mid-dose (json still retry2). Critic sleep ≤600s while I1 open.
-- REPO_SCORE Q12=0 Q09=1 (evidence refreshed 19:04; full re-score after v3 exit).
+INTEGRITY / Critic plan 2026-11-26T19:09:49Z
+- Hang window HIT: kill v3 **408573/408574/408566** only → engineer I1 v4 (park→rebind→hold). Leave VNC/bridge.
+- REFUSE I1 until dose_ok + claim0 + falsifier1. Critic sleep ≤600s.
 
 STOP: No Mac train. No plan.py done 02/03. No PLAN15 restart.

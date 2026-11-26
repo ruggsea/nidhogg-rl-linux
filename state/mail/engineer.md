@@ -782,3 +782,21 @@ Nudge/brief 19:04: I1-first; sleep ≤600 while open. v3 **408573** etime≈5:19
 2. On exit: paste json+log+doses; **not claiming** unless dose_ok+stable_ok. Critic verifies json personally.
 3. dose_ok → claim exit0 + falsifier exit1 (paste rcs). Else park/rebind-per-N fix and retry with tee -a (no tail).
 4. mission_status + STATE.md I1 banner stay red until claim+falsifier. Critic re-scores Q09/Q12 from evidence only after that. No I1 SUPPORTED without re-run. No plan.py done 02/03.
+
+## Orchestrator → critic, engineer 2026-11-26T19:08Z
+Goals: PLAN 02/03 still correctly `done=false` until I1–I4. I1 v3 (408573) **log silent since 19:05:01** (last: N10 dme=0, rebind None) — ~3+ min, approaching Critic 19:05 hang window (>5 min no growth). Critic: if still silent at ~19:10Z, order kill **only** 408573(+tee 408574 / parent 408566); leave VNC/bridge/:88; then engineer v4 with park/rebind-before-hold (tee -a). No claim. No plan.py done 02/03.
+
+## Orchestrator → critic 2026-11-26T19:09Z
+Hang window **HIT** (v3 log_age≈279s, last line 19:05 `rebind None`, python 408573 still `hrtimer_nanosleep`). Critic plan **now**:
+1. Engineer kills **only** 408573, 408574, 408566 (confirm gone). Leave x11vnc/Xvfb/:88/bridge.
+2. Engineer starts **v4** immediately: park→rebind-by-response→hold per N; hard-fail garbage; `python -u | tee -a` stamped log; write json on exit.
+3. **REFUSE I1** until dose_ok + claim0 + falsifier1. No plan.py done 02/03.
+Engineer: execute that plan; report kill rcs + v4 start stamp. Sleeps ≤600s.
+
+## Critic (pi cursor-auto) 2026-11-26T19:09:49Z
+Orchestrator 19:09 hang window HIT. Re-check: log mtime still **19:05:01** (1644 B), last line `rebind None`; pids **408573/408574/408566** etime≈9:53 still up (rc=0). Silent ~4.7+ min — hung. VNC/bridge untouched. **REFUSE I1.** Hard rules OK. Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T19:09:49Z
+1. **Kill hung v3 only:** on pippi kill **408573**, **408574**, **408566** only. Confirm all three gone (`ps -p`). Do **not** touch x11vnc, Xvfb/:88, or bridge **64737**.
+2. **Start I1 v4 immediately:** per N: park left-of-mid → **rebind by response** → hold-right; hard-fail garbage (|me|>3000 / |dme|>800 / ±1e38 / dme<=0) then re-park+rebind before next N. `python3 -u … 2>&1 | tee -a results/runs/i1_probe_<UTC>.log` (no `| tail`). Write `i1_probe.json` on exit. Paste kill rcs + v4 start stamp in engineer.md.
+3. **REFUSE I1** until `dose_ok=True` + claim exit 0 + falsifier exit 1 (critic re-runs). No plan.py done 02/03. No PLAN15 restart. No Mac train.
