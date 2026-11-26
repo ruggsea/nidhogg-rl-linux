@@ -1,0 +1,89 @@
+{
+  "plan": "PLAN15",
+  "kind": "1-gen diagnostic only",
+  "not_partner_strength": true,
+  "closed_utc": "2026-11-26T18:44Z",
+  "hang_note": "p7 train_win 84245 hung after TRAINING @17:09:23Z with them_x=-2.56e38; killed per Critic plan 18:43:08; no PLAN15 restart",
+  "partners": [
+    {
+      "partner": 0,
+      "name": "NO_DIVEKICKS",
+      "best": -64.49,
+      "diagnostic_only": true,
+      "critic_refused_or_inert_tainted": false,
+      "discarded_fit": null,
+      "hang": null,
+      "log": "results/runs/plan15_p0_NO_DIVEKICKS.log"
+    },
+    {
+      "partner": 1,
+      "name": "NO_THROWS",
+      "best": 4.21,
+      "diagnostic_only": true,
+      "critic_refused_or_inert_tainted": true,
+      "discarded_fit": null,
+      "hang": null,
+      "log": "results/runs/plan15_p1_NO_THROWS.log"
+    },
+    {
+      "partner": 2,
+      "name": "DIVEKICKER",
+      "best": 11.47,
+      "diagnostic_only": true,
+      "critic_refused_or_inert_tainted": true,
+      "discarded_fit": null,
+      "hang": null,
+      "log": "results/runs/plan15_p2_DIVEKICKER.log"
+    },
+    {
+      "partner": 3,
+      "name": "RUN_N_LUNGE",
+      "best": -73.04,
+      "diagnostic_only": true,
+      "critic_refused_or_inert_tainted": false,
+      "discarded_fit": null,
+      "hang": null,
+      "log": "results/runs/plan15_p3_RUN_N_LUNGE.log"
+    },
+    {
+      "partner": 4,
+      "name": "BRAWLER",
+      "best": null,
+      "diagnostic_only": true,
+      "critic_refused_or_inert_tainted": true,
+      "discarded_fit": 37.0,
+      "hang": null,
+      "log": "results/runs/plan15_p4_BRAWLER.log"
+    },
+    {
+      "partner": 5,
+      "name": "NEVER_LUNGES",
+      "best": null,
+      "diagnostic_only": true,
+      "critic_refused_or_inert_tainted": false,
+      "discarded_fit": null,
+      "hang": "short/incomplete log",
+      "log": "results/runs/plan15_p5_NEVER_LUNGES.log"
+    },
+    {
+      "partner": 6,
+      "name": "PARRY_MASTER",
+      "best": -28.32,
+      "diagnostic_only": true,
+      "critic_refused_or_inert_tainted": false,
+      "discarded_fit": null,
+      "hang": null,
+      "log": "results/runs/plan15_p6_PARRY_MASTER.log"
+    },
+    {
+      "partner": 7,
+      "name": "RANDOM",
+      "best": null,
+      "diagnostic_only": true,
+      "critic_refused_or_inert_tainted": false,
+      "discarded_fit": null,
+      "hang": "log frozen 17:09Z after TRAINING; them_x garbage; killed pid 84245 @18:43Z; incomplete gen",
+      "log": "results/runs/plan15_p7_RANDOM.log"
+    }
+  ]
+}

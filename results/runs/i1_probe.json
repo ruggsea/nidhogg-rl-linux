@@ -1,0 +1,112 @@
+{
+  "ok": false,
+  "entry": "run_entry",
+  "bound_inst": 2,
+  "stable_ok": true,
+  "stability": {
+    "n": 40,
+    "me_eq_them": 0,
+    "head": [
+      {
+        "t": 0.0,
+        "me": [
+          576.0,
+          160.0
+        ],
+        "them": [
+          864.0,
+          144.0
+        ],
+        "eq": false
+      },
+      {
+        "t": 0.2,
+        "me": [
+          576.0,
+          160.0
+        ],
+        "them": [
+          864.0,
+          144.0
+        ],
+        "eq": false
+      }
+    ],
+    "tail": [
+      {
+        "t": 7.61,
+        "me": [
+          400.0,
+          112.0
+        ],
+        "them": [
+          288.0,
+          128.0
+        ],
+        "eq": false
+      },
+      {
+        "t": 7.81,
+        "me": [
+          400.0,
+          112.0
+        ],
+        "them": [
+          288.0,
+          128.0
+        ],
+        "eq": false
+      }
+    ]
+  },
+  "doses": [
+    {
+      "N": 5,
+      "park": true,
+      "park_x": 416.0,
+      "clear": true,
+      "me0": 336.0,
+      "me1": 400.0,
+      "dme": 64.0,
+      "them0": 320.0,
+      "them1": 304.0,
+      "dthem": -16.0,
+      "teleport": false,
+      "hold_s": 0.4
+    },
+    {
+      "N": 10,
+      "park": true,
+      "park_x": 400.0,
+      "clear": true,
+      "me0": 288.0,
+      "me1": -1.7147039117384454e+38,
+      "dme": -1.7147039117384454e+38,
+      "them0": 640.0,
+      "them1": 336.0,
+      "dthem": -304.0,
+      "teleport": true,
+      "hold_s": 0.8
+    },
+    {
+      "N": 20,
+      "park": false,
+      "park_x": 305.0,
+      "clear": true,
+      "me0": 305.0,
+      "me1": 305.0,
+      "dme": 0.0,
+      "them0": -1.0,
+      "them1": -1.0,
+      "dthem": 0.0,
+      "teleport": false,
+      "hold_s": 1.6
+    }
+  ],
+  "mono": false,
+  "them_uncorr": false,
+  "dose_ok": false,
+  "step_s": 0.08,
+  "park_x": 420.0,
+  "probe": "i1_retry2_force_entry"
+}
