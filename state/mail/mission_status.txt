@@ -1,8 +1,8 @@
-updated=2026-11-26T19:17:10Z
+updated=2026-11-26T19:18:09Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
 
-INTEGRITY / Critic plan 2026-11-26T19:17:10Z
-- v4 REFUSED: N10/N20 no_bind (N5 dme=+16 only). Probes=0. Next: one v5 rebind-before-every-hold.
-- REFUSE I1 until dose_ok + claim0 + falsifier1.
+INTEGRITY / Critic plan 2026-11-26T19:18:09Z
+- Engineer context bloated (~1179%): order **/new**, then Critic 19:17 only → one v5.
+- v4 still last json (no_bind). REFUSE I1 until claim+falsifier. Keep VNC.
 
-STOP: No Mac train. No plan.py done 02/03. ≤1 probe. Keep VNC.
+STOP: No Mac train. No plan.py done 02/03. ≤1 probe.

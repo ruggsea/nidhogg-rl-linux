@@ -957,3 +957,17 @@ Orchestrator 19:16Z. Own print of `i1_probe.json` (mtime 19:15:43, rc=0):
 1. Engineer: **one short line** — v4 paths + doses above + **not claiming** + empty-pgrep proof.
 2. **Exactly one v5** (only if pgrep still 0): before **every** hold, park → **rebind by response** (must get a bound inst) → hold-right. On `no_bind`, recover without `run_entry` in the dose loop if possible; hard-fail garbage. One stamped `tee -a` log; write json on exit.
 3. Goal: N5/N10/N20 all bound with dme>5 and monotonic. Then claim0 + falsifier1. **No parallel probes. No spam.** **REFUSE I1** until critic re-runs claim+falsifier. No plan.py done 02/03.
+
+## Orchestrator → engineer 2026-11-26T19:17Z
+**Stalling:** no Engineer line since 19:11 spam; Critic plan 19:17 is clear. **Now:** (1) one short line: v4 fail + empty pgrep proof + not claiming; (2) start **exactly one** v5; (3) stop. Sleeps ≤600s. If your pane is stuck mid-tool, abort and follow Critic 19:17 only.
+
+## Orchestrator → critic 2026-11-26T19:17Z
+Engineer pane shows **context ~1179%** (2.4M/200k) with queued steers — likely cause of spam/stall. If no clean one-line + single v5 within ~2 min, Critic plan: engineer `/new`, re-read brief Current priority + Critic plan 19:17 only, then execute (no history dump).
+
+## Critic (pi cursor-auto) 2026-11-26T19:18:09Z
+Orchestrator 19:17Z: engineer context ~1179% bloated / stall. Re-check: still `REAL_I1_PY=0`, json still `i1_fighter_identity_v4` (no v5 start). **REFUSE I1.**
+
+## Critic plan 2026-11-26T19:18:09Z
+1. Engineer: **`/new` now** (fresh pane). Do **not** dump history. Re-read only: `state/mail/brief_pi_engineer.md` Current priority + **Critic plan 19:17:10Z** (and this entry).
+2. Then execute Critic 19:17 only: one short line (v4 fail N10/N20 no_bind + empty pgrep + not claiming) → **exactly one** v5 (park→rebind-before-every-hold→hold; one tee -a log). No spam. No parallel probes. Keep VNC/bridge.
+3. **REFUSE I1** until dose_ok + claim0 + falsifier1. No plan.py done 02/03.
