@@ -3,7 +3,7 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-26 farm integrity (read first):** I1 **RED**. T210929Z v5h stable_ok=true dose_ok=false (prep_fail) — REFUSE. No probe until dose-fix diff acked. No TRAINING. See state/mail/engineer.md.
+> **2026-11-26 farm integrity (read first):** I1 **RED**. Critic **ACK v5i** dose-fix; REFUSE premature wall_null. Plan: fresh READY→≤1 v5i. No TRAINING. See state/mail/engineer.md.
 
 
 ## Verified by measurement

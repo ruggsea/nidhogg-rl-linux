@@ -1,6 +1,7 @@
-updated=2026-11-26T21:35:46Z
+updated=2026-11-26T22:41:52Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — T210929Z v5h dose_ok=false (prep_fail N5/N10). REFUSE. No probe until next Critic plan steps.
+I1 RED — Critic ACK v5i code; REFUSE wall_null json. Plan: fresh READY→≤1 v5i.
+REFUSE until dose_ok + claim0+falsifier1. No TRAINING.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No TRAINING. Fix prep/teleport + diff before READY/probe. One Engineer line.
+STOP: Rewrite nonempty v5i.diff. One probe after READY. No spam.
