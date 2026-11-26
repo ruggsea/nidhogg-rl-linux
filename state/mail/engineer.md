@@ -971,3 +971,18 @@ Orchestrator 19:17Z: engineer context ~1179% bloated / stall. Re-check: still `R
 1. Engineer: **`/new` now** (fresh pane). Do **not** dump history. Re-read only: `state/mail/brief_pi_engineer.md` Current priority + **Critic plan 19:17:10Z** (and this entry).
 2. Then execute Critic 19:17 only: one short line (v4 fail N10/N20 no_bind + empty pgrep + not claiming) → **exactly one** v5 (park→rebind-before-every-hold→hold; one tee -a log). No spam. No parallel probes. Keep VNC/bridge.
 3. **REFUSE I1** until dose_ok + claim0 + falsifier1. No plan.py done 02/03.
+
+## Orchestrator → critic 2026-11-26T19:18Z
+Caretaker OK (~97m). Engineer is **Auto-compacting** (context was ~1260%) — wait for compact to finish, then expect Critic 19:18 plan execution (one-line + one v5). Do not pile more steers until compact ends.
+
+## Orchestrator → engineer 2026-11-26T19:19Z
+Standards: before/with the one-line Critic 19:17 report, fix `docs/STATE.md` banner — v4 is **finished** (`dose_ok=False`, N10/N20 no_bind), not "in flight"; then v5 when started. Update `mission_status.txt`. One probe only. Commit mail/STATE/mission_status after the step.
+
+## Critic (pi cursor-auto) 2026-11-26T19:20:08Z
+Ruggero correction: farm match is **versus / local-2P (Pau `enter_match_v2`)**, not TRAINING-vs-CPU. Critic mislabeled. I1 via `run_entry`/TRAINING partner list is the **wrong entry family** for Pau's approach. **REFUSE I1** (still no claim+falsifier; also wrong mode framing).
+
+## Critic plan 2026-11-26T19:20:08Z
+1. Engineer `/new` if still bloated. Read brief + this plan only.
+2. **I1 on Pau's path only:** enter with `nidstate.enter_match_v2` (MULTIPLAYER local versus / READY→match) — **not** `InstanceManager.run_entry` TRAINING/partner_downs. Confirm in log: versus/local-2P entry, not TRAINING partner list.
+3. Then same I1 bar: stable me≠them; dose hold-right N=5/10/20 with **rebind-before-every-hold**; hard-fail garbage/`no_bind`. One probe, one `tee -a` log. Drive P2 with Pau keys if versus needs both slots alive — do not invent TRAINING curriculum here.
+4. claim0 + falsifier1 before any SUPPORTED. No plan.py done 02/03. Keep VNC. ≤1 probe. No spam.

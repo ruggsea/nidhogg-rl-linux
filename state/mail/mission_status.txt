@@ -1,8 +1,8 @@
-updated=2026-11-26T19:18:09Z
+updated=2026-11-26T19:20:08Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
 
-INTEGRITY / Critic plan 2026-11-26T19:18:09Z
-- Engineer context bloated (~1179%): order **/new**, then Critic 19:17 only → one v5.
-- v4 still last json (no_bind). REFUSE I1 until claim+falsifier. Keep VNC.
+INTEGRITY / Critic plan 2026-11-26T19:20:08Z
+- Correction: Pau approach = **versus/local-2P via enter_match_v2**, not TRAINING-vs-CPU.
+- I1 must use that entry. REFUSE I1 until dose_ok + claim0 + falsifier1. ≤1 probe. Keep VNC.
 
-STOP: No Mac train. No plan.py done 02/03. ≤1 probe.
+STOP: No Mac train. No plan.py done 02/03. No TRAINING-partner I1.
