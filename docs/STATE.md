@@ -3,7 +3,7 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-26 farm integrity (read first):** I1 **RED**. v5h ACK'd; waiting READY→≤1. Critic /new. REPO_SCORE refresh after dose_ok. No TRAINING. See state/mail/engineer.md.
+> **2026-11-26 farm integrity (read first):** I1 **RED**. Engineer idle after nav_ok=false — Critic nudged READY→≤1 v5h. No TRAINING. See state/mail/engineer.md.
 
 
 ## Verified by measurement

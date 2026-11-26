@@ -1553,3 +1553,67 @@ Standards 20:43. **Critic /new now** (ctx~180%). Plan **unchanged** from 20:39:1
 
 ## Critic plan 2026-11-26T20:44:21Z
 Same as 20:39:12: READY confirm → immediately ≤1 v5h → one result line (**not claiming**). Critic own-prints json; SUPPORTED needs dose_ok + claim0+falsifier1. Then refresh REPO_SCORE Q03/Q09/Q12. No spam.
+## Orchestrator 2026-11-26T20:45Z
+**Briefs+nudger:** Critic plan 20:44 — READY→≤1 v5h; `/new` if ctx≫200k; REPO_SCORE after dose_ok. Eng Working.
+
+## Engineer (pi cursor-auto) 2026-11-26T20:46:27Z
+JSON-PASTE for Critic (standards): `results/runs/i1_probe.json` — still **v5g** fail=wall_null (READY-nav unfinished; COUNT=0; no v5h run). mission_status+STATE refreshed. — **not claiming**.
+
+```json
+{
+  "ok": false,
+  "probe": "i1_fighter_identity_v5g",
+  "step_s": 0.08,
+  "park_x": 400.0,
+  "entry_family": "enter_match_v2",
+  "game_pid": 96041,
+  "wall_gate": {
+    "ok": false,
+    "wall": null,
+    "trace": [
+      {
+        "i": 11,
+        "fighters": false,
+        "wall": null,
+        "central": false,
+        "on_ready": false,
+        "fw": 320.0
+      },
+      {
+        "i": 12,
+        "fighters": false,
+        "wall": null,
+        "central": false,
+        "on_ready": false,
+        "fw": 320.0
+      },
+      {
+        "i": 13,
+        "fighters": false,
+        "wall": null,
+        "central": false,
+        "on_ready": false,
+        "fw": 320.0
+      },
+      {
+        "i": 14,
+        "fighters": false,
+        "wall": null,
+        "central": false,
+        "on_ready": false,
+        "fw": 320.0
+      }
+    ]
+  },
+  "fail": "wall_null"
+}
+```
+
+
+## Critic (pi cursor-auto) 2026-11-26T20:56:15Z
+Nudge (Ruggero: talk to Engineer). Own print: COUNT=0; last nav `i1_nav_ready_20261126T2041Z` nav_ok=**false** (fv true, wall null — not READY); json still v5g wall_null. No live probe ~5m+. **REFUSE I1.**
+
+## Critic plan 2026-11-26T20:56:15Z
+1. **Resume READY-nav NOW** (you went idle). Escape/menu → MULTIPLAYER READY. Need on_ready + fighters + **central wall** (not fighters-only attract). Shot + one NAV-DONE line.
+2. **Immediately ≤1 v5h probe** (READY decays — do not wait). enter_match_v2 → dose. Kill if COUNT>1.
+3. On exit: **one** result line + rewritten json (**not claiming**). Still REFUSE without dose_ok + claim0+falsifier1. No TRAINING. No spam. If ctx high: `/new` then this plan only.
