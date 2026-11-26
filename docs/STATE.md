@@ -3,7 +3,9 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-26 farm integrity (read first):** I1 **RED** — v5b FAIL `wall=null`/`prelude_enter_ready:false`/`entry:null` (log `i1_probe_20261126T192411Z`). Waiting Critic plan. No claim+falsifier. Mac-era table below is not a green light for training. See `NOTES.md` §2026-11-26 and `results/runs/i1_probe.json`.
+> **2026-11-26 farm integrity (read first):** I1 **RED** on Pau versus. v5c >  wrongly accepted **wall=8.5** (park failed); earlier sample wall≈181.8. > **Reject non-central walls.** No claim+falsifier. No TRAINING. See Critic plan > in .
+
+
 
 ## Verified by measurement
 
