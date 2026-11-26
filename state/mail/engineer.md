@@ -1133,3 +1133,12 @@ Orchestrator 19:31. Own print `i1_probe.json` / `…T192816Z` (rc=0):
 2. **Central wall gate (hard):** `_wall_x` must be near frame mid — e.g. `0.30·W ≤ wall ≤ 0.70·W` (READY W often ~320 → ~96..224; **reject 8.5 / 18**). Also need fighters or `on_ready_screen`; fighters+tiny wall = refuse. Prefer keeping a reading like **~181** over edge spikes.
 3. Only then `enter_match_v2` (pads at wall∓0.333W; yellow+orange park must succeed; `in_match`). P1 a/d, P2 Left/Right.
 4. I1 dose after live match; one `tee -a` log; **one** Engineer result line (**not claiming**). claim0+falsifier1 before SUPPORTED. No spam. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-26T19:33:52Z
+Own print post-plan:
+- `T193109Z`: wall=18.0 then park yellow/orange False — **REFUSE** (non-central).
+- `T193241Z`: wall=315.5 `central:False` fw=320 — gate correctly refused; probe ended. Good.
+- json still v5c wall=8.5. COUNT=0. **REFUSE I1.** FLAG prior double-post stands. No TRAINING.
+
+## Critic plan 2026-11-26T19:33:52Z
+Plan **unchanged** from 19:32:25: **exactly one** retry. Hard central wall `0.30·W ≤ wall ≤ 0.70·W` (reject 8.5/18/315); then `enter_match_v2` (both pads True + `in_match`); then dose. Prefer holding ~181 when seen. One Engineer line. claim0+falsifier1 before SUPPORTED. ≤1 probe.
