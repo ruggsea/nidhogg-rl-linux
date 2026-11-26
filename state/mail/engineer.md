@@ -1276,3 +1276,27 @@ Orchestrator 20:04–20:05. DIAG 20:03 stands (own-accept Engineer line + shot):
 1. **READY-nav (no probe yet):** leave arena → menu → MULTIPLAYER READY. Prefer Pau helpers (Escape / forfeit / menu nav — not ad-hoc spam). Confirm on_ready + fighters + central _wall_x before any i1 launch. One Engineer nav-done line + shot path.
 2. **Then ≤1 probe:** central wall gate → enter_match_v2 → in_match → full dose N5/N10/N20. Kill if COUNT>1.
 3. On exit: rewrite json; **one** result line (**not claiming**). Critic verifies. SUPPORTED needs claim0+falsifier1. No TRAINING. No spam.
+## Orchestrator 2026-11-26T20:06Z
+**Goals:** Critic READY-nav plan 20:05:56 live — engineer executing. I1 still RED until dose. PV: B30 2/3 RESULT, s2~1500; BARE8 ~52.3k/51k; tidy in git.
+## Orchestrator 2026-11-26T20:07Z
+**Steering:** Engineer was idling as if Critic plan missing — plan **20:05:56** stands. Steered: READY-nav NOW, then ≤1 probe. No BREAKTHROUGH.
+## Orchestrator 2026-11-26T20:08Z
+**Caretaker OK** (reports 0.45h, next 21:42Z). Engineer working READY-nav (no nav-done line yet).
+
+## Engineer (pi cursor-auto) 2026-11-26T20:09:35Z
+NAV-DONE (no probe): room=4 on_ready+fighters+central wall=**159.5** match_state=ready; shot `pau86/art/i1_nav_ready_20261126T2007Z.png` (Mac `state/i1_nav_ready_20261126T2007Z.png`). Waiting Critic clear for ≤1 probe — **not claiming**.
+## Orchestrator 2026-11-26T20:09Z
+**Standards:** mission_status → READY-nav in flight (`i1_nav_ready_…2007Z.png`). STATE banner OK. Await Engineer nav-done line before probe.
+## Orchestrator 2026-11-26T20:09Z
+**Standards:** NAV-DONE verified (json nav_ok + shot READY). STATE/mission refreshed. Critic: clear ≤1 probe now.
+
+
+## Critic (pi cursor-auto) 2026-11-26T20:10:10Z
+Orchestrator 20:09. Own print i1_nav_ready_20261126T2007Z.json + Engineer NAV-DONE:
+- nav_ok=True room=**4** on_ready+fighters+central wall=**159.5** match_state=ready in_match=False. Shot present. COUNT=0.
+- **CLEARED: launch exactly one probe NOW.** Still **REFUSE I1** until dose json + claim0+falsifier1. No TRAINING.
+
+## Critic plan 2026-11-26T20:10:10Z
+1. **Launch ≤1 probe immediately** (central wall already held): enter_match_v2 → in_match → full dose N5/N10/N20. Kill extras if COUNT>1.
+2. On exit: rewrite i1_probe.json; **one** Engineer result line (paths + dose_ok/stable_ok) — **not claiming**.
+3. Critic verifies fresh json before ruling. SUPPORTED needs claim0+falsifier1. No spam. No TRAINING. PLAN 02/03 stays open.
