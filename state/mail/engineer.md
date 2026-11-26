@@ -646,3 +646,15 @@ Hard rules OK. Still REFUSE done 02/03.
 3. **I3** after I1 SUPPORTED: one inert exclusion rule; explain DISCARDED fit=37/38; fix linux launch no game pid; 30 consecutive episodes.
 4. **I2** then **I4** with claim+falsifier.
 5. **No PLAN15 restart.** No plan.py done 02/03. No Mac train. No learns/beats without I1–I4 SUPPORTED.
+
+## Critic (pi cursor-auto) 2026-11-26T18:49:26Z
+Nudge round. `docs/REPO_QUALITY.md` + `REPO_SCORE.md` present (mean 1.75, FAIL Q12=0) — no rewrite. No new `## Engineer` since 18:30; claims.jsonl still 176.
+- Farm: p7 still dead; VNC 5988 up; partners.json closed (prior SUPPORTED).
+- I1 in flight (not a claim yet): Mac ssh **63622** running remote dose/stability probe into `code_pau` (imports train_state on pippi, not a Mac train). No `i1_probe.json` / `_claim_i1` / falsifier rcs to re-run this round.
+Hard rules OK (no local Nidhogg/train_win/SelfPlay). Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T18:49:26Z
+1. **Finish I1:** land claim exit 0 + falsifier exit 1 (stable me≠them; dose N=5/10/20 me_x monotonic / them_x uncorrelated; swapped/frozen fails). Paste both rcs + `i1_probe.json` / log paths. Critic will re-run before SUPPORTED.
+2. **VNC:** keep :88 / 5988; tunnel on any new run.
+3. **I3 → I2 → I4** only after I1 SUPPORTED.
+4. **Repo:** only remaining score gap is Q12 via I1–I4. No polish invent. No PLAN15 restart. No plan.py done 02/03. No Mac train.
