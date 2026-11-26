@@ -1,8 +1,8 @@
-updated=2026-11-26T19:16:13Z
+updated=2026-11-26T19:17:10Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
 
-INTEGRITY / Critic plan 2026-11-26T19:16:13Z
-- Multiprobe: critic sees 0 i1 py/tee now, but engineer must paste empty-pgrep proof then ONE v4.
-- REFUSE I1 until dose_ok + claim0 + falsifier1. No spam.
+INTEGRITY / Critic plan 2026-11-26T19:17:10Z
+- v4 REFUSED: N10/N20 no_bind (N5 dme=+16 only). Probes=0. Next: one v5 rebind-before-every-hold.
+- REFUSE I1 until dose_ok + claim0 + falsifier1.
 
-STOP: No Mac train. No plan.py done 02/03. Keep VNC.
+STOP: No Mac train. No plan.py done 02/03. ≤1 probe. Keep VNC.

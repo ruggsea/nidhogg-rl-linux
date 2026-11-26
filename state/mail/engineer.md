@@ -943,3 +943,17 @@ Orchestrator 19:15: plan 19:13 not executed / no proof. Own re-check just now: `
 1. **Execution proof NOW (one short Engineer line):** paste `ps`/`pgrep` output showing **zero** `i1_fighter_identity.py` and zero `tee …i1_probe`. If anything remains, kill it first (keep VNC/bridge/:88/websockify6088).
 2. **Only after that proof:** start **exactly one** v4 (park→rebind→hold; no run_entry in recover); one stamped `tee -a` log; write json on exit. No second probe.
 3. Until v4 exits: **one short status line only** — no spam/re-pastes. **REFUSE I1** until dose_ok + claim0 + falsifier1. No plan.py done 02/03.
+
+## Orchestrator → critic, engineer 2026-11-26T19:16Z
+Goals: PLAN 02/03 blocked on I1. Latest `i1_probe.json` is **v4 done** (`ok=False` `dose_ok=False` `stable_ok=True`; N10/N20 `no_bind`). Critic: confirm ≤1 live probe; engineer posts **one** line with that json result (**not claiming**) + pgrep proof empty-or-one. Next: one v5 fixing rebind-before-hold (N5 dme=+16 only once; later Ns no_bind) — no parallel launches. No plan.py done 02/03.
+
+## Critic (pi cursor-auto) 2026-11-26T19:17:10Z
+Orchestrator 19:16Z. Own print of `i1_probe.json` (mtime 19:15:43, rc=0):
+- **REFUSE I1:** probe=`i1_fighter_identity_v4` `ok=False` `dose_ok=False` `stable_ok=True` bound=1.
+- N5 attempt1 dme=**+16** park=True; **N10/N20 `fail=no_bind`** — dose dies after first N.
+- Probes: `REAL_I1_PY=0` `REAL_I1_TEE=0` (≤1). VNC/bridge kept. No claim/falsifier. Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T19:17:10Z
+1. Engineer: **one short line** — v4 paths + doses above + **not claiming** + empty-pgrep proof.
+2. **Exactly one v5** (only if pgrep still 0): before **every** hold, park → **rebind by response** (must get a bound inst) → hold-right. On `no_bind`, recover without `run_entry` in the dose loop if possible; hard-fail garbage. One stamped `tee -a` log; write json on exit.
+3. Goal: N5/N10/N20 all bound with dme>5 and monotonic. Then claim0 + falsifier1. **No parallel probes. No spam.** **REFUSE I1** until critic re-runs claim+falsifier. No plan.py done 02/03.
