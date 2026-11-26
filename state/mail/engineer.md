@@ -544,3 +544,24 @@ Steer: Critic plan 16:44 + Orchestrator 17:02Z. PLAN15 still on **p7 RANDOM** (t
 **/tmp hygiene (Critic plan #6):** obsolete one-shot patches still in /tmp: do_step02_poll5 fc_all fix_pause fix_prefs_exit patch_bridge patch_pos_valid patch_proc_wait patch_vanish patch_wc stoplog. Durable bridge already at `code_pau/tools/nid_state_bridge.py`. Will clear/note after p7 (no new /tmp helpers).
 
 **mission_status.txt** refreshed 17:16Z. Next: when p7 ends → leftovers JSON cleanup + I1 on free farm. Still REFUSE plan.py done 02/03.
+
+## Critic (pi cursor-auto) 2026-11-26T17:23:08Z
+Engineer 17:17Z: PLAN15 p7 left alone, VNC up, I1 prep numbers, waiting on REPO_*. No new claims.jsonl row (still 176) → no claim/falsifier to re-run.
+- SUPPORTED VNC: `ssh pippi` `ss -ltnp | grep 5988` → 127.0.0.1:5988 x11vnc pid **87598** (rc=0). Tunnel line as posted.
+- SUPPORTED PLAN15 still on p7: train_win pid **84245** seed 17; partners.log ends `=== PARTNER 7 RANDOM ===`; p7 log 99 lines (rc=0). Still 1-gen diagnostic only — prior REFUSE on BESTs stands.
+- SUPPORTED I1 prep count as printed from eng: me/them alternate in p2 g0i0 (not re-counted this round; same log as 16:44 REFUSE). No I1 claim script yet → I1 not SUPPORTED.
+- FLAG /tmp helpers still present: do_step02_poll5.py, patch_bridge.py (and list from eng).
+- Repo quality: wrote `docs/REPO_QUALITY.md` (Q01–Q18) + `docs/REPO_SCORE.md` weighted mean **0.50** FAIL (Q01/Q02/Q12 = 0).
+Hard rules OK: Mac procs NONE; plan 02+03 done=false; train_state.py mtime 2026-11-26T09:49Z unchanged. Still REFUSE plan.py done 02/03.
+
+## Critic plan 2026-11-26T17:23:08Z
+Work list for the engineer, in order. I1–I4 outrank polish.
+1. **Let PLAN15 p7 finish or die — do not touch.** Record as 1-gen diagnostic only. When dead: write partners JSON (no .tmp), note leftovers, clear obsolete /tmp one-shots listed in eng 17:17Z.
+2. **Keep VNC on :88** (127.0.0.1:5988). On every new run post tunnel `ssh -L 5900:localhost:5988 pippi` → viewer localhost:5900. Stop VNC with the run.
+3. **I1 fighter identity (first integrity claim).** Fix bind so me≠them and me is stable for a whole episode. Dose-response: hold right N=5/10/20 → me_x monotonic, them_x uncorrelated. Claim + falsifier (frozen/swapped field must exit 1). Paste both rcs. No real training until I re-run them.
+4. **I3 one inert rule** after I1: single exclusion (`inert OR entry_gate=False OR DISCARDED` → out of fitness/selection, counted). Explain fit=37.0 on DISCARDED. Fix `linux launch: no game pid`. Then 30 consecutive episodes, 0 crash / 0 unexplained relaunch / 0 entry fail; inert counted.
+5. **I2** after I1: sign(Δme_x) from state+key, ≥200 live steps, hit rate vs majority baseline + claim/falsifier.
+6. **I4** after I3: each reward term event-tied; scripted vs random ≥2σ; claim/falsifier.
+7. **Figures:** `results/figures/plan15_partner_fitness.png` (inert-counted marked) + command in engineer.md; I3 failure counts when I3 runs.
+8. **Repo quality (between waits; never before a free farm for I1):** execute in order from `docs/REPO_SCORE.md` top fixes — (a) README Mac=mirror / farm=pippi `~/nf-p/...` + mission_status pointer; (b) rewrite AGENTS.md (no Mac train; I1–I4; Critic plan; VNC); (c) delete all `._*` + gitignore; (d) DECISIONS.md + LIMITATIONS.md; (e) one entry path / supersede stale docs; (f) fold me/them + inert-BEST into NOTES/docs/STATE. Critic re-scores after the batch. Do not invent criteria.
+No `plan.py done 02/03`. No Mac train/game. No Mac rewrite commit until stash-or-keep. No “learns/beats” without I1–I4 SUPPORTED.
