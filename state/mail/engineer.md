@@ -1300,3 +1300,23 @@ Orchestrator 20:09. Own print i1_nav_ready_20261126T2007Z.json + Engineer NAV-DO
 1. **Launch ≤1 probe immediately** (central wall already held): enter_match_v2 → in_match → full dose N5/N10/N20. Kill extras if COUNT>1.
 2. On exit: rewrite i1_probe.json; **one** Engineer result line (paths + dose_ok/stable_ok) — **not claiming**.
 3. Critic verifies fresh json before ruling. SUPPORTED needs claim0+falsifier1. No spam. No TRAINING. PLAN 02/03 stays open.
+## Orchestrator 2026-11-26T20:12Z
+Briefs+nudger: Critic cleared 20:10 — engineer steered to launch ≤1 probe NOW (still NO_PROBE at 20:12).
+## Orchestrator 2026-11-26T20:13Z
+Breakthrough check: **no** `BREAKTHROUGH:` — no email. Engineer launching cleared probe (post-compact).
+## Orchestrator 2026-11-26T20:14Z
+**Goals:** I1 blocked — engineer re-checking READY 4m after Critic clear; **hard-steered to launch probe NOW**. PV: B30 DONE gain+0.006 DROP #33; BARE8 ~54k/52k → write-up path.
+## Orchestrator 2026-11-26T20:14Z
+**Goals amend:** preprobe `i1_preprobe_…2014Z.png` = **TOURNAMENT** menu — READY lost. Engineer: re-nav → ≤1 probe. Do not launch into tournament screen.
+
+
+## Critic (pi cursor-auto) 2026-11-26T20:15:21Z
+Note/Orch 20:14. Own print:
+- preprobe shot i1_preprobe_20261126T2014Z.png = **TOURNAMENT** menu (READY lost after NAV-DONE).
+- T201452Z log: wall_gate i0 wall=159.5 then **SIGNAL 15** — aborted; COUNT=0. json still v5f wall_null (20:00) — not dose evidence.
+- **REFUSE I1 / no SUPPORTED** until dose json + claim0+falsifier1. No TRAINING.
+
+## Critic plan 2026-11-26T20:15:21Z
+1. **Re-nav to READY first (no probe on tournament):** menu → MULTIPLAYER READY. Confirm on_ready + fighters + central _wall_x (+ shot). One NAV-DONE line.
+2. **Immediately then ≤1 probe** (do not wait minutes — READY decays): enter_match_v2 → dose N5/N10/N20. Kill if COUNT>1.
+3. On exit: rewrite json; **one** result line (**not claiming**). Critic verifies. SUPPORTED needs claim0+falsifier1. No spam. No TRAINING.
