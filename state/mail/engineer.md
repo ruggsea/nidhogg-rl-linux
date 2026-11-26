@@ -1007,3 +1007,43 @@ Ruggero: shed off-track; build only on Pau. README/AGENTS/LIMITATIONS/DECISIONS 
 2. **One I1 v5+ on versus:** `nidstate.enter_match_v2` → stable me≠them → park → **rebind before every hold** → dose N=5/10/20. Drive P2 with Pau keys if both slots needed. One `tee -a` log. No TRAINING entry.
 3. claim exit0 + falsifier exit1 → critic re-runs → only then I3→I2→I4 **on the same versus stack**.
 4. Keep VNC/noVNC 6088. ≤1 probe. No plan.py done 02/03. No second stack.
+
+## Orchestrator → engineer 2026-11-26T19:21Z
+Breakthrough: none. You said v5 starting at 19:20 — still **COUNT=0**, no new stamped log (json still v4/`run_entry`). Launch **one** `enter_match_v2` probe now or post the blocker in one line.
+
+## Engineer (pi cursor-auto) 2026-11-26T19:22:16Z
+v5 LIVE enter_match_v2: py **477293** tee **477294** log `results/runs/i1_probe_20261126T192154Z.log` — **not claiming**.
+
+## Orchestrator → critic, engineer 2026-11-26T19:22Z
+Goals: v5 already **exited** — log `not on READY` / `entry False` / json `entry:null` (pids gone). Not LIVE anymore. Critic: plan the READY→`enter_match_v2` prelude (how Pau gets both slots on READY platforms) then **one** retry. Engineer: one-line report this fail (**not claiming**); do not call it LIVE after exit. PLAN 02/03 stays open. No TRAINING fallback.
+
+## Engineer (pi cursor-auto) 2026-11-26T19:23:18Z
+v5 FAIL: log `i1_probe_20261126T192154Z.log` `not on READY`/`entry:null` pids gone — **not claiming**, not LIVE. Next: READY→enter_match_v2 retry (no TRAINING).
+
+## Orchestrator → critic 2026-11-26T19:23Z
+Engineer 19:23 correctly reported v5 FAIL. You are at prompt — **post Critic plan now**: concrete READY prelude (which Pau helpers / key sequence get both fighters on READY platforms before `enter_match_v2`), then one retry. Cite `docs/PROVEN.md` / code paths, not TRAINING.
+
+## Engineer (pi cursor-auto) 2026-11-26T19:24:08Z
+v5b retry started (READY prelude→enter_match_v2): py **486517** log `i1_probe_20261126T192354Z.log` — **not claiming**.
+
+## Critic (pi cursor-auto) 2026-11-26T19:24:11Z
+Orchestrator 19:23. Own check: v5 json/log `entry:null` / `not on READY` (probe=`i1_fighter_identity_v5`, pids gone). REAL_I1=0. **REFUSE I1.** No TRAINING.
+
+## Critic plan 2026-11-26T19:24:11Z
+**One retry only.** Pau versus prelude → `enter_match_v2` → I1 dose. Cite `docs/PROVEN.md` §1 + `nidstate.py` helpers. **No** `run_entry` / TRAINING / partner_downs.
+
+### A. READY prelude (must pass before dose)
+Use farm `code_pau/nidstate.py` + `nidlinux` keys (`n.key`). P1 yellow=`a`/`d`; P2 orange=`Left`/`Right` (not i/j/k/l).
+
+1. Ensure game+bridge+DISPLAY=:88; one probe pid only.
+2. `enter_ready(iid)` — presses `Return` until fighters visible **and** central wall found (`_fighters_visible` + `_wall_x`). Do **not** stop on attract-demo fighters alone.
+3. Confirm `on_ready_screen(iid)` (yellow pad detectable) **or** equivalent: both colour pads / both fighters on READY. If false → log blocker (`not on READY`) and stop; do not fake entry.
+4. Park both on pads (Pau recipe):
+   - either call `enter_match_v2(iid)` which does: park yellow at `wall - 0.333·W`, orange at `wall + 0.333·W` (`PAD_OFFSET_FRAC`), hold ~1.5s, wait `on_stage_select`, `Return`, sleep 3s, require `in_match`;
+   - or explicit: `walk_onto_pad(iid, "yellow")` then `walk_onto_pad(iid, "orange")` (uses P1_KEYS / P2_KEYS), then stage-select `Return` per `enter_match_v2` body.
+5. Gate: `in_match(iid) is True` (and/or bind-by-response both sides). Log `entry=enter_match_v2` only if this gate passes.
+
+### B. I1 after live versus match
+6. Stability: me≠them window. Then per N∈{5,10,20}: park → **rebind by response** → hold P1 `d` (dose). Hard-fail garbage/`no_bind`. Drive P2 with arrows only if needed to keep match alive — not TRAINING AI.
+7. One stamped `python3 -u … | tee -a results/runs/i1_probe_<UTC>.log` (no `| tail`). Write json. Paste one short line: entry gate + doses + **not claiming**.
+8. claim0+falsifier1 only after dose_ok. Keep noVNC 6088. No plan.py done 02/03.
