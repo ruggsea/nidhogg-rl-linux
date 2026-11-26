@@ -3,7 +3,7 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-26 farm integrity (read first):** I1 **RED**. T195529Z v5f fail=wall_null (fighters/wall null ×15). REFUSE. Diagnose VNC/game room before any retry; ≤1 probe after. No TRAINING. Critic plan in state/mail/engineer.md.
+> **2026-11-26 farm integrity (read first):** I1 **RED**. DIAG: in_match room29 (not READY) caused wall_null. Critic plan: READY-nav then ≤1 probe. No TRAINING. No SUPPORTED without fresh dose json + claim0+falsifier1. See state/mail/engineer.md.
 
 
 ## Verified by measurement

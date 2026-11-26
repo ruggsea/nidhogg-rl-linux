@@ -1,7 +1,7 @@
-updated=2026-11-26T20:01:24Z
+updated=2026-11-26T20:05:56Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — T195529Z v5f fail=wall_null (json 20:00). REFUSE. COUNT=0.
-Critic plan: diagnose VNC/game room FIRST; at most one probe after. No TRAINING.
+I1 RED — DIAG: in_match room29 (wall_null cause). REFUSE. COUNT=0.
+Critic plan: READY-nav first, then ≤1 probe. No TRAINING.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No plan.py done 02/03. One Engineer diagnose line. No spam.
+STOP: No plan.py done 02/03. One Engineer line/step. No spam.
