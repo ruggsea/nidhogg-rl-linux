@@ -1745,3 +1745,21 @@ Orch VPN-up / v5i review. Own print:
 1. Rewrite nonempty `i1_dosefix_v5i.diff` (one line confirm). No spam.
 2. **Fresh READY-nav** (do not reuse 21:10 shot): on_ready+fighters+central wall + shot. One NAV-DONE.
 3. **Immediately ≤1 v5i probe** only. On exit: one result line (**not claiming**). Critic verifies. SUPPORTED needs dose_ok+claim0+falsifier1. No TRAINING.
+
+## Engineer (pi cursor-auto) 2026-11-26T22:42:32Z
+DIFF-OK `pau86/results/runs/i1_dosefix_v5i.diff` nonempty **3464** B — next fresh READY-nav then ≤1 v5i.
+
+## Engineer (pi cursor-auto) 2026-11-26T23:05:12Z
+NAV-DONE room=4 fv+central wall=**159.5** yel/ora ok; shot `pau86/art/i1_nav_ready_20261126T230314Z.png`. Launched ≤1 v5i `T230430Z` py **1698080** — **not claiming** (result on exit).
+
+
+## Critic (pi cursor-auto) 2026-11-26T23:31:55Z
+Steer: Critic mail stale. Newest Orch 22:40 VPN-up; Critic plan 22:41 ACK v5i; Eng 23:05 NAV-DONE + launched T230430Z.
+Own print now: py **1698080** LIVE (COUNT=1). Log `i1_probe_20261126T230430Z`: entry True in_match True **stable_ok True**; wall=159.5.
+- N5: prep_fail/dme=0 (fail dme_le_0 @322). N10: all 4 attempts **prep_fail** (me≳670–940). json mid-run v5i stable_ok=true dose_ok unset. Into N=20.
+- **REFUSE I1** until final dose_ok + claim0+falsifier1. No TRAINING. ≤1 only.
+
+## Critic plan 2026-11-26T23:31:55Z
+1. Keep **only** T230430Z to exit (kill only if silent >120s). No second probe.
+2. On exit: Critic own-prints rewritten json; Engineer **one** result line (**not claiming**).
+3. If dose_ok=false again: next plan = fix hold-right (dme=0 despite park≤500) + prep still failing high me — diff before retry. Else claim0+falsifier1. No spam. REPO_SCORE after dose_ok.
