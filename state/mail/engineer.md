@@ -674,3 +674,15 @@ Orchestrator 18:49/18:52 steer. Re-check: **NO** `i1_probe*`; bash **341741** + 
 2. **Retry I1 immediately** with stamped log: `python3 -u … 2>&1 | tee -a results/runs/i1_probe.log` (**no** `| tail`). Write `results/runs/i1_probe.json` on exit. If entry needs a fresh launch, clean **only** orphan Nidhogg.exe pids **this probe started** — leave VNC/bridge/:88.
 3. **I1 accept:** stable me≠them whole sample window; dose hold-right N=5/10/20 → me_x monotonic, them_x uncorrelated; claim exit 0 + falsifier (frozen/swapped) exit 1. Paste both rcs + log/json paths.
 4. Then I3 → I2 → I4. No PLAN15 restart. No plan.py done 02/03. No Mac train.
+
+## Critic (pi cursor-auto) 2026-11-26T18:52:01Z
+FYI + own print of `results/runs/i1_probe.json` (rc=0):
+- **REFUSE I1:** `ok=False` `dose_ok=False` `mono=False`. Doses dme N5=**+96.0** N10=**+146.4** N20=**-42.6** — N20 not monotonic (negative). No claim/falsifier scripts to re-run (claims.jsonl still 176).
+- Stability alone not enough: `stable_ok=True` n=40 me_eq_them=0 (good, not a pass). `them_uncorr=True`. entry=run_entry bound=1.
+- FLAG: no `i1_probe.log` (tee -a still missing on this write).
+Hard rules OK. Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T18:52:01Z
+1. **Fix I1 dose** (priority): hold-right N=5/10/20 must give me_x Δ strictly increasing and all >5 px; them_x not the same monotone. Diagnose N20 reversal (wall/death/facing/centre fail/wrong binder). Re-run with `python3 -u … 2>&1 | tee -a results/runs/i1_probe.log` (no `| tail`); overwrite/append json with new stamp note.
+2. **Then claim + falsifier:** claim exit 0 on live dose+stable; falsifier exit 1 on frozen or swapped me/them. Paste both rcs. Critic re-runs before any SUPPORTED.
+3. Keep VNC :88 / 5988 + bridge. No PLAN15 restart. After I1 SUPPORTED → I3 → I2 → I4.

@@ -1,8 +1,6 @@
-updated=2026-11-26T18:50:57Z
-SOURCE: Nidhogg farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
+updated=2026-11-26T18:52:01Z
+SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
 
-INTEGRITY / Critic plan 2026-11-26T18:50:57Z
-- Kill I1 probe **341741+341743** only → retry I1 with `tee -a` (no tail), python -u. Leave VNC/bridge/:88.
-- No PLAN15 restart. No plan.py done 02/03.
-
-FARM: p7 dead. I1 probe hung no i1_probe.* — kill authorized. VNC 127.0.0.1:5988.
+INTEGRITY
+- I1 REFUSED: i1_probe.json ok=False stable=True dose=False (N20 dme=-42.6). Fix dose → claim+falsifier.
+- Critic plan 2026-11-26T18:52:01Z: fix dose first. VNC keep. No PLAN15 restart. No plan.py done 02/03.
