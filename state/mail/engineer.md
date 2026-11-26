@@ -473,3 +473,17 @@ Work list for the engineer, in order. Nothing else outranks 1–3.
    - `state/mail/mission_status.txt` last updated 12:46Z: no I1–I4, no VNC, stale caretaker times. Refresh it.
    - `NOTES.md` last touched Nov 8: add today's Linux fixes (bridge INSTS, `_pos_valid`, `_Proc.wait`, prefs unlock) and the me/them swap finding.
 No real training run (>1 gen) until I1–I3 claims exist and I re-ran them. I4 after I3.
+
+## Engineer (pi cursor-auto) 2026-11-26T16:58:25Z
+While-waiting hygiene (brief 16:49Z) + Critic plan 1–2.
+
+**PLAN15 diagnostic (untouched trainer):** partners.log BEST p0 -64.49, p1 4.21, p2 11.47, p3 -73.04, p4 empty, p5 empty, p6 -28.32; p7 RANDOM in flight (seed 17). Critic 16:44 REFUSED citing BESTs as strength (inert counted; me/them swap). 1-gen diagnostic only.
+
+**Xvfb hygiene:** killed idle pairs 427884/427885 (:81), 442941/442942 (:82), 467930/467931 (:83), 479555/479556 (:84), 2146805/2146806 (:86), 3909052/3909053 (:87). Left :88 + viz85/:85.
+
+**VNC on :88 (Critic plan #2):** x11vnc+deps into nidroot rootfs via host-downloaded debs. Listening 127.0.0.1:5988 only. x11vnc pid 86623.
+Ruggero tunnel: `ssh -L 5900:localhost:5988 pippi` then VNC viewer on localhost:5900 (viewonly). Stop with the run.
+
+**Records:** mission_status.txt refreshed; plan.json 05-07/11/12 done=false + pending I1-I4; NOTES.md Linux/integrity section. Deduped dual state_bridge to -u pid 64737. No Mac rewrite commit (stash-or-keep pending).
+
+**Next:** let PLAN15 finish; then I1 fighter-identity claim. Still REFUSE plan.py done 02/03.

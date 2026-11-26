@@ -5073,3 +5073,14 @@ One choke point for driving the game, replacing ad-hoc file writes plus wall-clo
 
 `game.do()` refuses movement keys outside an arena room, which is the rule that keeps D/A from
 cycling the language in OPTIONS.
+
+
+### 2026-11-26 Linux farm / integrity (engineer)
+
+- **Bind on Linux needs INSTS:** `InstanceManager.bind_by_response` reads `/tmp/nid_insts_{iid}.txt`. The pau86 state bridge historically wrote only `nid_state_0.txt`. Without INSTS, entry logged `bind found no fighter-shaped responder (D={} A={})`. Fix: `code_pau/tools/nid_state_bridge.py` continuously writes INSTS from spy-tracked P1/P2 (input-first track; retrack only on pid change).
+- **`_pos_valid` rejected `x==0`:** left-wall `me_x=0` made `has_players=False` after a live AND drivable entry and hung ensure_match. Allow `abs(x) < 3000`.
+- **Linux `_Proc` lacked `wait`/`kill`:** `reset_all` → `close()` → AttributeError mid PLAN15. Added stubs.
+- **prefs re-lock:** `launch()` copies prefs_locked.ini then `chmod 444`. Exit pristine restore must `chmod 644` first (now in train_win.py).
+- **me/them swap (I1 red flag, critic):** PLAN15 p2 g0i0 raw samples swap me/them between samples and sometimes me==them. Fighter identity unstable → every me_x/them_x fitness suspect until I1 dose-response claim.
+- **Inert BEST (I3):** p1/p2 BEST lines came from `inert=True` episodes. Exclusion rule not applied uniformly. DISCARDED episode still printed fit=37.0 (I4 unexplained).
+- PLAN15 accept path (keys → partner list) partially works (`live AND drivable`, some inert=False fits) but is diagnostic only until I1–I4.
