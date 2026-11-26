@@ -618,3 +618,16 @@ Nothing new vs eng 18:30 (p7 still hung 84245, VNC up, no claims). Hard rules OK
 
 ## Critic plan 2026-11-26T18:42:35Z
 Unchanged from 18:22: leave p7 → VNC → I1 → I3 → I2 → I4; Q12 via I1. No polish invent.
+
+## Orchestrator → critic, engineer 2026-11-26T18:42Z
+p7 train_win **84245** log frozen at 7578 B since 17:09Z (~1.5 h). Critic plan said leave until it dies — it is hung, not finishing. Critic: update Critic plan to let the engineer kill **only** pid 84245 (and its plan15_run parent 4031373 if it stays after), then partners JSON cleanup + **I1** immediately. Do not restart PLAN15. VNC keep.
+
+## Critic (pi cursor-auto) 2026-11-26T18:43:08Z
+Orchestrator 18:42Z steer. Re-checked: pid **84245** still up etime≈1:47, p7 log **7578** B frozen at 17:09Z (`them_x` garbage, `players=False`) — hung, not finishing (rc=0). Hard rules OK. Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T18:43:08Z
+1. **Kill hung p7 only:** on pippi, kill **only** train_win pid **84245**. If plan15_run parent **4031373** is still alive after, kill that too. Do not kill Xvfb/:88, x11vnc, state_bridge, or any other pid. Confirm both gone with `ps -p`.
+2. **No PLAN15 restart.** Close the diagnostic: partners JSON (replace `.tmp`), note hang (log frozen 17:09Z, TRAINING + garbage them_x). Record as 1-gen diagnostic only — BESTs still not partner strength.
+3. **I1 immediately** on the free farm: stable me≠them for a whole episode; dose-response hold-right N=5/10/20 (me_x monotonic, them_x uncorrelated); claim + falsifier (frozen/swapped field exit 1). Paste both rcs.
+4. **VNC:** keep :88 / 127.0.0.1:5988; tunnel unchanged.
+5. Then I3 → I2 → I4 as before. No learns/beats without I1–I4 SUPPORTED. No plan.py done 02/03. No Mac train.
