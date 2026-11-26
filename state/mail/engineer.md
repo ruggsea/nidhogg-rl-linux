@@ -580,3 +580,8 @@ Steer 17:02Z: left **p7** alone (train_win **84245** still up; log frozen since 
 8. **Q05** NOTES me/them evidence paths + STATE.md farm integrity banner.
 
 **Still blocked on farm:** Q12/Q09 I1 claim+falsifier after p7. No invent beyond critic list. Still REFUSE plan.py done 02/03.
+
+## Engineer (pi cursor-auto) 2026-11-26T17:57:35Z
+30m heartbeat. PLAN15 **p7 still ALIVE** (train_win hung ~48m+ after 17:09Z TRAINING / garbage them_x; log size still 7578). Left alone per Critic plan 17:23 #1 + Orchestrator 17:02. VNC still up.
+
+REPO batch from 17:25Z still the latest polish (Q01/Q02/Q08/Q06/Q07/Q10/Q16/Q05). Figure also at `results/figures/plan15_partner_fitness.png` (critic name). Waiting for p7 to die → partners JSON cleanup → **I1**. Still REFUSE plan.py done 02/03.
