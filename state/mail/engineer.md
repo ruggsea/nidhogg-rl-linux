@@ -1391,3 +1391,150 @@ Orch 20:35. Own print:
 1. **Code first:** implement DOSE-FIX on pippi; paste short unified diff (or before/after hunks) in engineer.md. No READY/probe until Critic sees that diff.
 2. Then READY confirm (on_ready+fighters+central wall) → **≤1** probe → rewrite json; **one** result line (**not claiming**).
 3. SUPPORTED only after dose_ok + claim0+falsifier1. No spam. No TRAINING. PLAN 02/03 stays open.
+## Orchestrator 2026-11-26T20:36Z
+**Steering OK:** Critic 20:36 code-first plan; engineer patching v5h on pippi (tool mtime 20:36, diff in flight). No probe until Critic acks diff.
+## Orchestrator 2026-11-26T20:37Z
+**Caretaker OK** (reports 0.93h, next 21:42Z). Waiting Engineer paste of `i1_dosefix_v5h.diff` into mail for Critic ack.
+
+## Engineer (pi cursor-auto) 2026-11-26T20:38:27Z
+DOSE-FIX DIFF applied on pippi `code_pau/tools/i1_fighter_identity.py` → probe **v5h** (face-right + park me_x≲500 after rebind; hard-fail me≈-1 / dme≤0). Path also `pau86/results/runs/i1_dosefix_v5h.diff`. **No probe yet** — waiting Critic. Unified diff:
+
+```diff
+--- /tmp/i1_fighter_identity.py.pre_dosefix	2026-11-26 20:28:17.452490868 +0000
++++ /home/ruggsea/nf-p/code_pau/tools/i1_fighter_identity.py	2026-11-26 20:36:15.624347479 +0000
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""I1 v5c: hard _wall_x gate -> enter_match_v2 -> dose. No run_entry/TRAINING."""
++"""I1 v5h: central wall gate -> enter_match_v2 -> dose; post-rebind face-right+park<=500; hard-fail me~-1/dme<=0."""
+ import json, os, sys, time, threading
+ sys.path.insert(0, os.environ.get("CODE_PAU", "/home/ruggsea/nf-p/code_pau"))
+ import train_state as ts
+@@ -15,8 +15,16 @@
+ _p2_stop = threading.Event()
+ 
+ def valid_x(x):
++    """Reject None, ±1e38 garbage, and sentinel me≈-1."""
+     try:
+-        return x is not None and abs(float(x)) < 3000.0
++        if x is None:
++            return False
++        v = float(x)
++        if abs(v) >= 3000.0:
++            return False
++        if abs(v + 1.0) < 0.51:  # me≈-1 invalid
++            return False
++        return True
+     except (TypeError, ValueError):
+         return False
+ 
+@@ -97,6 +105,27 @@
+     print("rebind", b, flush=True)
+     return b
+ 
++def prep_after_rebind(mgr, max_x=500.0):
++    """Critic dose-fix: face RIGHT then hard-park me_x≲500 before measuring b0."""
++    hold(mgr, 68, 0.15)  # face right (D)
++    # pull left hard if too far right
++    for _ in range(8):
++        b = read_me(mgr)
++        if not b or not valid_x(b.get("me_x")):
++            return False, None
++        if b["me_x"] <= max_x:
++            break
++        hold(mgr, 65, min(0.55, 0.05 + (b["me_x"] - max_x) / 400.0))
++    ok_park, park_x = park(mgr, target=min(PARK_X, max_x - 40.0), tol=40.0, tries=60)
++    hold(mgr, 68, 0.12)  # re-assert face right after park
++    b = read_me(mgr)
++    if not b or not valid_x(b.get("me_x")):
++        return False, park_x
++    if b["me_x"] > max_x:
++        print("prep_after_rebind still_too_right", b["me_x"], flush=True)
++        return False, b["me_x"]
++    return True, b["me_x"]
++
+ def recover_bind(mgr):
+     mgr.bound_inst = None
+     time.sleep(0.4)
+@@ -133,23 +162,33 @@
+             if not recover_bind(mgr):
+                 last = {"N": N, "attempt": attempt, "fail": "no_bind"}
+                 continue
+-        ok_park, park_x = park(mgr)
++        # dose-fix: face-right + hard park me_x≲500 before b0
++        ok_prep, park_x = prep_after_rebind(mgr, max_x=500.0)
++        if not ok_prep:
++            print("dose", N, "attempt", attempt, "prep_fail", park_x, flush=True)
++            mgr.bound_inst = None
++            last = {"N": N, "attempt": attempt, "fail": "prep_fail", "park_x": park_x}
++            continue
++        ok_park = True
+         b0 = read_me(mgr)
+         p0 = read_pair_valid(mgr)
+-        if not b0 or not p0:
+-            print("dose", N, "attempt", attempt, "no_state_pre", flush=True)
++        if not b0 or not p0 or not valid_x(b0.get("me_x")) or not valid_x(p0.get("them_x")):
++            print("dose", N, "attempt", attempt, "no_state_pre_or_bad_me", b0, flush=True)
+             mgr.bound_inst = None
++            last = {"N": N, "attempt": attempt, "fail": "bad_me_pre"}
+             continue
+-        if b0["me_x"] > 900:
++        if b0["me_x"] > 500:
+             print("dose", N, "attempt", attempt, "start_too_right", b0["me_x"], flush=True)
+             hold(mgr, 65, 1.2)
++            mgr.bound_inst = None
+             continue
+-        hold(mgr, 68, N * STEP)
++        hold(mgr, 68, N * STEP)  # hold RIGHT
+         b1 = read_me(mgr)
+         p1 = read_pair_valid(mgr)
+         if not b1 or not valid_x(b1.get("me_x")):
+-            print("dose", N, "attempt", attempt, "garbage_after", flush=True)
++            print("dose", N, "attempt", attempt, "garbage_after_or_me_-1", b1, flush=True)
+             mgr.bound_inst = None
++            last = {"N": N, "attempt": attempt, "fail": "bad_me_post"}
+             continue
+         dme = b1["me_x"] - b0["me_x"]
+         dthem = (p1["them_x"] - p0["them_x"]) if p1 else None
+@@ -159,7 +198,14 @@
+                "them0": p0["them_x"], "them1": (p1 or {}).get("them_x"), "dthem": dthem,
+                "teleport": teleport, "hold_s": N * STEP, "bound": mgr.bound_inst}
+         print("dose", row, flush=True)
+-        if teleport or dme <= 5:
++        # hard-fail wrong-way / tiny / garbage (dose-fix)
++        if teleport or dme <= 0:
++            print("dose", N, "attempt", attempt, "hard_fail_dme", dme, flush=True)
++            mgr.bound_inst = None
++            last = row
++            last["fail"] = "dme_le_0" if dme <= 0 else "teleport"
++            continue
++        if dme <= 5:
+             mgr.bound_inst = None
+             last = row
+             continue
+@@ -203,7 +249,7 @@
+     print("WROTE", OUT, flush=True)
+ 
+ def main():
+-    out = {"ok": False, "probe": "i1_fighter_identity_v5g", "step_s": STEP, "park_x": PARK_X,
++    out = {"ok": False, "probe": "i1_fighter_identity_v5h", "step_s": STEP, "park_x": PARK_X,
+            "entry_family": "enter_match_v2"}
+     try:
+         out["game_pid"] = n._game_pid(IID)
+```
+
+## Engineer (pi cursor-auto) 2026-11-26T20:38:29Z
+READY-CONFIRM after dose-fix: {'ready_ok': False, 'ready': False, 'fv': False, 'wall': None, 'central': False, 'game_pid': 96041} — **no probe** until Critic clears diff — **not claiming**.
+## Orchestrator 2026-11-26T20:38Z
+**Standards:** v5h diff present in mail; READY-CONFIRM false. Critic: own-print/ack diff then order READY-nav. PV LEDGER now has #31 E31 LIVE — judge/worker OK.
+
+
+## Critic (pi cursor-auto) 2026-11-26T20:39:12Z
+Orch 20:38. Own print:
+- Diff path `pau86/results/runs/i1_dosefix_v5h.diff` + mail hunks + live tool mtime 20:36 probe=**v5h**.
+- **ACK dose-fix code:** prep_after_rebind (face-right + park me≲500), start_too_right@500, hard-fail dme≤0/teleport, reject bad me≈-1. Matches DOSE-FIX note.
+- READY-CONFIRM **false** (wall=null) — correct no-probe. COUNT=0. Still **REFUSE I1**. No TRAINING.
+
+## Critic plan 2026-11-26T20:39:12Z
+1. **READY-nav now** (no probe until confirm): leave current screen → MULTIPLAYER READY. Confirm on_ready+fighters+central wall (+ shot). One NAV-DONE line.
+2. **Immediately ≤1 v5h probe** (READY decays): enter_match_v2 → dose N5/N10/N20. Kill if COUNT>1.
+3. On exit: rewrite json; **one** result line (**not claiming**). Critic verifies. SUPPORTED needs dose_ok + claim0+falsifier1. No spam. No TRAINING.

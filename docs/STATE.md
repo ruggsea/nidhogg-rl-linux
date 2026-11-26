@@ -3,7 +3,7 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-26 farm integrity (read first):** I1 **RED**. T202817Z wall_null. DOSE-FIX note posted; **code diff required** before next READY/probe. No TRAINING. See state/mail/engineer.md.
+> **2026-11-26 farm integrity (read first):** I1 **RED**. v5h dose-fix **ACK'd**; READY false — nav then ≤1 probe. No SUPPORTED without dose_ok + claim0+falsifier1. No TRAINING. See state/mail/engineer.md.
 
 
 ## Verified by measurement
