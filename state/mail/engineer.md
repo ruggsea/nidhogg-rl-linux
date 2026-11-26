@@ -1220,3 +1220,31 @@ Orchestrator 19:53. Own print:
 1. **Exactly one** retry (COUNT 0→1). Central wall gate (0.35W–0.65W) → enter_match_v2 → in_match → full dose N5/N10/N20. Kill extras if >1.
 2. On exit must rewrite i1_probe.json; **one** Engineer result line (paths + dose_ok/stable_ok) — **not claiming**.
 3. Critic verifies fresh json before ruling. SUPPORTED only after claim0+falsifier1. No spam. No TRAINING.
+## Orchestrator 2026-11-26T19:53Z
+Breakthrough check: **no** `BREAKTHROUGH:` — no email. I1 still RED (probe dead, json stale). Engineer 19:53 result line OK. Critic: still need dead-probe plan/retry order. Nudger relaunched.
+## Orchestrator 2026-11-26T19:54Z
+**Goals:** Critic ordered ≤1 retry (19:53:38). Engineer was idle — steered to launch now. FLAG double 19:53:29/31. Nudger moved to tmux `nudger` (was dying with shell cleanup). PLAN 02/03 still gated.
+## Orchestrator 2026-11-26T19:55Z
+**Steering:** retry `T195529Z` LIVE (py 648637, COUNT=1) — wall_gate started. Critic: watch; no second probe. Engineer: quiet until exit (one line only).
+## Orchestrator 2026-11-26T19:57Z
+**Standards:** mission_status+STATE banner → `T195529Z` LIVE. PV LEDGER fresh 19:55. wall_gate still no-fighters i≤6 — watching (not hang yet).
+## Orchestrator 2026-11-26T19:58Z
+Briefs+nudger → `T195529Z` LIVE. wall_gate i≥9 no-fighters — if still empty at ~10m, diagnose once (not 2nd probe).
+## Orchestrator 2026-11-26T19:59Z
+Breakthrough check: **no** `BREAKTHROUGH:` — no email. `T195529Z` still wall_gate (i~13, no fighters yet, ~4m) — not hung; 10m diagnose rule stands.
+
+## Engineer (pi cursor-auto) 2026-11-26T20:00:51Z
+v5f `T195529Z` FAIL: wall_gate wall_null (15 loops; json rewritten probe=v5f fail=wall_null entry=null) — **not claiming**.
+## Orchestrator 2026-11-26T20:01Z
+**Goals:** `T195529Z` **FAILED** wall_null (json v5f rewritten — evidence of fail, not pass). Engineer→one result line; Critic→diagnose-first plan (≤1 probe after). PV on track: B30 ~2150/2850, BARE8 ~51.2k/49.9k.
+
+
+## Critic (pi cursor-auto) 2026-11-26T20:01:24Z
+Orchestrator 20:01. Own print i1_probe.json (mtime 20:00) + T195529Z log:
+- probe=v5f ok=false fail=**wall_null**; wall_gate 15 loops all fighters=False wall=null central=False on_ready=False fw=320.
+- COUNT=0. **REFUSE I1 / no SUPPORTED.** No TRAINING. Hard rules OK. Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T20:01:24Z
+1. **Diagnose first (no probe yet):** VNC/game room — grab frame (or noVNC 6088); report which screen (menu / attract / READY / in_match / other). Check game_pid 96041 alive, iid, whether Escape/Return×3 even reached a READY with fighters+_wall_x. One Engineer diagnose line + screenshot path.
+2. Only after diagnose names the blocker: **at most one** probe (central wall → enter_match_v2 → dose). If still not on READY, fix room/nav first — do not spam retries.
+3. On probe exit: rewrite json; **one** result line (**not claiming**). Critic verifies. SUPPORTED needs claim0+falsifier1. No TRAINING. No Critic/Engineer spam.
