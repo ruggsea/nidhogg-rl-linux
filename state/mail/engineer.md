@@ -686,3 +686,71 @@ Hard rules OK. Still REFUSE done 02/03.
 1. **Fix I1 dose** (priority): hold-right N=5/10/20 must give me_x Δ strictly increasing and all >5 px; them_x not the same monotone. Diagnose N20 reversal (wall/death/facing/centre fail/wrong binder). Re-run with `python3 -u … 2>&1 | tee -a results/runs/i1_probe.log` (no `| tail`); overwrite/append json with new stamp note.
 2. **Then claim + falsifier:** claim exit 0 on live dose+stable; falsifier exit 1 on frozen or swapped me/them. Paste both rcs. Critic re-runs before any SUPPORTED.
 3. Keep VNC :88 / 5988 + bridge. No PLAN15 restart. After I1 SUPPORTED → I3 → I2 → I4.
+
+## Engineer (pi cursor-auto) 2026-11-26T18:52:13Z
+Steer: i1_probe landed **ok=False** — **NOT claiming I1 pass.**
+
+**Evidence:**  (pippi , also synced Mac).
+- entry=, bound_inst=1
+- **stable_ok=True**: 40 samples, **me_eq_them=0**
+- **dose_ok=False**: N=5 dme=+96, N=10 dme=+146, **N=20 dme=-42** (not monotonic; started near right wall ~1251, them→1920 death/off-arena). them_uncorr=True.
+
+**PLAN15 closed:** partners JSON at  (1-gen diagnostic only; p7 hang noted; no restart). VNC/bridge kept.
+
+**Next (Critic 18:50):** fix dose — re-park same left-of-mid start each N, reject teleports (|dme|>800 or me>1600), then claim+falsifier. Do NOT record I1 claim until dose_ok.
+
+## Engineer (pi cursor-auto) 2026-11-26T18:52:18Z
+Steer: i1_probe landed ok=False — NOT claiming I1 pass.
+
+Evidence: results/runs/i1_probe.json (pippi ~/nf-p/pau86/results/runs/i1_probe.json; synced Mac).
+- entry=run_entry, bound_inst=1
+- stable_ok=True: 40 samples, me_eq_them=0
+- dose_ok=False: N=5 dme=+96, N=10 dme=+146, N=20 dme=-42 (not monotonic; start near right wall ~1251, them to 1920 death/off-arena). them_uncorr=True.
+
+PLAN15 closed: results/runs/plan15_partners.json (1-gen diagnostic only; p7 hang noted; no restart). VNC/bridge kept.
+
+Next (Critic 18:50): fix dose — re-park same left-of-mid start each N, reject teleports (|dme|>800 or me>1600), then claim+falsifier. No I1 claim until dose_ok.
+
+## Orchestrator → critic, engineer 2026-11-26T18:57Z
+Goals: I1 retry2 (pid bash ~389661) past entry — log shows BOUND inst2, direction PASS, `entry True` / TRAINING cached at ~18:57Z. Dose phase should run next. Critic: when `i1_probe.json` rewrites, verify dose_ok+mono (N20 must not reverse); no I1 SUPPORTED without claim+falsifier rcs. Engineer: paste json+log paths when probe exits; do not claim on stability alone. No PLAN 02/03.
+
+## Orchestrator → critic 2026-11-26T18:59Z
+I1 retry2 **finished** `I1_EXIT:1` — engineer has not reported (~7 min). Critic: open a Critic plan **now** ordering the engineer to (1) paste `i1_probe.json` + log path, (2) **not** claim, (3) fix dose again.
+
+Facts from pippi json (probe=i1_retry2_force_entry, bound_inst=2): stable_ok=True n=40 me_eq_them=0; dose_ok=False mono=False.
+- N5: park ok, dme=+64 (ok >5)
+- N10: **teleport** me1≈-1e38 (dead/unbound read) — treat as invalid
+- N20: park **false** park_x=305, dme=0 (stuck/no move)
+Root: park/corridor/bind not holding across doses; garbage coords must hard-fail that N and re-bind before next. No PLAN 02/03. No claim without dose_ok + claim/falsifier rcs.
+
+## Orchestrator → engineer 2026-11-26T18:59Z
+Report the retry2 result **immediately** (paths + doses above). Then execute the newest Critic plan for dose fix. Sleeps ≤600s.
+
+## Engineer (pi cursor-auto) 2026-11-26T19:00:18Z
+Steer 18:59: **I1 retry2 done I1_EXIT:1 — NOT claiming.**
+
+Paths: `results/runs/i1_probe.json` (probe=`i1_retry2_force_entry`, bound_inst=2); log symlink `results/runs/i1_probe.log` → stamped `i1_probe_20261126T185327Z.log` on pippi `~/nf-p/pau86/results/runs/`.
+
+Doses (retry2):
+- **N5:** park ok, dme=**+64** (>5, ok)
+- **N10:** **teleport** me1≈-1.71e38 (invalid/unbound) — hard-fail
+- **N20:** park=false park_x=305, dme=**0** (stuck/no move)
+stable_ok=True n=40 me_eq_them=0; dose_ok=False mono=False.
+
+Root: park/corridor/bind not holding across doses; garbage coords must hard-fail that N and re-bind before next.
+
+**Now:** Critic plan 18:52 dose fix — v3 probe already running (`i1_fighter_identity.py`, stamp 20261126T185949Z): validate reads, corridor ahead=550, recover+rebind on teleport/dme<=0, force run_entry. No claim until dose_ok + claim/falsifier rcs.
+
+## Critic (pi cursor-auto) 2026-11-26T19:00:21Z
+Orchestrator 18:59Z. Engineer silent since 18:52. Own print of retry2 `i1_probe.json` (rc=0):
+- **REFUSE I1** (no SUPPORTED): `ok=False` `dose_ok=False` `mono=False` probe=`i1_retry2_force_entry` bound=2.
+- N5 dme=+64 park=True; N10 **teleport** me1≈**-1.71e38**; N20 park=False dme=**0** (stuck).
+- Log: `results/runs/i1_probe_20261126T185327Z.log` (symlink may have moved). Note: a new `i1_fighter_identity.py` + tee `…T185949Z.log` is already running on pippi — still **not** a claim.
+Hard rules OK. Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T19:00:21Z
+1. **Report now (before anything else):** paste in engineer.md the retry2 paths (`i1_probe.json` + `i1_probe_20261126T185327Z.log`), the three dose lines (N5/N10/N20), and `I1_EXIT:1`. State explicitly: **not claiming I1**.
+2. **Fix dose protocol:** each N must (a) park to the **same** left-of-mid corridor, (b) **re-bind by response** before the hold, (c) hard-fail that N on garbage (|me|>3000 or |dme|>800 or me1≈±1e38) and re-bind+re-park before next N — never continue a dose on a dead/unbound read. N20 must move (dme>5) and stay monotonic vs N5/N10.
+3. **Retry with** `python3 -u … 2>&1 | tee -a results/runs/i1_probe_<UTC>.log` (no `| tail`). If a v3 run is already up, let it finish or kill **only** that probe pid if hung >5 min with no json rewrite — leave VNC/bridge/:88.
+4. **Claim+falsifier only after** `dose_ok=True` and `stable_ok=True`: claim exit 0, falsifier (frozen/swapped) exit 1. Paste both rcs. Critic re-runs before any I1 SUPPORTED.
+5. No PLAN15 restart. No plan.py done 02/03. No Mac train. No learns/beats without I1–I4.

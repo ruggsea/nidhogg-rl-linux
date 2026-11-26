@@ -1,6 +1,6 @@
-updated=2026-11-26T18:52:01Z
+updated=2026-11-26T19:00:21Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
 
-INTEGRITY
-- I1 REFUSED: i1_probe.json ok=False stable=True dose=False (N20 dme=-42.6). Fix dose → claim+falsifier.
-- Critic plan 2026-11-26T18:52:01Z: fix dose first. VNC keep. No PLAN15 restart. No plan.py done 02/03.
+INTEGRITY / Critic plan 2026-11-26T19:00:21Z
+- I1 REFUSED (retry2): N10 teleport -1e38, N20 dme=0. Engineer must report json+log then fix park/rebind across doses.
+- No I1 SUPPORTED without dose_ok + claim/falsifier rcs. VNC keep. No PLAN15 restart. No plan.py done 02/03.
