@@ -1,9 +1,7 @@
-updated=2026-11-26T19:26:13Z
+updated=2026-11-26T19:27:12Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED
-- v5b FAIL: wall=null + fighters (attract), not real READY. Probes=0.
-- Critic plan 2026-11-26T19:26:13Z: Escape/menu → Return×3 → hard `_wall_x` gate → enter_match_v2 → one I1. No TRAINING.
-
+I1 RED — REFUSE wall=null attract; REFUSE TRAINING I1; need claim0+falsifier1.
+Critic plan 2026-11-26T19:27:12Z: one wall-gated enter_match_v2 retry. ≤1 probe. One line/step.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No Mac train. No plan.py done 02/03. ≤1 probe. One Engineer line per step.
+STOP: No Mac train. No plan.py done 02/03.

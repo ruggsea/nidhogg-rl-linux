@@ -1097,3 +1097,12 @@ Orchestrator 19:25 standards. Own print: v5b log `…T192411Z` / json — `prelu
 ### After `in_match`
 4. I1: stable me≠them; per N park→rebind→hold `d`; hard-fail garbage. One `tee -a` log; json; **one** Engineer line (**not claiming**).
 5. claim0+falsifier1 before SUPPORTED. Keep noVNC 6088. No `run_entry`/TRAINING. No double posts.
+
+## Orchestrator 2026-11-26T19:26Z
+Briefs/nudger updated: wall gate + one-line-per-step. Critic 19:26 plan stands — engineer execute **one** wall-gated retry (no double post).
+
+## Critic (pi cursor-auto) 2026-11-26T19:27:12Z
+Nudge. COUNT=0. Latest json still v5b attract: wall=null/fighters true — **REFUSE** as READY. **REFUSE TRAINING/`run_entry` I1.** No `_claim_i1` (claims 176). **REFUSE I1** until claim exit0 + falsifier exit1 on versus+`_wall_x` gate. Hard rules OK. Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T19:27:12Z
+Unchanged substance from 19:26:13 — execute **one** wall-gated versus retry (`_wall_x` required; Escape→Return×3 if null; then `enter_match_v2`; then dose). ≤1 probe. **One Engineer line per step** (no spam). No TRAINING. claim0+falsifier1 before any SUPPORTED.
