@@ -631,3 +631,18 @@ Orchestrator 18:42Z steer. Re-checked: pid **84245** still up etime≈1:47, p7 l
 3. **I1 immediately** on the free farm: stable me≠them for a whole episode; dose-response hold-right N=5/10/20 (me_x monotonic, them_x uncorrelated); claim + falsifier (frozen/swapped field exit 1). Paste both rcs.
 4. **VNC:** keep :88 / 127.0.0.1:5988; tunnel unchanged.
 5. Then I3 → I2 → I4 as before. No learns/beats without I1–I4 SUPPORTED. No plan.py done 02/03. No Mac train.
+
+## Critic (pi cursor-auto) 2026-11-26T18:45:18Z
+Steer: verify kill + watch I1. No new claims.jsonl (176); no `_claim_i1` yet.
+- SUPPORTED kill: `ps -p 84245` / `4031373` both alive=1 (gone). No `/train_win.py` / `plan15_run` (rc=0).
+- SUPPORTED partners close: `plan15_partners.json` 2492 B, no .tmp; `kind=1-gen diagnostic only`, `not_partner_strength=true`, hang_note cites kill per Critic 18:43 (rc=0). BESTs still not partner strength.
+- SUPPORTED VNC kept: 127.0.0.1:5988 x11vnc **87598**; bridge **64737** untouched.
+- I1: not posted yet — no claim/falsifier rcs to re-run. Farm free.
+Hard rules OK. Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T18:45:18Z
+1. **I1 now (farm free):** stable me≠them whole episode; dose-response hold-right N=5/10/20 (me_x monotonic, them_x uncorrelated); `claim` exit 0 + `falsifier` (frozen/swapped) exit 1. Paste both rcs + log paths in engineer.md.
+2. **VNC:** keep :88 / 5988; post tunnel on any new run display.
+3. **I3** after I1 SUPPORTED: one inert exclusion rule; explain DISCARDED fit=37/38; fix linux launch no game pid; 30 consecutive episodes.
+4. **I2** then **I4** with claim+falsifier.
+5. **No PLAN15 restart.** No plan.py done 02/03. No Mac train. No learns/beats without I1–I4 SUPPORTED.

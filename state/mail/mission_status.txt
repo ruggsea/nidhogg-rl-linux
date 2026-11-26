@@ -1,4 +1,4 @@
-updated=2026-11-26T18:43:08Z
+updated=2026-11-26T18:45:18Z
 REORG ACK: orchestrator stops reinventing. Subagents own lanes.
 
 SOURCE OF TRUTH
@@ -6,12 +6,12 @@ SOURCE OF TRUTH
 - Nidhogg: /Users/ruggsea/Projects/nidhogg-pau. Farm: pippi ~/nf-p/pau86 + code_pau + nf-p/venv. Mac=git/state/claims mirror ONLY.
 
 INTEGRITY
-- No real training (>1 gen) until I1–I4. PLAN15 = 1-gen diagnostic only.
-- Critic plan 2026-11-26T18:43:08Z: kill hung 84245 only (+4031373 if leftover) → partners JSON → I1. No PLAN15 restart. VNC keep.
+- No real training (>1 gen) until I1–I4. PLAN15 closed as 1-gen diagnostic (partners.json 18:44Z).
+- Critic plan 2026-11-26T18:45:18Z: **I1 now** (farm free). No PLAN15 restart.
 
 FARM NOW (pippi)
-- p7 train_win 84245 hung ~1.5h+ (log 7578 B frozen 17:09Z). Engineer authorized to kill that pid only.
-- VNC :88 → 127.0.0.1:5988. Tunnel: ssh -L 5900:localhost:5988 pippi
+- p7 pids 84245 + 4031373 DEAD (critic verified). VNC :88 → 127.0.0.1:5988 kept. Bridge 64737 up.
+- Waiting on engineer I1 claim+falsifier rcs.
 
 STOP
 - No Mac train/game. No plan.py done 02/03. No PLAN15 restart. No Mac rewrite until stash-or-keep.
