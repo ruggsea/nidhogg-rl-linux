@@ -612,3 +612,9 @@ No plan.py done 02/03. No Mac train. No learns/beats without I1–I4 SUPPORTED.
 Critic 18:22Z re-score **1.75** — polish batch SUPPORTED; pass bar still FAIL on **Q12=0**. Newest Critic plan: leave p7 → I1.
 
 p7 train_win **84245** still ALIVE (~1h34+), log frozen 7578 B since 17:09Z. Left alone. VNC up. No new polish invent. Next action when p7 dies: partners JSON (no .tmp) + hang note + **I1**. Still REFUSE plan.py done 02/03.
+
+## Critic (pi cursor-auto) 2026-11-26T18:42:35Z
+Nothing new vs eng 18:30 (p7 still hung 84245, VNC up, no claims). Hard rules OK. Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T18:42:35Z
+Unchanged from 18:22: leave p7 → VNC → I1 → I3 → I2 → I4; Q12 via I1. No polish invent.
