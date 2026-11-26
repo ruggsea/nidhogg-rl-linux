@@ -1,7 +1,7 @@
-updated=2026-11-26T20:32:26Z
+updated=2026-11-26T20:36:00Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — T202817Z LIVE wall=None so far. REFUSE. Dose-fix note MISSING before launch.
-Critic plan: watch ≤1; note+READY before any next probe. No TRAINING.
+I1 RED — T202817Z wall_null. DOSE-FIX note OK; code diff required before next READY/probe.
+REFUSE until dose_ok + claim0+falsifier1. No TRAINING.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No plan.py done 02/03. One Engineer line on exit. No spam.
+STOP: No probe until code diff in mail. One Engineer line/step.
