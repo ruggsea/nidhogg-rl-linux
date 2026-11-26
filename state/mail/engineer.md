@@ -839,3 +839,67 @@ Steer: Critic plan 16:44 + Orchestrator 17:02Z. PLAN15 still on **p7 RANDOM** (t
 Critic 18:22Z re-score **1.75** — polish batch SUPPORTED; pass bar still FAIL on **Q12=0**. Newest Critic plan: leave p7 → I1.
 
 p7 train_win **84245** still ALIVE (~1h34+), log frozen 7578 B since 17:09Z. Left alone. VNC up. No new polish invent. Next action when p7 dies: partners JSON (no .tmp) + hang note + **I1**. Still REFUSE plan.py done 02/03.
+
+## Engineer (pi cursor-auto) 2026-11-26T19:11:54Z
+Steer/Critic 19:09: **killed hung v3; started v4. NOT claiming I1.**
+
+**Kill (only probe pids):** 408573 / 408574 / 408566 → gone (`ps -p` clear). stall was ~282s after last log `rebind None` @19:05:01. Left VNC **87598** + bridge **64737** + :88.
+
+**v3 never wrote json** (i1_probe.json still retry2 mtime 18:58). Partial log doses before hang:
+- N5 attempt2 dme=+83.7 (after fails)
+- N10 attempt0 dme=0 → recover → rebind None → hung in run_entry
+Log: `results/runs/i1_probe_20261126T185949Z.log`
+
+**v4 started:** stamp **20261126T191007Z**, pid **438323**, probe=`i1_fighter_identity_v4`
+- protocol: per-N park → **rebind-by-response before hold** → hold-right; hard-fail garbage; **no run_entry inside recover** (hang fix)
+- log: `results/runs/i1_probe_20261126T191007Z.log` (symlink `i1_probe.log`)
+- will overwrite `i1_probe.json` on exit
+
+No claim until dose_ok+stable_ok + claim/falsifier rcs. No plan.py done 02/03.
+
+## Engineer (pi cursor-auto) 2026-11-26T19:11:55Z
+Steer: i1_probe landed ok=False — NOT claiming I1 pass.
+
+Evidence: results/runs/i1_probe.json (pippi ~/nf-p/pau86/results/runs/i1_probe.json; synced Mac).
+- entry=run_entry, bound_inst=1
+- stable_ok=True: 40 samples, me_eq_them=0
+- dose_ok=False: N=5 dme=+96, N=10 dme=+146, N=20 dme=-42 (not monotonic; start near right wall ~1251, them to 1920 death/off-arena). them_uncorr=True.
+
+PLAN15 closed: results/runs/plan15_partners.json (1-gen diagnostic only; p7 hang noted; no restart). VNC/bridge kept.
+
+Next (Critic 18:50): fix dose — re-park same left-of-mid start each N, reject teleports (|dme|>800 or me>1600), then claim+falsifier. No I1 claim until dose_ok.
+
+## Engineer (pi cursor-auto) 2026-11-26T19:11:55Z
+Steer 18:59: **I1 retry2 done I1_EXIT:1 — NOT claiming.**
+
+Paths: `results/runs/i1_probe.json` (probe=`i1_retry2_force_entry`, bound_inst=2); log symlink `results/runs/i1_probe.log` → stamped `i1_probe_20261126T185327Z.log` on pippi `~/nf-p/pau86/results/runs/`.
+
+Doses (retry2):
+- **N5:** park ok, dme=**+64** (>5, ok)
+- **N10:** **teleport** me1≈-1.71e38 (invalid/unbound) — hard-fail
+- **N20:** park=false park_x=305, dme=**0** (stuck/no move)
+stable_ok=True n=40 me_eq_them=0; dose_ok=False mono=False.
+
+Root: park/corridor/bind not holding across doses; garbage coords must hard-fail that N and re-bind before next.
+
+**Now:** Critic plan 18:52 dose fix — v3 probe already running (`i1_fighter_identity.py`, stamp 20261126T185949Z): validate reads, corridor ahead=550, recover+rebind on teleport/dme<=0, force run_entry. No claim until dose_ok + claim/falsifier rcs.
+
+## Engineer (pi cursor-auto) 2026-11-26T19:11:54Z
+30m heartbeat. PLAN15 **p7 still ALIVE** (train_win hung ~48m+ after 17:09Z TRAINING / garbage them_x; log size still 7578). Left alone per Critic plan 17:23 #1 + Orchestrator 17:02. VNC still up.
+
+REPO batch from 17:25Z still the latest polish (Q01/Q02/Q08/Q06/Q07/Q10/Q16/Q05). Figure also at `results/figures/plan15_partner_fitness.png` (critic name). Waiting for p7 to die → partners JSON cleanup → **I1**. Still REFUSE plan.py done 02/03.
+
+## Engineer (pi cursor-auto) 2026-11-26T19:11:55Z
+Steer 17:02Z: left **p7** alone (train_win **84245** still up; log frozen since 17:09Z TRAINING + garbage them_x). VNC up.
+
+**REPO_SCORE batch (critic 17:22Z, between waits):**
+1. **Q01** root README rewritten — Mac=mirror, farm=pippi paths, mission_status + Critic plan; Mac runbook collapsed as superseded.
+2. **Q02** AGENTS.md rewritten — farm ops, I1–I4 hold, no Mac gameslot/train, VNC tunnel.
+3. **Q08** deleted 277 `._*`; `.gitignore` adds `._*` + `*.pt`/`*.pth`/ckpt*.
+4. **Q15/Q11** SUPERSEDED banners on `docs/NEXT_STEPS.md`, `docs/OVERVIEW.md`; worktree `docs/SUPERSEDED.md`.
+5. **Q06/Q07** added root `DECISIONS.md` + `LIMITATIONS.md`.
+6. **Q10** `results/figures/plan15_partner_bests.png` — command: `python3 -c` bar chart from partners BEST (hatched=inert/me-them tainted). Not partner strength.
+7. **Q16** pippi `/tmp/{do_step02_poll5,fc_all,fix_*,patch_*,stoplog}.py` → `*.OBSOLETE_20261126` (live bridge file kept).
+8. **Q05** NOTES me/them evidence paths + STATE.md farm integrity banner.
+
+**Still blocked on farm:** Q12/Q09 I1 claim+falsifier after p7. No invent beyond critic list. Still REFUSE plan.py done 02/03.

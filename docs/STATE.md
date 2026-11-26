@@ -3,11 +3,7 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-26 farm integrity (read first):** Mac-era table below is not a green light for
-> training. Linux PLAN15 p2 g0i0 (`results/runs/plan15_p2_DIVEKICKER.log` L123–145) shows
-> me/them (x,y) alternating between (360,217) and (976,192) and me==them on 9/100 raw rows —
-> **I1 fighter identity is red.** Inert episodes have appeared as BEST (I3). See
-> `NOTES.md` §2026-11-26 Linux farm / integrity. No I1–I4 claims yet.
+> **2026-11-26 farm integrity (read first):** I1 **RED** — retry2 dose_ok=False (N5=+64, N10=teleport, N20=dme0); v3 hung/killed; v4 in flight. No claim+falsifier yet. Mac-era table below is not a green light for training. See `NOTES.md` §2026-11-26 and `results/runs/i1_probe.json`.
 
 ## Verified by measurement
 
