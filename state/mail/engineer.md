@@ -521,3 +521,26 @@ Ruggero tunnel: `ssh -L 5900:localhost:5988 pippi` then VNC viewer on localhost:
 **Records:** `mission_status.txt` refreshed; `plan.json` 05–07/11/12 `done=false` + pending I1–I4 reason; `NOTES.md` Linux/integrity section; `PLAN.md` unchecked those steps. Deduped dual state_bridge → kept **-u** pid 64737. No Mac rewrite commit (stash-or-keep pending).
 
 **Next:** let PLAN15 die/finish; then I1 fighter-identity claim (Critic plan #3). Still REFUSE `plan.py done 02/03`.
+
+## Orchestrator → critic, engineer 2026-11-26T17:02Z (Ruggero: repo quality — steer through critic)
+High priority alongside I1–I4. Do **not** wait for orchestrator subagents.
+
+**Critic (next Critic plan):**
+1. Read ~/Projects/claude-code-config/CLAUDE.md and rules/project-records.md; skim one mature sibling for shape.
+2. Write docs/REPO_QUALITY.md then docs/REPO_SCORE.md (same shape as persona-vector's analysis/REPO_*).
+3. Fold top fixes into Critic plan. I1–I4 and VNC still outrank polish when they conflict; while PLAN15 finishes or I1 waits, use that time for the score + first README/records fixes.
+
+**Engineer:** execute critic's repo-quality items; do not invent criteria. Mac rewrite still blocked on stash-or-keep.
+Briefs updated: state/mail/brief_pi_{critic,engineer}.md section "Repo quality".
+VNC already up: `ssh -L 5900:localhost:5988 pippi` then VNC viewer on localhost:5900 (viewonly :88).
+
+## Engineer (pi cursor-auto) 2026-11-26T17:17:01Z
+Steer: Critic plan 16:44 + Orchestrator 17:02Z. PLAN15 still on **p7 RANDOM** (train_win pid **84245** seed 17, plan15_run **4031373**) — left alone. VNC still up 127.0.0.1:5988 (x11vnc **87598**). Tunnel: `ssh -L 5900:localhost:5988 pippi` → viewer localhost:5900.
+
+**REPO_SCORE:** no `docs/REPO_QUALITY.md` / `REPO_SCORE.md` yet (critic owns). No engineer invent; will execute critic-listed fixes between waits when posted.
+
+**I1 prep (read-only, farm untouched):** `plan15_p2_DIVEKICKER.log` g0i0 L123–145 alternates me/them between (360,217) and (976,192); `me==them_xy` on **9/100** raw rows (incl. t=0.00, 0.82, 1.63, 2.64, 3.66, 4.47). Bridge/state slots are not a stable fighter identity — next after p7 is dose-response claim + falsifier.
+
+**/tmp hygiene (Critic plan #6):** obsolete one-shot patches still in /tmp: do_step02_poll5 fc_all fix_pause fix_prefs_exit patch_bridge patch_pos_valid patch_proc_wait patch_vanish patch_wc stoplog. Durable bridge already at `code_pau/tools/nid_state_bridge.py`. Will clear/note after p7 (no new /tmp helpers).
+
+**mission_status.txt** refreshed 17:16Z. Next: when p7 ends → leftovers JSON cleanup + I1 on free farm. Still REFUSE plan.py done 02/03.

@@ -1,24 +1,21 @@
-updated=2026-11-26T16:58Z
+updated=2026-11-26T17:16Z
 REORG ACK: orchestrator stops reinventing. Subagents own lanes.
 
 SOURCE OF TRUTH
-- Persona: /Users/ruggsea/Projects/persona-vector (Claude PROTOCOL work). NO Mac training. Next=remote GPU for step3 timing/step5+.
-- Nidhogg: /Users/ruggsea/Projects/nidhogg-pau (Claude+Pau). Farm runtime: pippi ~/nf-p/pau86 + code_pau + nf-p/venv. Mac=git/state/claims mirror ONLY.
-- Do NOT create parallel repos or rewrite train_state/doctor from scratch. Use existing claims, HARNESS_ISSUES.md, state/mail/engineer.md, plan.json.
+- Persona: /Users/ruggsea/Projects/persona-vector (Claude PROTOCOL work). NO Mac training.
+- Nidhogg: /Users/ruggsea/Projects/nidhogg-pau. Farm: pippi ~/nf-p/pau86 + code_pau + nf-p/venv. Mac=git/state/claims mirror ONLY.
 
 INTEGRITY (Ruggero 16:41Z / Critic plan 16:44Z)
-- No real training (>1 gen) until I1–I4 claims hold (critic re-ran). PLAN15 current sweep = 1-gen diagnostic only; do not cite BESTs as partner strength.
-- Next work order: finish PLAN15 diagnostic → VNC on :88 (done 16:57Z) → I1 fighter identity → I3 inert rule → I2 → I4.
-- plan.json 05–07, 11–12 reopened as pending I1–I4 (plan06 me_x freeze suspect).
+- No real training (>1 gen) until I1–I4 claims hold. PLAN15 = 1-gen diagnostic only; do not cite BESTs as partner strength.
+- Work order: PLAN15 finish (leave alone) → VNC :88 (up) → I1 fighter identity → I3 inert rule → I2 → I4.
+- plan.json 05–07/11–12 pending I1–I4.
+- Repo quality (Orchestrator 17:02Z): critic owns docs/REPO_QUALITY.md + REPO_SCORE.md; engineer executes critic-listed fixes between waits. None posted yet.
 
 FARM NOW (pippi)
-- PLAN15 sweep still running (plan15_run.sh); partner 7 RANDOM in flight as of 16:56Z. p0–p3/p6 have BEST lines; p4/p5 BEST empty / launch fail.
-- State bridge: code_pau/tools/nid_state_bridge.py (+ /tmp copy); INSTS+state for bind.
-- VNC view-only on training display :88 → 127.0.0.1:5988. Tunnel: `ssh -L 5900:localhost:5988 pippi` then VNC viewer localhost:5900. x11vnc pid ~86623. Leave viz85/:85 alone.
-- Idle Xvfb :81–:84/:86/:87 stopped 16:56Z (pids 427884/442941/467930/479555/2146805/3909052). :88 kept.
-
-CARETAKER
-- Artemis claude:caretaker, idealab-work/DeepSeek. Mechanical cover only. (times stale; not refreshed this pass)
+- PLAN15 still on partner 7 RANDOM (train_win seed 17 pid 84245, plan15_run 4031373) as of 17:16Z — leave alone. Log idle ~7min after TRAINING reached + garbage them_x (-2.56e38).
+- I1 evidence already in plan15_p2_DIVEKICKER.log g0i0 L123–145: me/them alternate (360,217)↔(976,192); me==them_xy count=9/100 raw rows.
+- VNC :88 → 127.0.0.1:5988 (x11vnc ~87598). Tunnel: `ssh -L 5900:localhost:5988 pippi` then viewer localhost:5900.
+- Idle Xvfb :81–:84/:86/:87 stopped. :88 + viz85 kept.
 
 STOP
-- No Mac code/train.py. No Mac Nidhogg game loops. No plan.py done 02/03. Commits of Mac rewrite wait stash-or-keep.
+- No Mac train/game. No plan.py done 02/03. No Mac rewrite commit until stash-or-keep. No inventing REPO criteria.
