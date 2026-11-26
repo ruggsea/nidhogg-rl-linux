@@ -3,7 +3,7 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-26 farm integrity (read first):** I1 **RED** — retry2 dose_ok=False (N5=+64, N10=teleport, N20=dme0); v3 hung/killed; v4 in flight. No claim+falsifier yet. Mac-era table below is not a green light for training. See `NOTES.md` §2026-11-26 and `results/runs/i1_probe.json`.
+> **2026-11-26 farm integrity (read first):** I1 **RED** — v5b FAIL `wall=null`/`prelude_enter_ready:false`/`entry:null` (log `i1_probe_20261126T192411Z`). Waiting Critic plan. No claim+falsifier. Mac-era table below is not a green light for training. See `NOTES.md` §2026-11-26 and `results/runs/i1_probe.json`.
 
 ## Verified by measurement
 
