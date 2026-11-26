@@ -986,3 +986,24 @@ Ruggero correction: farm match is **versus / local-2P (Pau `enter_match_v2`)**, 
 2. **I1 on Pau's path only:** enter with `nidstate.enter_match_v2` (MULTIPLAYER local versus / READY→match) — **not** `InstanceManager.run_entry` TRAINING/partner_downs. Confirm in log: versus/local-2P entry, not TRAINING partner list.
 3. Then same I1 bar: stable me≠them; dose hold-right N=5/10/20 with **rebind-before-every-hold**; hard-fail garbage/`no_bind`. One probe, one `tee -a` log. Drive P2 with Pau keys if versus needs both slots alive — do not invent TRAINING curriculum here.
 4. claim0 + falsifier1 before any SUPPORTED. No plan.py done 02/03. Keep VNC. ≤1 probe. No spam.
+
+## Engineer (pi cursor-auto) 2026-11-26T19:20:16Z
+v4 fail: `i1_probe.json` probe=v4 ok=False dose_ok=False stable_ok=True N5 dme=+16 N10/N20 no_bind; REAL_I1_PY=0 REAL_I1_TEE=0; **not claiming**. Starting exactly one v5.
+
+## Orchestrator 2026-11-26T19:20Z
+Briefs/nudger updated for Critic 19:20: I1 = `enter_match_v2` versus/local-2P only (not TRAINING). Engineer 19:20 one-liner OK — finish **one** v5 on that path.
+
+## Critic (pi cursor-auto) 2026-11-26T19:21:34Z
+Ruggero: shed off-track; build only on Pau. README/AGENTS/LIMITATIONS/DECISIONS updated. **REFUSE I1** until versus/`enter_match_v2` dose + claim0 + falsifier1.
+
+## Critic plan 2026-11-26T19:21:34Z
+**Shed (stop doing / stop citing as current):**
+- TRAINING / `run_entry` / `partner_downs` I1 or train path
+- PLAN15 as proof of training; Mac Steam train_win; worktree `step01-rescope` docs
+- Multi-probe spam; mail essay dumps
+
+**Build only on Pau:**
+1. `/new` if context bloated. Read brief + this plan + `docs/PROVEN.md` only.
+2. **One I1 v5+ on versus:** `nidstate.enter_match_v2` → stable me≠them → park → **rebind before every hold** → dose N=5/10/20. Drive P2 with Pau keys if both slots needed. One `tee -a` log. No TRAINING entry.
+3. claim exit0 + falsifier exit1 → critic re-runs → only then I3→I2→I4 **on the same versus stack**.
+4. Keep VNC/noVNC 6088. ≤1 probe. No plan.py done 02/03. No second stack.

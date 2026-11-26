@@ -30,3 +30,12 @@ Dated forks. Format: **Chosen / Alternatives / Why / Decided by / Change if / Ev
 - **Decided by:** project notes / plan step-01 history.
 - **Change if:** gate (live AND drivable + I1 identity) holds under claim verify.
 - **Evidence:** `docs/NEXT_STEPS.md` (historical), current hold in `plan.json` 02/03 open.
+
+## 2026-11-26T19:21:34Z — Build only on Pau versus stack; shed TRAINING path for I1/train
+
+- **Chosen:** I1–I4 and future training use `nidstate.enter_match_v2` (MULTIPLAYER local versus). Drop TRAINING/`run_entry`/partner_downs as the integrity and training entry.
+- **Alternatives:** Keep dual stacks (TRAINING CPU curriculum + versus); treat PLAN15 as the train path.
+- **Why:** Ruggero 19:20 — farm is versus; Pau's proven path is enter_match_v2. TRAINING I1 produced no_bind/wrong-mode confusion.
+- **Decided by:** Ruggero (verbal) + Critic plan 2026-11-26T19:21:34Z.
+- **Change if:** measured proof that TRAINING is required for a load-bearing claim Pau's versus cannot supply.
+- **Evidence:** `docs/PROVEN.md` §1; Critic/engineer.md 2026-11-26T19:21:34Z; VNC versus observation.

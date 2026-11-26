@@ -1,22 +1,24 @@
 # nidhogg-pau
 
-Train an agent that beats the CPU in **real Nidhogg** (memory reads + key injection — no
-simulator, no vision). **This Mac is a git / state / claims mirror only.** The game and all
-training run on the Linux farm.
+Train an agent in **real Nidhogg** (memory reads + key injection — no simulator, no vision).
+**Build only on Pau’s Linux stack:** `nidstate.enter_match_v2` = **MULTIPLAYER / local versus (2P)**,
+not SINGLE PLAYER → TRAINING → CPU partner. **This Mac is a git / state / claims mirror only.**
+Game + probes + training run on the Linux farm.
 
 | | |
 |---|---|
-| **Farm** | `pippi`: `~/nf-p/pau86` (farm root) + `~/nf-p/code_pau` (code) + `~/nf-p/venv` |
+| **Farm** | `pippi`: `~/nf-p/pau86` + `~/nf-p/code_pau` + `~/nf-p/venv` |
+| **Pau map** | `docs/PROVEN.md` + `nidstate.py` / `nidlinux.py` |
 | **Status now** | `state/mail/mission_status.txt` |
 | **Work list** | newest `## Critic plan` in `state/mail/engineer.md` |
-| **Integrity** | No real training (>1 gen) until I1–I4 claims hold. PLAN15 = 1-gen diagnostic only. |
+| **Integrity** | No real training (>1 gen) until I1–I4 on the **versus** path. |
 
-VNC (view-only): `ssh -L 5900:localhost:5988 pippi` → connect viewer to `localhost:5900`
-(display `:88` on the farm).
+noVNC (Pau): `ssh -L 6088:localhost:6088 pippi` → http://127.0.0.1:6088/vnc.html  
+(x11vnc on `:88` / port 5988; websockify 6088 already on farm)
 
-> **Superseded:** the Mac `uv venv` / `python3 train_win.py` / Steam-on-Mac runbook below is
-> historical. Do **not** launch the game or train on this Mac. See `AGENTS.md`,
-> `LIMITATIONS.md`, and `docs/REPO_SCORE.md`.
+> **Off-track / do not build on:** Mac Steam `train_win`, TRAINING-menu/`run_entry`/partner_downs
+> I1 probes, PLAN15 as “training works”, `.claude/worktrees/step01-rescope` docs (SUPERSEDED).
+> See `AGENTS.md`, `LIMITATIONS.md`, `docs/REPO_SCORE.md`.
 
 ---
 

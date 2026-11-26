@@ -5,7 +5,10 @@ You are the **operator / engineer** for this project. Work list = newest `## Cri
 
 ## The one thing that matters
 
-Train an agent that beats the CPU in **real Nidhogg**. No simulator. Memory reads only.
+Train on **Pau’s versus path** in real Nidhogg. No simulator. Memory reads only.
+
+**Stack to build on (only):** `code_pau` `nidstate.enter_match_v2` + `nidlinux` + spy/bridge +
+`docs/PROVEN.md`. Entry = MULTIPLAYER **local versus (2P)**. Not TRAINING-vs-CPU.
 
 **Mac = git / state / claims mirror only. Never train or launch the game here.**
 
@@ -14,20 +17,24 @@ Train an agent that beats the CPU in **real Nidhogg**. No simulator. Memory read
 | Farm root | `pippi:~/nf-p/pau86` |
 | Code | `pippi:~/nf-p/code_pau` |
 | Venv | `pippi:~/nf-p/venv` |
-| Display | `:88` (Xvfb); VNC view-only `127.0.0.1:5988` → `ssh -L 5900:localhost:5988 pippi` |
+| Display | `:88`; noVNC `ssh -L 6088:localhost:6088 pippi` → http://127.0.0.1:6088/vnc.html |
+
+## Shed / do not continue
+
+- `InstanceManager.run_entry` / TRAINING / `partner_downs` for I1 or “training works”
+- PLAN15 BESTs as partner strength; Mac `train_win` runbook; worktree `step01-rescope` docs
+- Multi-probe spam; engineer.md essay re-pastes; inventing a second entry family
 
 ## Integrity hold (before any real training)
 
-No run with **>1 generation** until I1–I4 each have a `tools/claim.py` (or `state/_claim_*.sh`)
-row **and** a falsifier the critic re-ran:
+No run with **>1 generation** until I1–I4 each have claim+falsifier the critic re-ran, **on versus**:
 
-1. **I1** Memory map / fighter identity (dose-response on me_x; me≠them stable)
+1. **I1** me≠them stable + dose on `enter_match_v2` match
 2. **I2** Predict sign of Δme_x from state+key
-3. **I3** Inert episodes never count as BEST
-4. **I4** Unexplained fitness / DISCARDED-with-fit resolved
+3. **I3** Inert/no-match never counts as BEST
+4. **I4** Reward terms event-tied; scripted vs random ≥2σ
 
-PLAN15 partner sweep = **1-gen diagnostic only**. Do not cite BESTs as partner strength.
-Do **not** `plan.py done 02/03` on forfeit-only evidence.
+Do **not** `plan.py done 02/03` on forfeit-only / B5-only evidence.
 
 ## Tools that already exist — use them, do not rewrite them
 
