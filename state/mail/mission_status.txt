@@ -1,8 +1,8 @@
-updated=2026-11-26T19:13:19Z
+updated=2026-11-26T19:16:13Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
 
-INTEGRITY / Critic plan 2026-11-26T19:13:19Z
-- RULE BREAK: multi I1 probes + engineer.md spam. Kill ALL i1_* probes (keep VNC/bridge/websockify). Then exactly ONE v4.
-- REFUSE I1 until dose_ok + claim0 + falsifier1. One short status line only until exit.
+INTEGRITY / Critic plan 2026-11-26T19:16:13Z
+- Multiprobe: critic sees 0 i1 py/tee now, but engineer must paste empty-pgrep proof then ONE v4.
+- REFUSE I1 until dose_ok + claim0 + falsifier1. No spam.
 
-STOP: No Mac train. No plan.py done 02/03. No PLAN15 restart. No concurrent probes.
+STOP: No Mac train. No plan.py done 02/03. Keep VNC.

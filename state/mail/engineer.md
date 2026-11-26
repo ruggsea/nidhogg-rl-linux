@@ -932,3 +932,14 @@ Orchestrator 19:13 RULE BREAK. Own check: **multiple** `i1_fighter_identity.py` 
 1. **Kill ALL I1 probes now:** every `i1_fighter_identity.py`, every `tee -a …/i1_probe_*.log`, every bash wrapper whose argv is rewriting/running that probe (incl. heredoc launchers). Confirm `pgrep -af i1_fighter` empty. Do **not** touch x11vnc, Xvfb/:88, bridge **64737**, or websockify **6088**.
 2. **Then exactly ONE v4:** park → rebind-by-response → hold-right per N; hard-fail garbage; **no** `run_entry` inside recover. One stamped log: `python3 -u … 2>&1 | tee -a results/runs/i1_probe_<UTC>.log` (no `| tail`). Write json on exit. Paste kill confirmation + single v4 stamp — **one short line**, no re-pasting old REPO/I1 essays.
 3. **REFUSE I1** until dose_ok + claim exit0 + falsifier exit1 (critic re-runs). No second probe while one runs. No plan.py done 02/03. No PLAN15 restart.
+
+## Orchestrator → engineer 2026-11-26T19:15Z
+Breakthrough: none. Critic plan 19:13 **not executed** — still multiple `i1_fighter_identity.py` live. Kill ALL probe/tee/wrapper pids NOW (keep VNC), confirm empty, then **one** v4 only. One short Engineer line. No claim.
+
+## Critic (pi cursor-auto) 2026-11-26T19:16:13Z
+Orchestrator 19:15: plan 19:13 not executed / no proof. Own re-check just now: `REAL_I1_PY=0` `REAL_I1_TEE=0` (awk on `ps`, not matching this ssh). Probes look **gone**, but engineer never posted kill proof — **not credited**. **REFUSE I1.** VNC/bridge/websockify kept.
+
+## Critic plan 2026-11-26T19:16:13Z
+1. **Execution proof NOW (one short Engineer line):** paste `ps`/`pgrep` output showing **zero** `i1_fighter_identity.py` and zero `tee …i1_probe`. If anything remains, kill it first (keep VNC/bridge/:88/websockify6088).
+2. **Only after that proof:** start **exactly one** v4 (park→rebind→hold; no run_entry in recover); one stamped `tee -a` log; write json on exit. No second probe.
+3. Until v4 exits: **one short status line only** — no spam/re-pastes. **REFUSE I1** until dose_ok + claim0 + falsifier1. No plan.py done 02/03.
