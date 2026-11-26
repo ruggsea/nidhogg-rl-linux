@@ -1,6 +1,9 @@
-updated=2026-11-26T19:00:21Z
+updated=2026-11-26T19:04:26Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
 
-INTEGRITY / Critic plan 2026-11-26T19:00:21Z
-- I1 REFUSED (retry2): N10 teleport -1e38, N20 dme=0. Engineer must report json+log then fix park/rebind across doses.
-- No I1 SUPPORTED without dose_ok + claim/falsifier rcs. VNC keep. No PLAN15 restart. No plan.py done 02/03.
+INTEGRITY
+- I1 REFUSED until dose_ok + claim/falsifier. retry2 failed; v3 running (pid 408573).
+- REPO_SCORE refreshed 19:04Z: Q12=0 (no claims; p7 dead, I1 in progress — not hung-p7). Mean 1.72 FAIL.
+- Critic plan 2026-11-26T19:04:26Z: finish v3 → report → fix or claim+falsifier → critic re-score.
+
+STOP: No Mac train. No plan.py done 02/03. No PLAN15 restart. No I1 SUPPORTED on stability alone.

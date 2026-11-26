@@ -1,33 +1,33 @@
-# Repo score — 2026-11-26T18:22Z
+# Repo score — 2026-11-26T19:04Z
 
-Re-score after engineer REPO batch (eng 17:25Z). Criteria: `docs/REPO_QUALITY.md`.
+Evidence refresh (Orchestrator 19:03Z). Scores unchanged pending I1 v3 exit + claim/falsifier.
+Criteria: `docs/REPO_QUALITY.md`. Prior polish batch eng 17:25Z still holds for Q01–Q08/Q10–Q11/Q13–Q18.
 
 | id | score | evidence |
 |---|---|---|
-| Q01 | 2 | Root README first screen: Mac=mirror, farm=pippi `~/nf-p/{pau86,code_pau,venv}`, mission_status + Critic plan, I1–I4 hold, Mac runbook marked superseded. |
-| Q02 | 2 | `AGENTS.md` rewritten: farm ops, no Mac train/gameslot, I1–I4, Critic plan, VNC tunnel. |
-| Q03 | 2 | `mission_status.txt` `updated=2026-11-26T17:57:35Z`: p7 hung note, VNC, REPO batch landed, I1–I4. |
+| Q01 | 2 | Root README: Mac=mirror, farm=pippi `~/nf-p/{pau86,code_pau,venv}`, mission_status + Critic plan, I1–I4 hold. |
+| Q02 | 2 | `AGENTS.md`: farm ops, no Mac train, I1–I4, Critic plan, VNC tunnel. |
+| Q03 | 1 | `mission_status.txt` needs refresh after I1 v3 exit (was 19:00Z; v3 still running). |
 | Q04 | 2 | plan.json 02+03 `done=false`; 05–07/11/12 pending I1–I4. |
-| Q05 | 2 | `NOTES.md` §2026-11-26 Linux farm/integrity + me/them paths; `docs/STATE.md` farm integrity banner (I1 red). |
-| Q06 | 2 | Root `DECISIONS.md`: farm-only, I1–I4 hold, step-01 rescope (Chosen/Alt/Why/By/Change if/Evidence). |
-| Q07 | 2 | Root `LIMITATIONS.md`: farm-only, stash-or-keep, PLAN15 diagnostic, I1–I4, 02/03 open, /tmp, AppleDouble. |
-| Q08 | 2 | `find . -name '._*' \| wc -l` → **0**. `.gitignore` has `._*` / `**/._*`. |
-| Q09 | 1 | Still 176 claims; PLAN15 BESTs not accepted. No new integrity claim rows. |
-| Q10 | 2 | `results/figures/plan15_partner_fitness.png` (+ twin bests.png), PNG 1200×540. Eng named command. Diagnostic only. |
-| Q11 | 2 | SUPERSEDED banners on `docs/NEXT_STEPS.md`, `docs/OVERVIEW.md`; worktree `docs/SUPERSEDED.md`. Entry = README+AGENTS+mission_status. |
-| Q12 | 0 | No I1–I4 claim/falsifier scripts yet. Farm still on hung p7 — I1 blocked. |
-| Q13 | 2 | PLAN.md still render of plan.json; 02/03 open. |
-| Q14 | 2 | `.gitignore` adds `._*`, `*.pt`/`*.pth`/`ckpt*`. |
+| Q05 | 2 | `NOTES.md` Linux/integrity + me/them; `docs/STATE.md` I1-red banner (engineer to update after v3). |
+| Q06 | 2 | Root `DECISIONS.md`: farm-only, I1–I4 hold, step-01 rescope. |
+| Q07 | 2 | Root `LIMITATIONS.md`: farm-only, PLAN15 diagnostic, I1–I4, 02/03 open. |
+| Q08 | 2 | `find . -name '._*'` → 0; gitignore has `._*`. |
+| Q09 | 1 | Still 176 `claims.jsonl` rows; **no** I1 claim/falsifier. PLAN15 BESTs not accepted. I1 probes exist as evidence only (`i1_probe.json` retry2 `dose_ok=False`). |
+| Q10 | 2 | `results/figures/plan15_partner_fitness.png` diagnostic only. |
+| Q11 | 2 | SUPERSEDED banners; entry = README+AGENTS+mission_status. |
+| Q12 | 0 | **No I1–I4 claim/falsifier scripts.** Farm free (p7 **84245/4031373 dead**, PLAN15 closed `plan15_partners.json`). I1 in progress: retry2 REFUSED (N10 teleport −1e38, N20 dme=0); v3 `i1_fighter_identity.py` still running — **not** a pass. |
+| Q13 | 2 | PLAN.md render of plan.json; 02/03 open. |
+| Q14 | 2 | `.gitignore` has `._*`, `*.pt`/`*.pth`/`ckpt*`. |
 | Q15 | 2 | Cold open of README answers goal / farm / blocked / next. |
-| Q16 | 2 | pippi `/tmp/{do_step02_poll5,fc_all,fix_*,patch_*,stoplog}.py` → `*.OBSOLETE_20261126` (10 files); live `.py` gone. |
-| Q17 | 2 | Worktree docs marked SUPERSEDED; root entry path clear. |
-| Q18 | 2 | NOTES integrity section + EXPERIMENTS + claims cover tries; PLAN15 findings greppable. |
+| Q16 | 2 | `/tmp` one-shots → `*.OBSOLETE_20261126`. |
+| Q17 | 2 | Worktree docs SUPERSEDED. |
+| Q18 | 2 | NOTES + EXPERIMENTS + claims greppable; I1 probe logs under `results/runs/i1_probe_*`. |
 
-**Weighted sum:** 2·3+2·3+2·2+2·3+2·2+2·2+2·1+2·2+1·3+2·2+2·2+0·3+2·1+2·1+2·2+2·2+2·1+2·1 = **63 / 72**. Weighted mean ≈ **1.75**. Pass bar (≥1.5 and Q01/Q02/Q04/Q09/Q12 ≥1): **FAIL** only on **Q12=0** (and Q09 still 1). Polish batch landed; integrity claims still missing.
+**Weighted sum:** **62 / 72** (Q03 2→1). Weighted mean ≈ **1.72**. Pass bar: **FAIL** (Q12=0, Q09=1).
 
-## Remaining top fixes (after I1 farm free)
+## Remaining top fixes
 
-1. **Q12** — I1 claim+falsifier (then I3/I2/I4). Blocks pass bar.
-2. **Q09** — Land those as accepted numbers with critic re-run.
-3. When p7 dies: partners JSON (no `.tmp`), then I1 on free farm.
-4. Re-score once Q12 ≥1.
+1. **Q12 / Q09** — After I1 v3 exits: if `dose_ok` land claim+falsifier; critic re-runs; then re-score. Until then keep Q12=0 / REFUSE I1.
+2. Engineer: paste v3 json+log; refresh `mission_status.txt` + `docs/STATE.md` I1 banner (red until dose_ok+claim/falsifier).
+3. One probe pid only; leave VNC/bridge/:88.
