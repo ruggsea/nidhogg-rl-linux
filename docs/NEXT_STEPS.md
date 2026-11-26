@@ -1,5 +1,8 @@
 # Next steps — from proof of concept to a training interface
 
+> **SUPERSEDED 2026-11-26.** Entry path is root `README.md` + `state/mail/mission_status.txt` +
+> newest Critic plan in `state/mail/engineer.md`. Training is farm-only (pippi). Kept for history.
+
 Read `docs/OVERVIEW.md` first (what exists and why), then this.
 
 ## 0. Is moving to the server the right call?

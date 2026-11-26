@@ -5081,6 +5081,7 @@ cycling the language in OPTIONS.
 - **`_pos_valid` rejected `x==0`:** left-wall `me_x=0` made `has_players=False` after a live AND drivable entry and hung ensure_match. Allow `abs(x) < 3000`.
 - **Linux `_Proc` lacked `wait`/`kill`:** `reset_all` → `close()` → AttributeError mid PLAN15. Added stubs.
 - **prefs re-lock:** `launch()` copies prefs_locked.ini then `chmod 444`. Exit pristine restore must `chmod 644` first (now in train_win.py).
-- **me/them swap (I1 red flag, critic):** PLAN15 p2 g0i0 raw samples swap me/them between samples and sometimes me==them. Fighter identity unstable → every me_x/them_x fitness suspect until I1 dose-response claim.
-- **Inert BEST (I3):** p1/p2 BEST lines came from `inert=True` episodes. Exclusion rule not applied uniformly. DISCARDED episode still printed fit=37.0 (I4 unexplained).
+- **me/them swap (I1 red flag, critic):** PLAN15 p2 g0i0 raw samples (`results/runs/plan15_p2_DIVEKICKER.log` L123–145) alternate me/them between (360,217)↔(976,192); `me==them_xy` on 9/100 raw rows (t=0.00, 0.82, 1.63, 2.64, 3.66, 4.47, …). Fighter identity unstable → every me_x/them_x fitness suspect until I1 dose-response claim.
+- **Inert BEST (I3):** p1/p2 BEST lines came from `inert=True` episodes. Exclusion rule not applied uniformly. DISCARDED episode still printed fit=37.0 (I4 unexplained) — see p4 BRAWLER `fit=37.0` with `inert=True`.
 - PLAN15 accept path (keys → partner list) partially works (`live AND drivable`, some inert=False fits) but is diagnostic only until I1–I4.
+- **Figure:** `results/figures/plan15_partner_bests.png` — reported BEST bars; hatched = critic-refused / inert-tainted (not partner strength).

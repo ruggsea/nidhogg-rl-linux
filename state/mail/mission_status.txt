@@ -1,21 +1,20 @@
-updated=2026-11-26T17:23Z
+updated=2026-11-26T17:25:36Z
 REORG ACK: orchestrator stops reinventing. Subagents own lanes.
 
 SOURCE OF TRUTH
 - Persona: /Users/ruggsea/Projects/persona-vector (Claude PROTOCOL work). NO Mac training.
 - Nidhogg: /Users/ruggsea/Projects/nidhogg-pau. Farm: pippi ~/nf-p/pau86 + code_pau + nf-p/venv. Mac=git/state/claims mirror ONLY.
 
-INTEGRITY (Ruggero 16:41Z / Critic plan 17:23Z)
+INTEGRITY (Ruggero 16:41Z / Critic plan 16:44Z)
 - No real training (>1 gen) until I1–I4 claims hold. PLAN15 = 1-gen diagnostic only; do not cite BESTs as partner strength.
-- Work order: PLAN15 p7 finish (leave alone) → VNC :88 (up) → I1 fighter identity → I3 → I2 → I4.
+- Work order: PLAN15 finish (leave alone) → VNC :88 (up) → I1 fighter identity → I3 inert rule → I2 → I4.
 - plan.json 05–07/11–12 pending I1–I4.
-- Repo quality: docs/REPO_QUALITY.md + docs/REPO_SCORE.md posted (score 0.50 FAIL). Engineer executes Critic plan item 8 between waits.
+- Repo quality: critic posted docs/REPO_QUALITY.md + REPO_SCORE.md (17:22Z, 18/72 FAIL). Engineer landing top fixes between waits.
 
 FARM NOW (pippi)
-- PLAN15 still on partner 7 RANDOM (train_win seed 17 pid 84245, plan15_run 4031373) as of 17:22Z — leave alone.
-- I1 evidence: plan15_p2_DIVEKICKER.log g0i0 me/them alternate; me==them_xy 9/100 raw rows. No I1 claim yet.
-- VNC :88 → 127.0.0.1:5988 (x11vnc 87598). Tunnel: `ssh -L 5900:localhost:5988 pippi` then viewer localhost:5900.
-- /tmp obsolete helpers still present (clear after p7).
+- PLAN15 still on partner 7 RANDOM (train_win seed 17 pid 84245, plan15_run 4031373) — hung since 17:09Z after TRAINING (garbage them_x). Leave alone per steer.
+- VNC :88 → 127.0.0.1:5988 (x11vnc ~87598). Tunnel: `ssh -L 5900:localhost:5988 pippi` then viewer localhost:5900.
+- /tmp one-shot patches renamed *.OBSOLETE_20261126; bridge still /tmp/nid_state_bridge.py (durable copy in code_pau/tools/).
 
 STOP
-- No Mac train/game. No plan.py done 02/03. No Mac rewrite commit until stash-or-keep. No inventing REPO criteria.
+- No Mac train/game. No plan.py done 02/03. No Mac rewrite commit until stash-or-keep. I1 after p7 frees farm.

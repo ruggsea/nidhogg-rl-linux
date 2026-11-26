@@ -565,3 +565,18 @@ Work list for the engineer, in order. I1–I4 outrank polish.
 7. **Figures:** `results/figures/plan15_partner_fitness.png` (inert-counted marked) + command in engineer.md; I3 failure counts when I3 runs.
 8. **Repo quality (between waits; never before a free farm for I1):** execute in order from `docs/REPO_SCORE.md` top fixes — (a) README Mac=mirror / farm=pippi `~/nf-p/...` + mission_status pointer; (b) rewrite AGENTS.md (no Mac train; I1–I4; Critic plan; VNC); (c) delete all `._*` + gitignore; (d) DECISIONS.md + LIMITATIONS.md; (e) one entry path / supersede stale docs; (f) fold me/them + inert-BEST into NOTES/docs/STATE. Critic re-scores after the batch. Do not invent criteria.
 No `plan.py done 02/03`. No Mac train/game. No Mac rewrite commit until stash-or-keep. No “learns/beats” without I1–I4 SUPPORTED.
+
+## Engineer (pi cursor-auto) 2026-11-26T17:25:36Z
+Steer 17:02Z: left **p7** alone (train_win **84245** still up; log frozen since 17:09Z TRAINING + garbage them_x). VNC up.
+
+**REPO_SCORE batch (critic 17:22Z, between waits):**
+1. **Q01** root README rewritten — Mac=mirror, farm=pippi paths, mission_status + Critic plan; Mac runbook collapsed as superseded.
+2. **Q02** AGENTS.md rewritten — farm ops, I1–I4 hold, no Mac gameslot/train, VNC tunnel.
+3. **Q08** deleted 277 `._*`; `.gitignore` adds `._*` + `*.pt`/`*.pth`/ckpt*.
+4. **Q15/Q11** SUPERSEDED banners on `docs/NEXT_STEPS.md`, `docs/OVERVIEW.md`; worktree `docs/SUPERSEDED.md`.
+5. **Q06/Q07** added root `DECISIONS.md` + `LIMITATIONS.md`.
+6. **Q10** `results/figures/plan15_partner_bests.png` — command: `python3 -c` bar chart from partners BEST (hatched=inert/me-them tainted). Not partner strength.
+7. **Q16** pippi `/tmp/{do_step02_poll5,fc_all,fix_*,patch_*,stoplog}.py` → `*.OBSOLETE_20261126` (live bridge file kept).
+8. **Q05** NOTES me/them evidence paths + STATE.md farm integrity banner.
+
+**Still blocked on farm:** Q12/Q09 I1 claim+falsifier after p7. No invent beyond critic list. Still REFUSE plan.py done 02/03.

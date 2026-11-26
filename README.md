@@ -1,13 +1,22 @@
-# nidhogg-rl
+# nidhogg-pau
 
-An agent that learns to play **the real, locally installed copy of Nidhogg** — not a
-simulator. It reads the game's state out of process memory (no computer vision) and drives
-it with injected keystrokes, so the candidate policy is always playing the actual game.
+Train an agent that beats the CPU in **real Nidhogg** (memory reads + key injection — no
+simulator, no vision). **This Mac is a git / state / claims mirror only.** The game and all
+training run on the Linux farm.
 
-**Status: not yet beating the CPU.** The plumbing works end to end (it enters a Training
-match against the CPU, plays it, scores it, evolves, and repeats). The learned policy does
-not yet win rounds. Every number in this repo is measured; see `docs/STATE.md` for what is
-verified, and `docs/EXPERIMENTS.md` for what was tried and abandoned.
+| | |
+|---|---|
+| **Farm** | `pippi`: `~/nf-p/pau86` (farm root) + `~/nf-p/code_pau` (code) + `~/nf-p/venv` |
+| **Status now** | `state/mail/mission_status.txt` |
+| **Work list** | newest `## Critic plan` in `state/mail/engineer.md` |
+| **Integrity** | No real training (>1 gen) until I1–I4 claims hold. PLAN15 = 1-gen diagnostic only. |
+
+VNC (view-only): `ssh -L 5900:localhost:5988 pippi` → connect viewer to `localhost:5900`
+(display `:88` on the farm).
+
+> **Superseded:** the Mac `uv venv` / `python3 train_win.py` / Steam-on-Mac runbook below is
+> historical. Do **not** launch the game or train on this Mac. See `AGENTS.md`,
+> `LIMITATIONS.md`, and `docs/REPO_SCORE.md`.
 
 ---
 
@@ -18,86 +27,58 @@ verified, and `docs/EXPERIMENTS.md` for what was tried and abandoned.
 Mermaid version: [`docs/nn_diagram.md`](docs/nn_diagram.md). Generated from `neuro.py` by
 `tools/nn_diagram.py` (PNG/SVG) and `tools/nn_mermaid.py` (Mermaid).
 
-## How it works
+## How it works (farm)
 
 ```
 ┌────────────────────────┐         ┌───────────────────────────┐
-│ Nidhogg (real binary)  │         │ Python trainer            │
-│  hook/inject.dylib     │         │  train_win.py             │
-│   ├ reads fighter x/y  │──state──▶  ├ observation: 8 numbers  │
-│   ├ injects keys       │◀─keys────  ├ policy: neuro.py (935 w)│
-│   └ parks window 2 px  │  files    ├ fitness → GA            │
-└────────────────────────┘         └───────────────────────────┘
+│ Nidhogg (Linux / proot)│         │ Python trainer (code_pau) │
+│  nidlinux + state spy  │──state──▶  train_win.py / neuro.py  │
+│  key injection         │◀─keys────  fitness → GA             │
+└────────────────────────┘  /tmp     └───────────────────────────┘
 ```
 
-State and commands are plain files in `/tmp` (`nid_state_<id>.txt`, `nid_keys_<id>.txt`, …),
-so the Python side needs no IPC and the game side never blocks.
+State and commands are plain files in `/tmp` on the farm (`nid_state_<id>.txt`,
+`nid_keys_<id>.txt`, `nid_insts_<id>.txt`, …). Durable bridge:
+`code_pau/tools/nid_state_bridge.py`.
 
 | File | Role |
 |---|---|
-| `hook/inject.m`, `hook/hook.s` | Injected dylib: memory reads, key injection, window hiding, mute |
-| `train_state.py` | Launches the game, enters a Training match, reads state, sends keys |
-| `neuro.py` | 8→32→16→7 network (tanh), GA, and hand-written seed policies |
+| `train_state.py` | Launch, enter Training match, read state, send keys |
+| `neuro.py` | 8→32→16→7 network (tanh), GA, seed policies |
 | `train_win.py` | Episode loop, reward, generational training |
-| `evaluate.py` | Win-rate measurement (the only number that counts) |
-| `agent_play.py` + `play_vs_agent.sh` | Human vs. trained agent |
-| `train_forever.sh` | Unattended train → evaluate → repeat loop |
-| `NOTES.md` | Lab notebook: every experiment, including the failures |
-
-## Running it
-
-```bash
-uv venv .venv && source .venv/bin/activate      # Python 3.12
-uv pip install numpy matplotlib pyobjc
-
-clang -dynamiclib -fobjc-arc -O1 -arch arm64 \
-  -framework Cocoa -framework OpenGL -framework CoreVideo \
-  -o hook/inject.dylib hook/inject.m hook/hook.s
-codesign --force -s - hook/inject.dylib
-
-python3 train_win.py --instances 1 --gens 60 --pop 10 --window 60
-```
-
-Requirements and constraints baked into the code:
-
-* Nidhogg installed through Steam (path configured in `train_state.py`).
-* **Nothing appears on screen.** The game window is resized to a 2-pixel hairline parked at
-  the screen edge; no focus stealing, no fullscreen, no dialogs.
-* **The game is muted, never the Mac.** `prefs_locked.ini` is restored before every launch
-  (audio zeroed, language forced to English).
-* **At most two game processes.** `launch()` kills leftovers first; Steam's re-exec chain is
-  the reason this needs enforcing.
+| `evaluate.py` | Win-rate measurement |
+| `NOTES.md` | Lab notebook (incl. 2026-11-26 Linux/integrity) |
+| `docs/REPO_QUALITY.md` / `REPO_SCORE.md` | Critic-owned quality bar |
 
 ## Design decisions worth knowing
 
-* **Memory, not vision.** Reading `CInstance` x/y out of the process at ~40 Hz is exact and
-  needs no permissions. `legacy/` contains the abandoned screen-capture approach.
-* **The Training menu, not `room_goto`.** Jumping rooms directly produces a match with an
-  *inert* CPU; the menu path produces one that actually plays. The entry is
-  `13, W, 13, S, S, 13, 13, 13` — **two** S presses select TRAINING, one selects the
-  2-player ARCADE room, which waits forever for a second human.
-* **Entry is verified by CPU motion**, not by the fighter's y: a live training match and the
-  ARCADE waiting room both show fighters at y≈128.
-* **A Training match is one round.** Re-entry per episode is required; accepting into the
-  next round does not work.
-* **Speed is raised only after entry.** At speed 180 the game runs ~47 fps, but the menu
-  timing is calibrated at the default ~24 fps, so raising it earlier makes entry overshoot.
-
-## What has been measured
-
-Short version; details and dates in `docs/STATE.md`.
-
-* Keyboard control works: holding a direction moves the fighter at ~12 px/s.
-* Strikes only land at horizontal distance **≤ 22 px** (at 59 px they miss entirely).
-* Running alone does **not** win: holding right for 120 s gains ~366 px and is then pushed
-  back to the start — the CPU has to be beaten, not outrun.
-* Training matches are one round; the CPU wins by crossing the goal line at x=250.
+* **Memory, not vision.** Fighter x/y from process memory; exact, no permissions theatre.
+* **Training menu, not `room_goto`.** Direct room jumps yield an inert CPU; menu path yields a live opponent.
+* **I1 fighter identity is currently red.** PLAN15 p2 logs show me/them swapping and me==them samples — every me_x fitness is suspect until the dose-response claim holds.
+* **Mac rewrite of train_state/train_win is blocked** until stash-or-keep is decided (farm diffs live on pippi).
 
 ## Repo layout
 
 ```
-hook/          injected dylib (state reader, key injector, window handling)
-docs/          STATE.md (verified facts) and EXPERIMENTS.md (what failed and why)
-legacy/        abandoned approaches, kept for the record (incl. a banned simulator)
-NOTES.md       chronological lab notebook
+docs/          STATE, EXPERIMENTS, REPO_QUALITY/SCORE
+state/mail/    mission_status, engineer.md (Critic plan), briefs
+tools/         claim.py, plan.py, doctor, farm helpers
+NOTES.md       chronological notebook
+legacy/        abandoned approaches
 ```
+
+## Historical Mac runbook (do not use)
+
+<details>
+<summary>Old Mac Steam / inject.dylib launch (superseded 2026-11)</summary>
+
+```bash
+# DO NOT RUN ON THIS MAC — farm only
+uv venv .venv && source .venv/bin/activate
+python3 train_win.py --instances 1 --gens 60 --pop 10 --window 60
+```
+
+Requirements that applied to the Mac era: Steam Nidhogg, muted via prefs only, at most two
+game processes, window parking. All of that is farm ops now — see `AGENTS.md`.
+
+</details>

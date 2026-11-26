@@ -1,56 +1,55 @@
 # AGENTS.md — nidhogg-pau (project-local, deliberately short)
 
-You are the **operator** for this project. Read `state/plan.json` (via `python3 tools/plan.py show`) and
-work the next open step. The engineer session builds the harness; it does not drive the game.
+You are the **operator / engineer** for this project. Work list = newest `## Critic plan` in
+`state/mail/engineer.md`, then Orchestrator notes. Read `state/mail/mission_status.txt` first.
 
 ## The one thing that matters
 
-Train an agent that beats the CPU in the **real, locally installed** macOS Nidhogg. No simulator, no
-computer vision for state (memory reads only). One instance.
+Train an agent that beats the CPU in **real Nidhogg**. No simulator. Memory reads only.
 
-The game **may be visible** (relaxed 2026-11-08) but **must be muted**, and the muting is done only
-through the game's own prefs (`[audio] unmuted=0`, `musicVol=0`, restored from `prefs_locked.ini` and
-chmod 444 during a run). Never touch the Mac's system volume. Visible is measured 120-320 fps versus
-~24-30 parked, so visible is the default; `NID_HIDDEN=1` parks it and costs 2x.
+**Mac = git / state / claims mirror only. Never train or launch the game here.**
 
-## Own the game before touching it
+| | |
+|---|---|
+| Farm root | `pippi:~/nf-p/pau86` |
+| Code | `pippi:~/nf-p/code_pau` |
+| Venv | `pippi:~/nf-p/venv` |
+| Display | `:88` (Xvfb); VNC view-only `127.0.0.1:5988` → `ssh -L 5900:localhost:5988 pippi` |
 
-    python3 tools/gameslot.py acquire operator --ttl 7200     # before launch/keys
-    python3 tools/gameslot.py release                          # when you stop
+## Integrity hold (before any real training)
 
-If it says BUSY, someone else owns the game. Do not fight it.
+No run with **>1 generation** until I1–I4 each have a `tools/claim.py` (or `state/_claim_*.sh`)
+row **and** a falsifier the critic re-ran:
+
+1. **I1** Memory map / fighter identity (dose-response on me_x; me≠them stable)
+2. **I2** Predict sign of Δme_x from state+key
+3. **I3** Inert episodes never count as BEST
+4. **I4** Unexplained fitness / DISCARDED-with-fit resolved
+
+PLAN15 partner sweep = **1-gen diagnostic only**. Do not cite BESTs as partner strength.
+Do **not** `plan.py done 02/03` on forfeit-only evidence.
 
 ## Tools that already exist — use them, do not rewrite them
 
 | command | purpose |
 |---|---|
-| `python3 tools/plan.py show / next / done / block` | the plan; `done` requires evidence |
-| `python3 tools/doctor.py --gate` | environment health; refuses on WARN/FAIL |
-| `python3 tools/attest.py` | proves the path is real: room -> bind by response -> control gate -> opponent |
-| `python3 game.py status/enter/state/do/rounds/shot` | one choke point for driving the game |
-| `python3 tools/claim.py record/verify/fixtures` | every number you report needs `--cmd` and `--falsifier` |
-| `python3 tools/mailbox.py check --as operator` | messages from the engineer; reply with `post --to engineer` |
+| `python3 tools/plan.py show / next / done / block` | plan; `done` needs evidence |
+| `python3 tools/doctor.py --gate` | env health |
+| `python3 tools/claim.py record/verify/fixtures` | every number needs `--cmd` + `--falsifier` |
+| `python3 tools/mailbox.py check --as operator` | mail |
+| farm: `train_win.py` / `enter_match_v2` / `nid_state_bridge.py` | live match + state |
 
-## Facts already established (do NOT re-derive)
-
-`state/facts.json` holds them with provenance: room table (`2 rMainMenu`, `3 rMultiMenu`, `17 rLevelSelect`,
-`26-77` arenas), the menu scrolling under a fixed highlight bar (so selection is identified by the text
-under the bar, not a coordinate), `_Current_Room` being an int32 global, the player object index varying
-by room (bind by response, never by name), and the launch env requirements.
+Mac `tools/gameslot.py acquire` is **legacy** — the game is not on this Mac.
 
 ## Rules that cost hours to learn
 
-1. Never trust a motion-only liveness test: the title screen runs a **live attract demo inside an arena
-   room**. Only "D moves us right AND A moves us left" distinguishes control.
-2. Never press D/A outside an arena room: in menus they are slider input and inside OPTIONS they cycle
-   the language.
-3. Never press Enter on an unknown cursor: it selects whatever is highlighted.
-4. Never write `/tmp/nid_room_<id>.txt` — it is a `room_goto` command (renamed to `nid_roomgoto`).
-5. One game process. `nice 19` / background QoS measured 4x slower (30 fps vs 120).
-6. Never report a win rate you have not measured. As of now `rounds_won` is 0 and **no round transition
-   has ever been observed** — that is the measurement the project is for.
+1. Never trust motion-only liveness: title attract demo is a live arena. Need D/A control gate.
+2. Never press D/A outside an arena (menus = sliders / language).
+3. Never write `/tmp/nid_room_<id>.txt` — that is `room_goto`.
+4. No new load-bearing helpers in `/tmp` — durable code under `code_pau/tools/`.
+5. Never report a win rate you have not measured under I1–I4.
+6. Between waits: execute critic `docs/REPO_SCORE.md` top fixes; refresh `mission_status.txt` only when content changed; append engineer.md ≥ every 30 min when working.
 
 ## Reporting
 
-Results, not activity. Numbers with their command. Half a sentence for anything uncertain. The user
-checks whether numbers survive scrutiny, not whether you were busy.
+Results, not activity. Numbers with their command. Half a sentence for anything uncertain.

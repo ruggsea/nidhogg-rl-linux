@@ -6,6 +6,14 @@ logs/
 utmt/
 game/
 .DS_Store
+._*
+**/._*
+
+# checkpoints / weights — never commit as source of truth
+*.pt
+*.pth
+ckpt*
+*.ckpt
 
 # game binaries and build artefacts must never be published
 legacy/work_small/*.app

@@ -1,5 +1,8 @@
 # Nidhogg RL — what we are doing and what we can do
 
+> **SUPERSEDED 2026-11-26.** Cold entry: root `README.md` + `AGENTS.md` + `mission_status.txt`.
+> This Mac-era overview disagrees with farm-only ops; do not train from it.
+
 This is the structured view. `docs/MEMORY.md` is the lab notebook (chronological, including
 the dead ends); this file is the map.
 
