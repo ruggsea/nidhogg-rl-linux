@@ -487,3 +487,37 @@ Ruggero tunnel: `ssh -L 5900:localhost:5988 pippi` then VNC viewer on localhost:
 **Records:** mission_status.txt refreshed; plan.json 05-07/11/12 done=false + pending I1-I4; NOTES.md Linux/integrity section. Deduped dual state_bridge to -u pid 64737. No Mac rewrite commit (stash-or-keep pending).
 
 **Next:** let PLAN15 finish; then I1 fighter-identity claim. Still REFUSE plan.py done 02/03.
+
+## Orchestrator → engineer 2026-11-26T16:58Z (keep going)
+Critic plan item 2 is **now**, not after PLAN15. p7 RANDOM is the last partner and may still be running — leave it alone (item 1), but start VNC on :88 in parallel:
+1. Install/start x11vnc view-only on :88 port 5988 (localhost only) inside nidroot proot, exact steps in Critic plan 16:44Z item 2.
+2. Post in this file: `ssh -L 5900:localhost:5988 pippi` then open a VNC viewer on localhost:5900.
+3. While any wait: refresh `state/mail/mission_status.txt` (stale since 12:46Z) with I1–I4 status, VNC, Critic plan pointer — only if content changed. Then I1 fighter-identity after VNC posts.
+
+## Engineer (pi cursor-auto) 2026-11-26T16:58:37Z
+While-waiting hygiene (brief 16:49Z) + Critic plan 1–2.
+
+**PLAN15 diagnostic (untouched trainer):** partners.log BEST p0 -64.49, p1 4.21, p2 11.47, p3 -73.04, p4 empty, p5 empty, p6 -28.32; p7 RANDOM in flight (seed 17). Critic 16:44 REFUSED citing BESTs as strength (inert counted; me/them swap). 1-gen diagnostic only.
+
+**Xvfb hygiene:** killed idle pairs 427884/427885 (:81), 442941/442942 (:82), 467930/467931 (:83), 479555/479556 (:84), 2146805/2146806 (:86), 3909052/3909053 (:87). Left :88 + viz85/:85.
+
+**VNC on :88 (Critic plan #2):** x11vnc+deps into nidroot rootfs via host-downloaded debs. Listening 127.0.0.1:5988 only. x11vnc pid 86623.
+Ruggero tunnel: `ssh -L 5900:localhost:5988 pippi` then VNC viewer on localhost:5900 (viewonly). Stop with the run.
+
+**Records:** mission_status.txt refreshed; plan.json 05-07/11/12 done=false + pending I1-I4; NOTES.md Linux/integrity section. Deduped dual state_bridge to -u pid 64737. No Mac rewrite commit (stash-or-keep pending).
+
+**Next:** let PLAN15 finish; then I1 fighter-identity claim. Still REFUSE plan.py done 02/03.
+
+## Engineer (pi cursor-auto) 2026-11-26T16:58:37Z
+While-waiting hygiene (brief 16:49Z) + Critic plan 1–2.
+
+**PLAN15 diagnostic (untouched trainer):** as of 2026-11-26T16:58:37Z partners.log has BEST p0 −64.49, p1 4.21, p2 11.47, p3 −73.04, p4 '', p5 '', p6 −28.32; p7 RANDOM in flight (seed 17, train_win pid 84245). Critic 16:44 REFUSED citing BESTs as strength (inert counted; me/them swap). Record as 1-gen diagnostic only.
+
+**Xvfb hygiene (16:33, after p4 empty BEST):** killed idle proot/Xvfb pairs **427884/427885 (:81), 442941/442942 (:82), 467930/467931 (:83), 479555/479556 (:84), 2146805/2146806 (:86), 3909052/3909053 (:87)**. Left :88 + viz85/:85.
+
+**VNC on :88 (Critic plan #2):** installed x11vnc+deps into nidroot rootfs via host-downloaded debs (proot apt DNS failed). Listening **127.0.0.1:5988** only (`ss` verified). x11vnc pid **86623**.
+Ruggero tunnel: `ssh -L 5900:localhost:5988 pippi` then VNC viewer on localhost:5900 (viewonly). Stop with the run.
+
+**Records:** `mission_status.txt` refreshed; `plan.json` 05–07/11/12 `done=false` + pending I1–I4 reason; `NOTES.md` Linux/integrity section; `PLAN.md` unchecked those steps. Deduped dual state_bridge → kept **-u** pid 64737. No Mac rewrite commit (stash-or-keep pending).
+
+**Next:** let PLAN15 die/finish; then I1 fighter-identity claim (Critic plan #3). Still REFUSE `plan.py done 02/03`.
