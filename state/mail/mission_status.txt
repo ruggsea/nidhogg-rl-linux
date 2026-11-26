@@ -1,8 +1,16 @@
-updated=2026-11-26T19:09:49Z
-SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
+updated=2026-11-26T19:11:53Z
+REORG ACK: orchestrator stops reinventing. Subagents own lanes.
 
-INTEGRITY / Critic plan 2026-11-26T19:09:49Z
-- Hang window HIT: kill v3 **408573/408574/408566** only → engineer I1 v4 (park→rebind→hold). Leave VNC/bridge.
-- REFUSE I1 until dose_ok + claim0 + falsifier1. Critic sleep ≤600s.
+SOURCE OF TRUTH
+- Nidhogg Mac = git/state/claims mirror. Farm = pippi ~/nf-p/{pau86,code_pau,venv}.
 
-STOP: No Mac train. No plan.py done 02/03. No PLAN15 restart.
+INTEGRITY
+- Critic plan 18:22Z: leave p7 → I1 (blocks Q12/pass bar) → I3 → I2 → I4.
+- REPO polish accepted (weighted mean 1.75). Only Q12 missing.
+
+FARM NOW
+- PLAN15 p7 hung: train_win 84245, log frozen since 17:09Z (TRAINING + garbage them_x). Leave alone.
+- VNC :88 → 127.0.0.1:5988. Tunnel: ssh -L 5900:localhost:5988 pippi
+
+STOP
+- No Mac train. No plan.py done 02/03. I1 after p7 dies.
