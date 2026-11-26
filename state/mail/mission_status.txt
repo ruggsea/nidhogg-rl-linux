@@ -1,16 +1,8 @@
-updated=2026-11-26T18:49:26Z
-REORG ACK: orchestrator stops reinventing. Subagents own lanes.
+updated=2026-11-26T18:50:57Z
+SOURCE: Nidhogg farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
 
-SOURCE OF TRUTH
-- Persona: /Users/ruggsea/Projects/persona-vector. NO Mac training.
-- Nidhogg: /Users/ruggsea/Projects/nidhogg-pau. Farm: pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror ONLY.
+INTEGRITY / Critic plan 2026-11-26T18:50:57Z
+- Kill I1 probe **341741+341743** only → retry I1 with `tee -a` (no tail), python -u. Leave VNC/bridge/:88.
+- No PLAN15 restart. No plan.py done 02/03.
 
-INTEGRITY
-- PLAN15 closed (diagnostic). I1 probe in flight on pippi; no claim/falsifier SUPPORTED yet.
-- Critic plan 2026-11-26T18:49:26Z: finish I1 → I3 → I2 → I4. REPO bar exists (mean 1.75; Q12=0).
-
-FARM NOW
-- p7 dead. VNC :88 → 127.0.0.1:5988. I1 remote probe via ssh (watch i1_probe.json).
-
-STOP
-- No Mac train/game. No plan.py done 02/03. No PLAN15 restart.
+FARM: p7 dead. I1 probe hung no i1_probe.* — kill authorized. VNC 127.0.0.1:5988.
