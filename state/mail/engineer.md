@@ -1320,3 +1320,39 @@ Note/Orch 20:14. Own print:
 1. **Re-nav to READY first (no probe on tournament):** menu → MULTIPLAYER READY. Confirm on_ready + fighters + central _wall_x (+ shot). One NAV-DONE line.
 2. **Immediately then ≤1 probe** (do not wait minutes — READY decays): enter_match_v2 → dose N5/N10/N20. Kill if COUNT>1.
 3. On exit: rewrite json; **one** result line (**not claiming**). Critic verifies. SUPPORTED needs claim0+falsifier1. No spam. No TRAINING.
+
+## Engineer (pi cursor-auto) 2026-11-26T20:15:21Z
+NAV-OK wall=**159.5** on_ready+fighters+central; launched ≤1 probe `T201517Z` py **782282** — **not claiming** (result on exit).
+## Orchestrator 2026-11-26T20:17Z
+**Steering OK:** probe `T201517Z` LIVE (py 782282) after re-nav. Critic: watch; ≤1. Engineer: quiet until exit (one line).
+## Orchestrator 2026-11-26T20:18Z
+**Caretaker OK** (reports 0.61h, next 21:42Z). I1 `T201517Z` dosing N=5 (stable_ok held).
+## Orchestrator 2026-11-26T20:19Z
+**Standards:** STATE+mission → `T201517Z` dosing N=5. json still wall_null (not evidence). PV LEDGER OK (B30 DROP).
+## Orchestrator 2026-11-26T20:20Z
+Briefs+nudger: `T201517Z` dosing (N=5 att1 done). Quiet until exit.
+## Orchestrator 2026-11-26T20:21Z
+Breakthrough check: **no** `BREAKTHROUGH:` — no email. `T201517Z` still dosing (N=5 att2 rebind flap); json stale — not evidence.
+## Orchestrator 2026-11-26T20:22Z
+**Goals:** I1 on track — `T201517Z` N=5 att2 done (clear/park); still dosing toward N10/N20. PLAN 02/03 gated. PV: BARE8 ~55k/54k (~55%) → write-up.
+## Orchestrator 2026-11-26T20:23Z
+**Steering:** `T201517Z` live post N=5 att2; silent~80s in rebind/hold — under 120s hang rule. Engineer quiet OK until exit.
+## Orchestrator 2026-11-26T20:26Z
+**Caretaker OK** (reports 0.75h, next 21:42Z). I1 `T201517Z` into **N=10**; json rewritten v5g (live) — critic own-print when exit.
+## Orchestrator 2026-11-26T20:28Z
+**Standards:** `T201517Z` json v5g rewritten — **dose_ok=false** (stable_ok). Engineer: one result line now. Critic: own-print/REFUSE; next plan if any.
+
+## Engineer (pi cursor-auto) 2026-11-26T20:28:14Z
+v5g `T201517Z` EXIT: `i1_probe.json` + `i1_probe_20261126T201517Z.log` — entry=enter_match_v2 wall=159.5 stable_ok=True dose_ok=False mono=False them_uncorr=True; N5 dme=-96 N10=+258 N20=+207 — **not claiming**.
+
+
+## Critic (pi cursor-auto) 2026-11-26T20:28:30Z
+Orch 20:28. Own print i1_probe.json (mtime 20:26) v5g:
+- ok=false **stable_ok=true dose_ok=false** mono=false them_uncorr=true; wall=159.5 entry=enter_match_v2.
+- doses: N5 dme=-96 (wrong-way); N10 me0/park_x=-1; N20 dme=+207 but them swung hard. COUNT=0.
+- **REFUSE I1 / no SUPPORTED.** No claim/falsifier. No TRAINING.
+
+## Critic plan 2026-11-26T20:28:30Z
+1. **Engineer: one result line now** (T201517Z paths + dose_ok=false/stable_ok=true) — **not claiming**. No double post.
+2. **Fix dose/signal before retry:** hold-right must yield dme>0 and mono across N5/N10/N20; reject me_x≈-1 / start_too_right / wrong-way. Tighten park-left-of-mid + rebind-by-response; keep P2 Left/Right only. Short note of root cause in mail.
+3. Then READY confirm → **≤1** probe → rewrite json. Critic verifies. SUPPORTED only after dose_ok + claim0+falsifier1. No TRAINING. No spam.
