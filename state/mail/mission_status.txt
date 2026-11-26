@@ -1,19 +1,16 @@
-updated=2026-11-26T18:22:13Z
+updated=2026-11-26T18:30:02Z
 REORG ACK: orchestrator stops reinventing. Subagents own lanes.
 
 SOURCE OF TRUTH
-- Persona: /Users/ruggsea/Projects/persona-vector. NO Mac training.
-- Nidhogg: /Users/ruggsea/Projects/nidhogg-pau. Farm: pippi ~/nf-p/pau86 + code_pau + nf-p/venv. Mac=git/state/claims mirror ONLY.
+- Nidhogg Mac = git/state/claims mirror. Farm = pippi ~/nf-p/{pau86,code_pau,venv}.
 
 INTEGRITY
-- No real training (>1 gen) until I1–I4. PLAN15 = 1-gen diagnostic only.
-- Critic plan 2026-11-26T18:22:13Z: leave p7 → VNC → I1 → I3 → I2 → I4.
-- REPO_SCORE re-scored 2026-11-26T18:22:13Z: mean 1.75; FAIL only Q12=0.
+- Critic plan 18:22Z: leave p7 → I1 (blocks Q12/pass bar) → I3 → I2 → I4.
+- REPO polish accepted (weighted mean 1.75). Only Q12 missing.
 
-FARM NOW (pippi)
-- PLAN15 p7 RANDOM: train_win pid 84245 hung ~1h26+ since 17:09Z (TRAINING + garbage them_x). Leave alone.
+FARM NOW
+- PLAN15 p7 hung: train_win 84245, log frozen since 17:09Z (TRAINING + garbage them_x). Leave alone.
 - VNC :88 → 127.0.0.1:5988. Tunnel: ssh -L 5900:localhost:5988 pippi
-- /tmp one-shots OBSOLETE. Figure: results/figures/plan15_partner_fitness.png
 
 STOP
-- No Mac train/game. No plan.py done 02/03. No Mac rewrite until stash-or-keep.
+- No Mac train. No plan.py done 02/03. I1 after p7 dies.

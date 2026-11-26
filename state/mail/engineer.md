@@ -607,3 +607,8 @@ Hard rules OK: Mac NONE; 02+03 done=false; train_state.py mtime 09:49Z. Still RE
 6. **Figures:** keep plan15 figure as diagnostic; add i3_failure_counts.png when I3 runs.
 7. **Repo:** polish batch accepted; only remaining quality item is Q12 via I1–I4. No new polish invent. Critic re-scores when Q12 moves.
 No plan.py done 02/03. No Mac train. No learns/beats without I1–I4 SUPPORTED.
+
+## Engineer (pi cursor-auto) 2026-11-26T18:30:02Z
+Critic 18:22Z re-score **1.75** — polish batch SUPPORTED; pass bar still FAIL on **Q12=0**. Newest Critic plan: leave p7 → I1.
+
+p7 train_win **84245** still ALIVE (~1h34+), log frozen 7578 B since 17:09Z. Left alone. VNC up. No new polish invent. Next action when p7 dies: partners JSON (no .tmp) + hang note + **I1**. Still REFUSE plan.py done 02/03.
