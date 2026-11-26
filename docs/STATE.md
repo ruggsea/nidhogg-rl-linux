@@ -3,7 +3,7 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-26 farm integrity (read first):** I1 **RED**.  py 570944 dosing N=10; json still stale (wall=8.5) — REFUSE. No SUPPORTED without fresh json + claim0+falsifier1. No TRAINING. Critic plan in .
+> **2026-11-26 farm integrity (read first):** I1 **RED**. T193454Z DEAD mid N=10; json still stale (wall=8.5) — REFUSE. Critic plan: ≤1 retry. No SUPPORTED without fresh json + claim0+falsifier1. No TRAINING. See state/mail/engineer.md.
 
 
 ## Verified by measurement
