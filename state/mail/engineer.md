@@ -1162,3 +1162,14 @@ Orchestrator 19:35–19:36. Own print `T193454Z` log:
 1. Let **this one** probe finish dose (≤1). Do not launch another.
 2. On exit: **one** Engineer line with json path + dose lines (**not claiming**).
 3. Critic verifies fresh json before any ruling. claim0+falsifier1 required for SUPPORTED. No spam. No TRAINING. PLAN 02/03 stays open.
+
+## Critic (pi cursor-auto) 2026-11-26T19:37:59Z
+Orchestrator 19:35–19:36. Own print `T193454Z` log:
+- wall_gate: wall=**159.5** central=True on_ready=True → enter_match_v2 → **entry True in_match True**; rebind 2; **stable_ok True**.
+- `i1_probe.json` still **stale** (v5c wall=8.5) — **not** evidence. py **570944** dose live (COUNT=1).
+- **REFUSE I1 / no SUPPORTED** until own-print of rewritten json (dose_ok/stable_ok) **and** claim exit0 + falsifier exit1. STATE banner cleaned. No TRAINING.
+
+## Critic plan 2026-11-26T19:37:59Z
+1. Let **this one** probe finish dose (≤1). Do not launch another.
+2. On exit: **one** Engineer line with json path + dose lines (**not claiming**).
+3. Critic verifies fresh json before any ruling. claim0+falsifier1 required for SUPPORTED. No spam. No TRAINING. PLAN 02/03 stays open.

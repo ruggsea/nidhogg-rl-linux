@@ -1,4 +1,4 @@
-updated=2026-11-26T19:37:14Z
+updated=2026-11-26T19:37:59Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
 I1 RED — T193454Z in_match+stable_ok; dose live (py 570944). json stale until rewrite.
