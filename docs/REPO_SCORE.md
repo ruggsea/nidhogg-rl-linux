@@ -1,41 +1,33 @@
-# Repo score — 2026-11-26T17:22Z
+# Repo score — 2026-11-26T18:22Z
 
-Scored by critic against `docs/REPO_QUALITY.md`. Evidence from Mac tree + `ssh pippi` peek.
-Re-score after the engineer lands a Critic-plan batch.
+Re-score after engineer REPO batch (eng 17:25Z). Criteria: `docs/REPO_QUALITY.md`.
 
 | id | score | evidence |
 |---|---|---|
-| Q01 | 0 | Root `README.md` still titled/framed as Mac train (`uv venv`, `python3 train_win.py`, Steam Mac path). **0** hits of `pippi` / `nf-p` / `mirror`. |
-| Q02 | 0 | `AGENTS.md` (mtime 2026-11-08): “Train … locally installed **macOS** Nidhogg”, `gameslot.py acquire`, no I1–I4, no farm, no Critic plan. |
-| Q03 | 2 | `state/mail/mission_status.txt` `updated=2026-11-26T17:16Z`: farm=pippi paths, I1–I4 hold, PLAN15 p7, VNC tunnel, stash-or-keep. |
-| Q04 | 2 | `plan.json`: 02+03 `done=false`; 05–07/11/12 `done=false` + `reason: pending I1-I4 …`. PLAN.md render matches open 02/03. |
-| Q05 | 1 | Engineer reports NOTES Linux/integrity section today; root `NOTES.md` still opens on 2026-10-25 Mac injection. `docs/STATE.md` is Mac-verified table, rounds_won=0, no me/them swap. Partial. |
-| Q06 | 0 | No root `DECISIONS.md`. Step-01 rescope and I1–I4 hold live only in plan.json history / mail. |
-| Q07 | 0 | No root `LIMITATIONS.md`. |
-| Q08 | 0 | `find . -name '._*' \| wc -l` → **277** (root, docs/, spy/, legacy/, out/, …). |
-| Q09 | 1 | 176 `claims.jsonl` rows; 18 `_claim_*.sh` + 19 `_falsify_*.sh`. Critic 16:44Z REFUSED citing PLAN15 BESTs / plan06 win without I1. Older claims exist; integrity gate not claimed. |
-| Q10 | 0 | No `results/figures/`. No PNG+command pairs for PLAN15 or I-checks. |
-| Q11 | 0 | README + AGENTS = Mac train; `mission_status` = farm-only. `docs/OVERVIEW.md` / `NEXT_STEPS.md` / `.claude/worktrees/...` add more entry stories. |
-| Q12 | 0 | No `state/_claim_i1*` / I2–I4 claim or falsifier. Critic has not SUPPORTED any I1–I4 claim. |
-| Q13 | 2 | `PLAN.md` header: rendered from `state/plan.json` by `tools/plan.py`; open/done flags align with json for 02–07/11/12. |
-| Q14 | 1 | `.gitignore` present (needs spot-check for `._*` / checkpoints); AppleDouble still on disk. Not a full audit this round. |
-| Q15 | 0 | Cold open of README alone → “run train_win on this Mac”. Must read `mission_status.txt` to learn farm. |
-| Q16 | 1 | Durable `code_pau/tools/nid_state_bridge.py` exists. Engineer still lists obsolete `/tmp` one-shots (do_step02_poll5, patch_*, …) not cleared. |
-| Q17 | 0 | `.claude/worktrees/step01-rescope/docs/*` duplicates LAYOUT/OVERVIEW/… without superseded banner at root docs index. |
-| Q18 | 1 | `docs/EXPERIMENTS.md` + `NOTES.md` + claims cover older tries; today’s PLAN15 inert/me-them findings are in mail/logs more than the notebook. |
+| Q01 | 2 | Root README first screen: Mac=mirror, farm=pippi `~/nf-p/{pau86,code_pau,venv}`, mission_status + Critic plan, I1–I4 hold, Mac runbook marked superseded. |
+| Q02 | 2 | `AGENTS.md` rewritten: farm ops, no Mac train/gameslot, I1–I4, Critic plan, VNC tunnel. |
+| Q03 | 2 | `mission_status.txt` `updated=2026-11-26T17:57:35Z`: p7 hung note, VNC, REPO batch landed, I1–I4. |
+| Q04 | 2 | plan.json 02+03 `done=false`; 05–07/11/12 pending I1–I4. |
+| Q05 | 2 | `NOTES.md` §2026-11-26 Linux farm/integrity + me/them paths; `docs/STATE.md` farm integrity banner (I1 red). |
+| Q06 | 2 | Root `DECISIONS.md`: farm-only, I1–I4 hold, step-01 rescope (Chosen/Alt/Why/By/Change if/Evidence). |
+| Q07 | 2 | Root `LIMITATIONS.md`: farm-only, stash-or-keep, PLAN15 diagnostic, I1–I4, 02/03 open, /tmp, AppleDouble. |
+| Q08 | 2 | `find . -name '._*' \| wc -l` → **0**. `.gitignore` has `._*` / `**/._*`. |
+| Q09 | 1 | Still 176 claims; PLAN15 BESTs not accepted. No new integrity claim rows. |
+| Q10 | 2 | `results/figures/plan15_partner_fitness.png` (+ twin bests.png), PNG 1200×540. Eng named command. Diagnostic only. |
+| Q11 | 2 | SUPERSEDED banners on `docs/NEXT_STEPS.md`, `docs/OVERVIEW.md`; worktree `docs/SUPERSEDED.md`. Entry = README+AGENTS+mission_status. |
+| Q12 | 0 | No I1–I4 claim/falsifier scripts yet. Farm still on hung p7 — I1 blocked. |
+| Q13 | 2 | PLAN.md still render of plan.json; 02/03 open. |
+| Q14 | 2 | `.gitignore` adds `._*`, `*.pt`/`*.pth`/`ckpt*`. |
+| Q15 | 2 | Cold open of README answers goal / farm / blocked / next. |
+| Q16 | 2 | pippi `/tmp/{do_step02_poll5,fc_all,fix_*,patch_*,stoplog}.py` → `*.OBSOLETE_20261126` (10 files); live `.py` gone. |
+| Q17 | 2 | Worktree docs marked SUPERSEDED; root entry path clear. |
+| Q18 | 2 | NOTES integrity section + EXPERIMENTS + claims cover tries; PLAN15 findings greppable. |
 
-**Weighted sum:** 0·3 + 0·3 + 2·2 + 2·3 + 1·2 + 0·2 + 0·1 + 0·0·2 + 1·3 + 0·2 + 0·2 + 0·3 + 2·1 + 1·1 + 0·2 + 1·2 + 0·1 + 1·1 = **18 / 72** (max 2×weight). Weighted mean ≈ **0.50**. Pass bar (≥1.5 and Q01/Q02/Q04/Q09/Q12 ≥1): **FAIL**.
+**Weighted sum:** 2·3+2·3+2·2+2·3+2·2+2·2+2·1+2·2+1·3+2·2+2·2+0·3+2·1+2·1+2·2+2·2+2·1+2·1 = **63 / 72**. Weighted mean ≈ **1.75**. Pass bar (≥1.5 and Q01/Q02/Q04/Q09/Q12 ≥1): **FAIL** only on **Q12=0** (and Q09 still 1). Polish batch landed; integrity claims still missing.
 
-## Top fixes for a human opening cold (engineer order after I1–I4 / VNC)
+## Remaining top fixes (after I1 farm free)
 
-1. **Q01** — Rewrite root README first screen: Mac = mirror; farm = pippi `~/nf-p/{pau86,code_pau,venv}`; point at `mission_status.txt` + Critic plan; mark Mac `train_win.py` runbook superseded.
-2. **Q02** — Rewrite `AGENTS.md` to farm ops + I1–I4 hold + no Mac train/game + VNC tunnel.
-3. **Q08** — Delete all `._*` in tree; add `._*` to `.gitignore`.
-4. **Q15/Q11** — One entry path only; banner or move stale `docs/NEXT_STEPS.md` / worktree docs.
-5. **Q06/Q07** — Add root `DECISIONS.md` + `LIMITATIONS.md` (I1–I4 hold, farm-only, stash-or-keep, PLAN15 diagnostic).
-6. **Q10** — Create `results/figures/`; first figure = PLAN15 partner bars with inert-counted marked (command in engineer.md).
-7. **Q12/Q09** — After fighter-identity fix: land I1 claim+falsifier; then I3/I2/I4. No “learns/beats” without them.
-8. **Q16** — Clear or mark obsolete the listed `/tmp` helpers on pippi.
-9. **Q05** — Fold me/them swap + inert-as-BEST into `NOTES.md` / `docs/STATE.md` with log paths.
-
-I1–I4 and live VNC still outrank every polish item when the farm is free.
+1. **Q12** — I1 claim+falsifier (then I3/I2/I4). Blocks pass bar.
+2. **Q09** — Land those as accepted numbers with critic re-run.
+3. When p7 dies: partners JSON (no `.tmp`), then I1 on free farm.
+4. Re-score once Q12 ≥1.

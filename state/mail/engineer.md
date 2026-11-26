@@ -585,3 +585,25 @@ Steer 17:02Z: left **p7** alone (train_win **84245** still up; log frozen since 
 30m heartbeat. PLAN15 **p7 still ALIVE** (train_win hung ~48m+ after 17:09Z TRAINING / garbage them_x; log size still 7578). Left alone per Critic plan 17:23 #1 + Orchestrator 17:02. VNC still up.
 
 REPO batch from 17:25Z still the latest polish (Q01/Q02/Q08/Q06/Q07/Q10/Q16/Q05). Figure also at `results/figures/plan15_partner_fitness.png` (critic name). Waiting for p7 to die → partners JSON cleanup → **I1**. Still REFUSE plan.py done 02/03.
+
+## Critic (pi cursor-auto) 2026-11-26T18:22:13Z
+Loop gap: prior sleep aborted ~7s; last critic was 17:23Z. Catching eng 17:25 + 17:57. No new claims.jsonl (176) → no claim/falsifier to re-run.
+- SUPPORTED REPO batch Q01/Q02: README + AGENTS Mac=mirror / farm=pippi / I1–I4 / VNC (rc=0 head).
+- SUPPORTED Q08: `find . -name '._*'` → 0; gitignore has `._*` (rc=0).
+- SUPPORTED Q06/Q07: DECISIONS.md + LIMITATIONS.md present with required fields (rc=0).
+- SUPPORTED Q10: `results/figures/plan15_partner_fitness.png` PNG 1200×540 exists (rc=0). Diagnostic only — not partner strength.
+- SUPPORTED Q16: pippi 10× `/tmp/*.OBSOLETE_20261126`; live do_step02_poll5.py / patch_bridge.py absent (rc=0).
+- SUPPORTED Q05/Q11: NOTES integrity § + STATE banner; NEXT_STEPS/OVERVIEW SUPERSEDED (rc=0).
+- SUPPORTED VNC still 127.0.0.1:5988 x11vnc **87598**; PLAN15 p7 train_win **84245** etime≈1:26 Sl, log mtime frozen since 17:09Z (them_x garbage) — left alone per plan #1. partners.json.tmp still 26 B.
+- Re-score: weighted mean **1.75** (was 0.50). Pass bar still FAIL: **Q12=0** (no I1–I4 claims).
+Hard rules OK: Mac NONE; 02+03 done=false; train_state.py mtime 09:49Z. Still REFUSE done 02/03.
+
+## Critic plan 2026-11-26T18:22:13Z
+1. **p7:** leave hung train_win **84245** alone until it dies. When dead: partners JSON (no .tmp), note hang (TRAINING + them_x garbage, log frozen 17:09Z), then free farm for I1.
+2. **VNC:** keep :88 / 5988; post tunnel on every new run.
+3. **I1** (blocks pass bar / all real training): stable me≠them + dose-response N=5/10/20 + claim + falsifier (swapped/frozen must exit 1). Paste both rcs.
+4. **I3** one inert rule → 30 eps; fix linux launch no game pid; explain DISCARDED fit=37/38.
+5. **I2** then **I4** with claim+falsifier.
+6. **Figures:** keep plan15 figure as diagnostic; add i3_failure_counts.png when I3 runs.
+7. **Repo:** polish batch accepted; only remaining quality item is Q12 via I1–I4. No new polish invent. Critic re-scores when Q12 moves.
+No plan.py done 02/03. No Mac train. No learns/beats without I1–I4 SUPPORTED.
