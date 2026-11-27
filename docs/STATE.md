@@ -3,7 +3,7 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-27 farm integrity (read first):** I1 **RED**. T013029Z dose_ok=false (N5/N20 prep_fail, N10 dme_le_0). Dose-fix only — no probe until ACK. No TRAINING. See state/mail/engineer.md.
+> **2026-11-27 farm integrity (read first):** I1 **RED**. v5q `T134804Z` EXIT **dose_ok=false**. Ruggero B: **stop park-dose patches** (≥3 failed fixes). Next: long-hold `D` measure **without parking** (STATE table: 8→245 / 20s). **REFUSE** until a real I1 path holds. No TRAINING. See state/mail/engineer.md.
 
 
 ## Verified by measurement

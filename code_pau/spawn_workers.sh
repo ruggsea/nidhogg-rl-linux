@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Launch the two memory-hunt workers in parallel, each in its own farm + worktree:
+#   A: P1.x via structural sweep     (display :10, farm ~/.nidfarm)
+#   B: P1.y via the vertical axis    (display :20, farm ~/.nidfarm-b)
+# Each gets its own git worktree so they cannot clobber each other's code.
+set -uo pipefail
+
+REPO="$(cd "$(dirname "$0")" && pwd)"
+BASE="$(dirname "$REPO")"
+BUDGET="${BUDGET:-1800}"          # seconds per worker
+mkdir -p "$REPO/results" "$REPO/logs"
+[ -d "$REPO/results" ] && git -C "$REPO" check-ignore -q results 2>/dev/null || true
+
+spawn() {  # $1=tag $2=display_base $3=farm
+  local tag=$1 disp=$2 farm=$3 wt="$BASE/nidhogg-rl-$1"
+  if [ ! -d "$wt" ]; then
+    git -C "$REPO" worktree add --detach "$wt" HEAD >/dev/null 2>&1 || true
+  fi
+  # farm must have the patched game copy and the wine prefix template
+  if [ ! -d "$farm/game" ]; then
+    mkdir -p "$farm/logs"
+    cp -a --reflink=always "$HOME/.nidfarm/game" "$farm/game"
+    cp -a --reflink=always "$HOME/.nidfarm/template" "$farm/template"
+  fi
+  echo "[spawn] $tag: farm=$farm display=:$disp worktree=$wt"
+  ( cd "$wt" && \
+    NIDFARM="$farm" NID_DISPLAY_BASE="$disp" NIDTAG="$tag" NID_GAME_DIR="$farm/game" \
+    NIDART="/tmp/nidart-$tag" \
+    timeout "$BUDGET" pi --print --no-session --model "${NID_MODEL:-deepseek-flash}" \
+      --tools bash,read,write,edit \
+      "$(cat "$REPO/briefs/$tag.md")" \
+      > "$REPO/logs/worker_$tag.log" 2>&1 ; \
+    echo "[worker $tag] exit $?" >> "$REPO/logs/worker_$tag.log" ) &
+}
+
+# Runtime env: Proton, xdotool and the mesa libs (path from the install worktree).
+ENVSH="${NID_ENVSH:-$HOME/nidhogg-rl-install/results/env.sh}"
+if [ -f "$ENVSH" ]; then . "$ENVSH"; echo "[spawn] runtime env: $ENVSH"; else echo "[spawn] WARNING: no $ENVSH"; fi
+
+TAGS="${*:-a b c}"
+# NEVER pkill game processes here: this box is shared, and a parallel lane may have an instance
+# running (this line was killing every lane's instance on every spawn). Farm-scoped cleanup in
+# nidlinux.clean_farm() handles stale processes, per farm.
+# Any tag a..z: farm, display band and worktree are derived from the tag, so workers can be
+# added without editing this file. Display bands are 10 apart (a=:10 b=:20 ... z=:260).
+for t in $TAGS; do
+  idx=$(printf '%d' "'$t"); idx=$((idx - 97))          # a=0, b=1, ...
+  [ "$idx" -ge 0 ] && [ "$idx" -le 25 ] || { echo "[spawn] bad tag $t"; continue; }
+  disp=$((10 + idx * 10))
+  farm="$HOME/.nidfarm-$t"
+  [ "$t" = a ] && farm="$HOME/.nidfarm"
+  spawn "$t" "$disp" "$farm"
+done
+echo "[spawn] both launched; logs in $REPO/logs/worker_{a,b}.log"
+wait
+echo "[spawn] both finished"

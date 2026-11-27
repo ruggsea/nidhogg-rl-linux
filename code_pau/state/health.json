@@ -1,0 +1,51 @@
+{
+ "ts": 1795696087.4230986,
+ "overall": "FAIL",
+ "checks": [
+  {
+   "check": "game processes",
+   "status": "FAIL",
+   "detail": "0 running"
+  },
+  {
+   "check": "frame rate",
+   "status": "WARN",
+   "detail": "no frame counter in the hook log"
+  },
+  {
+   "check": "room",
+   "status": "PASS",
+   "detail": "None (?)"
+  },
+  {
+   "check": "state file",
+   "status": "FAIL",
+   "detail": "age Nones"
+  },
+  {
+   "check": "instance dump",
+   "status": "WARN",
+   "detail": "age Nones"
+  },
+  {
+   "check": "hook log",
+   "status": "FAIL",
+   "detail": "age Nones (a stale log means the probe thread is not running)"
+  },
+  {
+   "check": "legacy room command",
+   "status": "PASS",
+   "detail": "absent or empty (hook now uses nid_roomgoto)"
+  },
+  {
+   "check": "mute",
+   "status": "WARN",
+   "detail": "cannot read prefs.ini"
+  },
+  {
+   "check": "keys file",
+   "status": "PASS",
+   "detail": "absent"
+  }
+ ]
+}
