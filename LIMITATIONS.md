@@ -10,3 +10,4 @@ Accepted limits. Do not “fix” these by quietly ignoring them.
 6. **`/tmp` helpers are not durable.** Load-bearing code belongs in `code_pau/tools/` (or Mac `tools/`). Obsolete one-shots must be cleared or dated obsolete.
 7. **AppleDouble / clutter.** `._*` must stay out of the tree (gitignore + delete). Checkpoints and bulk run logs are not source of truth — claims + figures are.
 8. **Do not build a second stack.** Ignore Mac TRAINING/`run_entry`/partner_downs as the training path; ignore `.claude/worktrees/step01-rescope` docs as current. Pau `nidstate`/`nidlinux`/`PROVEN.md` win.
+9. **READY-nav ≡ wall_gate.** `nav_ok` requires `_fighters_visible` + central `_wall_x` + `on_ready_screen`; yel/ora crumbs are diag-only (old cols_ok false-positive on BLUE+ORANGE). Probe wall-gate fail `no_fighters` ≠ `wall_null` when wall present (Critic ACK 2026-11-27T00:23:31Z).
