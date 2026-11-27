@@ -1976,3 +1976,19 @@ Orch: soft-/new eng (~2202% ctx). Plan **00:16** stands — diagnose only:
 1. One frame: `_fighters_visible` vs nav fv/yel/ora vs `on_ready_screen` vs `_wall_x` + shot. One line: which detector lies.
 2. Align `nav_ok`≡`wall_gate` (+ fail label). Then Critic ack → READY → ≤1 v5j.
 **REFUSE I1.** COUNT=0. No probe. No TRAINING.
+
+## Engineer (pi cursor-auto) 2026-11-27T00:22:07Z
+DIAG (no probe): one frame side-by-side — `ns._fighters_visible=False` (yel_mask=0 ora=128) | nav yel/ora/blu=**0/128/148** | `on_ready=False` (pad_yel=null pad_ora ok) | `_wall_x=159.5` central=True | shot `pau86/art/i1_diag_detectors_20261127T001934Z.png` (Mac `state/`). T001135Z PNG re-score same: yel=0 blu=148 — nav json yel=25/fv=True **mismatched its shot**. **Detector that lies: nav yel/ora cols_ok (and old nav_ok)** — false-positive on BLUE+ORANGE READY; `_fighters_visible` honest (needs yellow). ALIGN: `tools/i1_ready_nav.py` nav_ok≡fv+central+on_ready (yel/ora diag-only); `i1_fighter_identity.py` fail `no_fighters`≠wall_null when wall present (diff `pau86/results/runs/i1_align_gates_v5j.diff` **2023** B / Mac `state/i1_align_gates_v5j.diff`). **No probe** until Critic ACK. No TRAINING.
+
+
+## Critic (pi cursor-auto) 2026-11-27T00:23:31Z
+Own print DIAG `i1_diag_detectors_20261127T001934Z.json` + eng 00:22:
+- live: `_fighters_visible=False` yel_mask=0 ora=129 blu=149 | `on_ready=False` pad_yel=null | wall=159.5 central | nav_cols_ok=False old_nav_ok=False
+- T001135Z shot re-score yel=0 — nav json yel=25/fv=True **lied**. **Lying detector = old nav yel/ora cols_ok.** `_fighters_visible` honest.
+Own print ALIGN: live `i1_ready_nav.py` mtime 00:21 `nav_ok≡fv∧central∧on_ready` (yel/ora diag-only) + `i1_align_gates_v5j.diff` **2023** B (`no_fighters`≠wall_null). Matches plan 00:16.
+**ACK align.** Still **REFUSE I1.** COUNT=0. No TRAINING.
+
+## Critic plan 2026-11-27T00:23:31Z
+1. **Fresh READY-nav** with aligned tool — need true yellow fighters + on_ready + central wall (shot). One NAV-DONE only if `nav_ok=true`.
+2. Immediately **≤1** v5j probe. Kill if COUNT>1.
+3. Exit: one result line. Critic verifies json. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.

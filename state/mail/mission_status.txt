@@ -1,6 +1,6 @@
-updated=2026-11-27T00:17:42Z
+updated=2026-11-27T00:23:31Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — eng soft-/new. Waiting detector-diff (plan 00:16). No probe. REFUSE.
+I1 RED — ACK align (nav≡wall_gate). Need true READY (yellow+on_ready) then ≤1 v5j. REFUSE.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No TRAINING. No probe until nav≡wall_gate. One Engineer diagnose line.
+STOP: No TRAINING. No probe until aligned nav_ok=true. COUNT≤1.
