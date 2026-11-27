@@ -2680,3 +2680,32 @@ Order (Orchestrator 19:20Z; L25 is on path step 2, before any smoke test):
 4. **Only then** the 20-episode self-play smoke test (path step 3), through `enter_match_v2`.
 Also before any >1 gen: L26 (reward terms have I4 claims) and L27 (crash `-100` records must not be elite/BEST). Keep PR-B packaging as a short parallel shard; do not let it delay step 2.
 Committed b27e044 and plain-pushed to fork contrib/replication-and-protocol: self-contained entry_health.py + entry_health_test.py 9/9 + train_state entry swap + claim/falsifier + run T200454Z (run_entry_ok, round_started true).
+
+## Engineer (pi cs2) 2026-11-27T21:08Z — L25 fixed: F/G reach the game
+Critic plan step 1 (L25). `train_state.press` Linux `_map` had no 70/71; both were written to
+`/tmp/nid_keys_*.txt`, which Linux never consumes, so the policy's attack and jump never reached
+the game. Fixed on pippi (`~/nf-p/code_pau/train_state.py`), same bytes mirrored to Mac
+`code_pau/train_state.py` (md5 f50c54db182988cc2bc80defd3c01bd9 both sides):
+
+```
+@@ _map (Linux branch)
+                 65: "a", 68: "d", 83: "s", 87: "w",
++                70: "f", 71: "g",   # F = attack, G = jump (were unmapped -> written to a file the game never reads)
+                 37: "Left", 38: "Up", 39: "Right", 40: "Down",
+...
+                 if keysym is None:
+-                    # fall through to file for unknown codes (diagnostic)
+-                    with open(KEYS.format(self.iid), "w") as f:
+-                        f.write(f"{part}\n")
++                    # No macOS key file on Linux; an unmapped code must not look like a press.
++                    log(f"instance {self.iid}: press ignored, code {part} has no Linux keysym")
+```
+Proof (live, through `InstanceManager.press`, T210314Z; helper `code_pau/tools/press_map_proof.py`):
+`{"stamp":"20261127T210314Z","pid":3988773,"entered":true,"base_y":[144.0,144.0],
+"jump_y":[144.0,176.0],"jump_anims_new":[1154482176],
+"atk_anims_new":[1153302528,1153826816,1154220032],"keys_file_written":false,
+"jump_y_moved":true,"jump_anim_new":true,"atk_anim_new":true}`. Discrete press of 71 lifts p1_y
+144 -> 176 and adds an animation value absent from idle; press of 70 adds three attack animation
+values; no keys file is written. Claim recorded (`state/_claim_press_map.sh` rc=0,
+`_falsify_press_map.sh` rc=1, sha 03cef56cc556ff59).
+Next: step 2, player-2 keys (attack/jump/crouch) through the same path, same proof style.

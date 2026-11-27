@@ -1,0 +1,30 @@
+{
+ "stamp": "20261127T210314Z",
+ "pid": 3988773,
+ "entered": true,
+ "instance": 0,
+ "base_y": [
+  144.0,
+  144.0
+ ],
+ "base_anims": [
+  1152909312,
+  1153564672
+ ],
+ "jump_y": [
+  144.0,
+  176.0
+ ],
+ "jump_anims_new": [
+  1154482176
+ ],
+ "atk_anims_new": [
+  1153302528,
+  1153826816,
+  1154220032
+ ],
+ "keys_file_written": false,
+ "jump_y_moved": true,
+ "jump_anim_new": true,
+ "atk_anim_new": true
+}

@@ -683,15 +683,15 @@ class InstanceManager:
             _map = {
                 13: "Return", 27: "Escape", 32: "space",
                 65: "a", 68: "d", 83: "s", 87: "w",
+                70: "f", 71: "g",   # F = attack, G = jump (were unmapped -> written to a file the game never reads)
                 37: "Left", 38: "Up", 39: "Right", 40: "Down",
             }
             codes = code if isinstance(code, tuple) else (code,)
             for part in codes:
                 keysym = _map.get(int(part), None)
                 if keysym is None:
-                    # fall through to file for unknown codes (diagnostic)
-                    with open(KEYS.format(self.iid), "w") as f:
-                        f.write(f"{part}\n")
+                    # No macOS key file on Linux; an unmapped code must not look like a press.
+                    log(f"instance {self.iid}: press ignored, code {part} has no Linux keysym")
                 else:
                     n.key(self.iid, keysym, hold=0.12)
                 time.sleep(0.03)
