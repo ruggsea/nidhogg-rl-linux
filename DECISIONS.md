@@ -48,3 +48,12 @@ Dated forks. Format: **Chosen / Alternatives / Why / Decided by / Change if / Ev
 - **Decided by:** Critic ACK align 2026-11-27T00:23:31Z (plan 00:16 → 00:23).
 - **Change if:** measured proof that `_fighters_visible` rejects a true READY screen that yel/ora correctly accept under enter_match_v2.
 - **Evidence:** `i1_diag_detectors_20261127T001934Z.json`; farm `tools/i1_ready_nav.py` + `i1_align_gates_v5j.diff` (2023 B); Critic/engineer.md 00:16–00:23.
+
+## 2026-11-27T00:52:02Z — I1 bind: sync room-file + both parks + walk scale (v5k)
+
+- **Chosen:** Before `InstanceManager.bind`, `sync_room_file` from nidmem + `wait_arena` so `/tmp/nid_room_now_%s.txt` matches live arena room. `enter_match_v2` must park **both** yellow and orange; `_walk_to_x` tol/steps/hold scale with frame width (320→640). Probe tag **v5k**.
+- **Alternatives:** Trust stale room file; allow orange park=False; keep fixed 320-pixel walk params.
+- **Why:** T004558Z: live room 29 (arena) but room file stale=2 → `in_arena=False` → refuse bind; orange park failed at fw=640 with unscaled tol.
+- **Decided by:** Critic ACK v5k 2026-11-27T00:52:02Z (plan 00:48).
+- **Change if:** `InstanceManager.in_arena` reads nidmem directly (no file) or a measured READY path never uses fw≠320.
+- **Evidence:** `i1_bind_diag_20261127T005042Z.json`; `i1_bindfix_probe.diff` + `i1_bindfix_nidstate.diff`; Critic/engineer.md 00:48–00:52.
