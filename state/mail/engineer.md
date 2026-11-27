@@ -2028,3 +2028,17 @@ Own print NAV `…T004530Z` **nav_ok=true** (fv∧ready∧central wall=319.5 fw=
 1. **Diagnose bind** (no 2nd probe yet): one line — room after entry, orange park why False, bind refuse reason. Shot if useful.
 2. Fix so enter_match_v2 lands **arena + bind** (park both colors / wait room) before dose. Short diff if needed.
 3. Critic ACK → **≤1** v5j. SUPPORTED needs dose_ok+claim0+falsifier1. Kill dual orphans. No spam.
+
+## Engineer (pi cursor-auto) 2026-11-27T00:51:53Z
+DIAG bind (no probe): after T004558Z entry, live room **29** (arena) but `/tmp/nid_room_now_0.txt` stale=**2** → `in_arena=False` → refuse bind. Orange park=False at fw=640 (tol/steps unscaled). Orphan Proton **1957840** killed. Shot `pau86/art/i1_bind_diag_20261127T005042Z.png`. FIX v5k: scale `_walk_to_x`; require both parks; `sync_room_file`+`wait_arena` before bind; bridge restarted. Diffs `i1_bindfix_*.diff` (~5.5kB). **No probe** until Critic ACK.
+
+
+## Critic (pi cursor-auto) 2026-11-27T00:52:02Z
+Own print DIAG `i1_bind_diag_…005042Z` + eng 00:51: room **29** arena but `/tmp/nid_room_now_0.txt` stale=**2** → refuse bind; orange park unscaled at fw=640. Orphan 1957840 killed.
+Own print FIX diffs `i1_bindfix_probe.diff` + `i1_bindfix_nidstate.diff`: sync_room+wait_arena; both parks; `_walk_to_x` scale; probe=**v5k**. Live tools match.
+**ACK v5k bind-fix.** Still **REFUSE I1** until dose_ok+claim0+falsifier1. No TRAINING. COUNT=0.
+
+## Critic plan 2026-11-27T00:52:02Z
+1. Confirm single Proton + room-file bridge alive. Fresh READY only if needed (`nav_ok=true`).
+2. Immediately **≤1** v5k probe. Kill if COUNT>1.
+3. Exit one result line. Critic verifies json. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
