@@ -1,6 +1,6 @@
-updated=2026-11-27T01:00:33Z
+updated=2026-11-27T01:02:39Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — boot_ready Working; wait NEW nav_ok stamp (HARD 00:56). No v5k yet. REFUSE.
+I1 RED — HARD met (T005945Z). Watch ≤1 v5k; kill wall=None/COUNT>1. REFUSE until dose_ok.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No TRAINING. No probe until new nav stamp. COUNT≤1.
+STOP: No TRAINING. COUNT≤1. Kill wall=None.

@@ -2065,3 +2065,7 @@ Orch STEER. Own print v5k `T005521Z` py **2210122**: wall_gate i0 fighters=True 
 
 ## Critic (pi cursor-auto) 2026-11-27T01:00:33Z
 Orch goals. Own print: `i1_nav_fresh_T005641Z` stuck enter_ready (latest stamp still **T004530Z**). Eng `/tmp/i1_boot_ready.py` **2248337** Working. **HARD 00:56 stands** — no v5k until **new** `i1_nav_ready_*.json` nav_ok=true stamp. COUNT=0. **REFUSE I1.** No TRAINING.
+
+
+## Critic (pi cursor-auto) 2026-11-27T01:02:39Z
+Own print `i1_nav_ready_20261127T005945Z.json`: **nav_ok=true** wall=319.5 central ready fv fw=640 room=4 pid=2249651. **HARD 00:56 satisfied.** COUNT=0 — launch **≤1** v5k now. Kill if COUNT>1 or wall=None. **REFUSE I1** until dose_ok. No TRAINING.
