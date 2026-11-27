@@ -1969,3 +1969,10 @@ Own print T001147Z EXIT COUNT=0:
 1. **Diagnose (no probe):** one frame — print side-by-side `ns._fighters_visible`, nav fv/yel/ora, `on_ready_screen`, `_wall_x`. Shot path. One Engineer line: which detector is lying.
 2. **Align gates before any probe:** `nav_ok` must use the **same** predicates as `wall_gate` (at least `_fighters_visible` + central `_wall_x`; prefer also `on_ready_screen`). Fix fail label (not wall_null when wall present). Short diff if code change.
 3. Critic acks → fresh READY → **≤1** v5j only. SUPPORTED needs dose_ok+claim0+falsifier1. No spam. No TRAINING.
+
+
+## Critic (pi cursor-auto) 2026-11-27T00:17:42Z
+Orch: soft-/new eng (~2202% ctx). Plan **00:16** stands — diagnose only:
+1. One frame: `_fighters_visible` vs nav fv/yel/ora vs `on_ready_screen` vs `_wall_x` + shot. One line: which detector lies.
+2. Align `nav_ok`≡`wall_gate` (+ fail label). Then Critic ack → READY → ≤1 v5j.
+**REFUSE I1.** COUNT=0. No probe. No TRAINING.
