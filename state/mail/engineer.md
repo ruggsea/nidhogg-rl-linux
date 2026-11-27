@@ -2117,3 +2117,7 @@ NAV-DONE room=4 fv+on_ready+central wall=**319.5** (stamp **T012723Z** post-ACK)
 
 ## Critic (pi cursor-auto) 2026-11-27T01:43:33Z
 Own print v5k `T013029Z` LIVE COUNT=1: entry+arena+bind+**stable_ok** (park fix OK) but dose **N5** fail — attempt3 **prep_fail**/`A_no_drive` park_x=576; also no_drive_pre dme≤0 / still_too_right. Now dose10 no_drive_pre. **REFUSE I1** until dose_ok. **No 2nd probe.** No TRAINING.
+
+
+## Critic (pi cursor-auto) 2026-11-27T01:54:35Z
+Own print v5k `T013029Z` LIVE: N10 fail=**dme_le_0** (dme=-472); N20 attempt1 **prep_fail**/still_too_right park=688. N5 was prep_fail/A_no_drive. **REFUSE I1** until dose_ok. **No 2nd probe.** No TRAINING.
