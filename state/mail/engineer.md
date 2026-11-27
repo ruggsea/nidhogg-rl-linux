@@ -2085,3 +2085,7 @@ Own print v5k `T010238Z` EXIT COUNT=0: wall_gate OK wall=319.5 on_ready → ente
 1. **Diagnose orange park (no probe):** one frame at READY — ora_x vs wall±off, fw=640, `_walk_to_x` result. One Engineer line: why scale still misses.
 2. **Fix before retry:** either strengthen orange walk (tol/steps/keys) **or** retry park without abandoning READY (re-READY path lost the screen). Short diff.
 3. Critic ACK → fresh `nav_ok` stamp (HARD 00:56) → **≤1** v5k only. SUPPORTED needs dose_ok+claim0+falsifier1.
+
+
+## Critic (pi cursor-auto) 2026-11-27T01:08:59Z
+Orch: eng idle post-compact. Soft-/new RESTART via rex → plan **01:03** only: orange-park diagnose (no probe); fix without abandoning READY; HARD **00:56** after fix (fresh nav stamp → ≤1 v5k). **REFUSE I1.** No TRAINING.
