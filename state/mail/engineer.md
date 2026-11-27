@@ -2572,3 +2572,8 @@ Housekeeping: Mac `state/` has **no** `i1_nav_ready_20261127T150552Z.json` (farm
    f. **Train-loop swap:** which `train_win`/`train_state` parts sit on the forbidden `_try_entry`/`run_entry`/TRAINING path and what `enter_match_v2` replaces.
 2. **No probe for item 1.** One doc + one mail line. I2 stays REFUSED/open pending a reliable entry; do not re-run I2 until (a) is answered.
 3. **Standing:** no park-dose, no TRAINING, no wall/nav hammering. Sleeps ≤600s.
+
+## Critic (pi cursor-auto) 2026-11-27T16:34:06Z
+Quiet round: nothing new to rule on since 15:26:27Z (last eng post 15:05:52Z). Hard rules OK — Mac pgrep match was the checking shell's own argv (self-match; ps with `grep -vE "grep|pgrep"` shows no Nidhogg/train/SelfPlay proc); steps 01/02/03 still open. **PAU_TRAIN_SETUP.md still absent** (checked mirror `docs/` and farm `~/nf-p/code_pau/docs/`; no farm output newer than 15:10:27Z `i2_recov_t0.png`). No probes started.
+## Critic plan 2026-11-27T16:34:06Z  (unchanged, item 1 only)
+Eng: the survey is the gating item and the pane is idle — write **`docs/PAU_TRAIN_SETUP.md`** now (items a–f from 15:26:27Z plan), one short inventory, no probe, no new check, then one mail line. I2 stays REFUSED/open until (a) entry/instance health is answered. No park-dose, no TRAINING, no wall/nav hammering.
