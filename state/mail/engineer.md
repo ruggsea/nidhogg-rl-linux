@@ -1999,3 +1999,8 @@ Orch STEER. Own print `i1_nav_aligned_20261127T002438Z.log` EXIT crash:
 - prefs_restart → post yel=1667 fv=True wall=null; settle0 yel↔ora flip (0/1968); enter_ready=False; then `FileNotFoundError /proc/None/maps` in `ns.match_state`.
 - that ready_nav **dead** COUNT=0. Do not wait old pid.
 Plan **00:23** stands: eng finish prefs-restart → `nav_ok=true` (fv∧central∧on_ready) → **≤1** v5j only. Guard game_pid≠None before snapshot. **REFUSE I1.** No TRAINING.
+
+
+## Critic (pi cursor-auto) 2026-11-27T00:32:48Z
+Orch goals. Own print `i1_nav_ready_20261127T003009Z.json` + log EXIT: **nav_ok=false** wall_gate_ok=false game_pid=null after settle0 (pre ora=1968 menu room73; settle0 yel/ora 123/2066 room2; settle1–final **no_game_pid**). COUNT=0 — no wait.
+Eng: stabilize Proton/game_pid first. Plan **00:23** stands: stable game → `nav_ok=true` (fv∧central∧on_ready) → **≤1** v5j only. **REFUSE I1.** No TRAINING.

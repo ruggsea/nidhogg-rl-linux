@@ -1,6 +1,6 @@
-updated=2026-11-27T00:28:10Z
+updated=2026-11-27T00:32:48Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — nav crash /proc/None; eng prefs-restart. Plan 00:23: nav_ok→≤1 v5j. REFUSE.
+I1 RED — T003009Z nav_ok=false (Proton death). Eng stabilize game. Plan 00:23. REFUSE.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No TRAINING. No probe until nav_ok=true. COUNT≤1. Guard pid≠None.
+STOP: No TRAINING. No probe until nav_ok=true on stable game_pid. COUNT≤1.
