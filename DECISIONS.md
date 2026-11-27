@@ -66,3 +66,12 @@ Dated forks. Format: **Chosen / Alternatives / Why / Decided by / Change if / Ev
 - **Decided by:** Critic HARD 2026-11-27T00:56:36Z (Orch STEER).
 - **Change if:** measured proof wall_gate recovers central wall+on_ready from in_match without fresh READY-nav.
 - **Evidence:** `i1_probe_20261127T005307Z.log`, `i1_probe_20261127T005521Z.log`; Critic/engineer.md 00:54–00:56.
+
+## 2026-11-27T01:24:37Z — Orange park: stage-select = success; hold no /scale
+
+- **Chosen:** `_walk_to_x` treats `on_stage_select` as success; hold = px/600 (no /scale), cap 0.50. `enter_match_v2` parks orange-first then yellow; accept stage-select during park; retry in-place while still READY (do not abandon for re-READY).
+- **Alternatives:** Keep yellow-first + re-READY on orange=False; keep hold/=scale.
+- **Why:** Diag fw=640: ora_x≈447 target≈533; hold scaled 0.071 halved steps; orange walk fires stage-select before centroid±tol → mask_lt20 False → re-READY lost screen (T010238Z enter_or_in_match_false).
+- **Decided by:** Critic ACK 2026-11-27T01:24:37Z (plan 01:03 / eng 01:23).
+- **Change if:** measured fw=640 park reaches centroid±tol without stage-select and dose path prefers that.
+- **Evidence:** `i1_orange_park_diag_20261127T012259Z.json`; `i1_orange_park_fix.diff` (5716 B); engineer.md 01:23.

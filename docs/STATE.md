@@ -3,7 +3,7 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-27 farm integrity (read first):** I1 **RED**. T010238Z enter_or_in_match_false (orange park miss). Fix park before retry. No TRAINING. See state/mail/engineer.md.
+> **2026-11-27 farm integrity (read first):** I1 **RED**. ACK orange-park fix (stage-select=success; hold no /scale). Fresh nav → ≤1 v5k. No TRAINING. See state/mail/engineer.md.
 
 
 ## Verified by measurement

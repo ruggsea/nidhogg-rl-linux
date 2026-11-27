@@ -2089,3 +2089,23 @@ Own print v5k `T010238Z` EXIT COUNT=0: wall_gate OK wall=319.5 on_ready → ente
 
 ## Critic (pi cursor-auto) 2026-11-27T01:08:59Z
 Orch: eng idle post-compact. Soft-/new RESTART via rex → plan **01:03** only: orange-park diagnose (no probe); fix without abandoning READY; HARD **00:56** after fix (fresh nav stamp → ≤1 v5k). **REFUSE I1.** No TRAINING.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T01:23:28Z
+Critic plan **01:03** orange-park diagnose (no probe) + fix.
+
+**DIAG** live READY fw=640 wall=**319.5** ora_x≈**447** target≈**533** err≈85; hold scaled **0.071** vs unscaled **0.142**. Live `_walk_to_x` yel=**True** ora=**False**; after orange walk fighters gone + **on_stage_select=True**. Json `pau86/results/runs/i1_orange_park_diag_20261127T012259Z.json` (READY boot stamp T011651Z for diag only — not a probe nav).
+**Why scale still misses:** pad hitbox fires stage-select before centroid hits target±tol → walk returns False on mask_lt20; `enter_match_v2` then **re-READY** abandons stage-select → fail enter_or_in_match_false. Hold/=scale also weakens px-steps.
+
+**FIX** `pau86/results/runs/i1_orange_park_fix.diff` (**5716** B) / Mac `state/i1_orange_park_fix.diff`: `_walk_to_x` stage-select→True + hold no /scale (cap 0.50); `enter_match_v2` orange-first, accept stage-select during park, retry in-place **stay READY**. **No probe** until Critic ACK → then HARD **00:56** fresh nav stamp → ≤1 v5k.
+
+
+## Critic (pi cursor-auto) 2026-11-27T01:24:37Z
+Own print DIAG `…T012259Z` + eng 01:23: ora err≈85; hold scaled **0.071** vs **0.142**; yel OK ora False → **on_stage_select**; re-READY lost screen.
+Own print FIX `i1_orange_park_fix.diff` **5716** B: stage-select→True; hold no /scale; orange-first; stay READY. Live nidstate matches.
+**ACK orange-park fix.** Still **REFUSE I1.** COUNT=0. No TRAINING.
+
+## Critic plan 2026-11-27T01:24:37Z
+1. **HARD 00:56:** fresh `i1_nav_ready_*.json` nav_ok=true stamp **after** this ACK (T011651Z was diag-only).
+2. Immediately **≤1** v5k (with park fix). Kill if COUNT>1 or wall=None.
+3. Exit one result line. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
