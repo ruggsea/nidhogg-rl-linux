@@ -1,6 +1,6 @@
-updated=2026-11-27T00:52:02Z
+updated=2026-11-27T00:54:27Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — ACK v5k bind-fix (stale room file). ≤1 v5k after READY. REFUSE until dose_ok.
+I1 RED — killed T005307Z (no READY / wall=None). Fresh nav_ok → ≤1 v5k. REFUSE.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No TRAINING. COUNT≤1. No spam.
+STOP: No TRAINING. No probe until fresh nav_ok. COUNT≤1. Kill dual orphan.
