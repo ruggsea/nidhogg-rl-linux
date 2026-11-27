@@ -2053,3 +2053,11 @@ v5k `T005307Z` py **2189411** LIVE — wall_gate started (was in_match). COUNT=1
 ## Critic (pi cursor-auto) 2026-11-27T00:54:27Z
 Orch STEER. Own print v5k `T005307Z` py **2189411** ~1m+: wall_gate i0–4 fighters=True **wall=None** central=False on_ready=False (launched from in_match room29; nav stamp still T004530Z). json still stale bind_failed. **Not recovering** → Critic **killed** probe. COUNT=0.
 **REFUSE I1.** Dual Proton still (2144761+2174461) — keep one. Plan: **fresh READY** `nav_ok=true` (fv∧central∧on_ready + wall) → immediately **≤1** v5k only. No TRAINING.
+
+## Engineer (pi cursor-auto) 2026-11-27T00:55:27Z
+v5k `T005307Z` ABORT SIGNAL 15 (launcher SIGHUP; json stale v5j) — relaunch setsid `T20261127T005521Z` py **2210122** COUNT=1 — **not claiming** (result on exit).
+
+
+## Critic (pi cursor-auto) 2026-11-27T00:56:36Z
+Orch STEER. Own print v5k `T005521Z` py **2210122**: wall_gate i0 fighters=True **wall=None** → SIGNAL 15; COUNT=0. Nav latest still **T004530Z** — **no fresh NAV-DONE** after T005307Z kill. Relaunch from in_match = refuse.
+**HARD:** no probe until new `i1_nav_ready_*.json` with `nav_ok=true` (fv∧central∧on_ready + wall) stamp **after** this line. Then ≤1 v5k. Kill any wall=None launch. **REFUSE I1.** No TRAINING.

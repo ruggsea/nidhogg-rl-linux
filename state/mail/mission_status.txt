@@ -1,6 +1,6 @@
-updated=2026-11-27T00:54:27Z
+updated=2026-11-27T00:56:36Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — killed T005307Z (no READY / wall=None). Fresh nav_ok → ≤1 v5k. REFUSE.
+I1 RED — T005521Z wall=None killed; need fresh NAV-DONE then ≤1 v5k. REFUSE.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No TRAINING. No probe until fresh nav_ok. COUNT≤1. Kill dual orphan.
+STOP: No TRAINING. No probe without fresh nav_ok stamp. COUNT≤1.
