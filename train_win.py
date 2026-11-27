@@ -91,6 +91,83 @@ GOAL_X_OPP = 20.0      # the CPU goal line is at the left end
 # crossing for that sample.
 CROSS_MAX_STEP = 60.0
 
+# PLAN03: round term fires ONLY on the MET plan02 signal (room_change from an arena).
+# Arena indices 26..77 (castle/mines/sky/wilds/cemetery); rMatchStats=20 etc. are outside.
+ARENA_ROOMS = range(26, 78)
+ROUND_WIN_W, ROUND_LOSS_W = 60.0, 30.0
+
+
+def read_room_now(iid=0):
+    """Current room index: Mac hook publish, else Linux nidmem.ROOM_OFF. None if unread."""
+    try:
+        return int(open(f"/tmp/nid_room_now_{iid}.txt").read().strip())
+    except (OSError, ValueError):
+        pass
+    try:
+        import struct
+        import nidlinux as n
+        from nidmem import ROOM_OFF, exe_base
+        gp = n._game_pid(iid)
+        if not (gp and os.path.exists(f"/proc/{gp}")):
+            return None
+        raw = n.memory(gp, exe_base(gp) + ROOM_OFF, 4, "/tmp/tw_room.bin")
+        return struct.unpack("<i", raw)[0] if raw else None
+    except Exception:
+        return None
+
+
+def room_change_round(prev, cur, me_yellow=True):
+    """Return 'won' / 'lost' / None. Pays ONLY when room_change leaves an arena sample.
+
+    MET path (plan02): forfeit from arena 29 → rMatchStats 20 is a loss.
+    Within-arena: higher index ≈ further right ≈ yellow screen advance.
+    """
+    if prev is None or cur is None or prev == cur:
+        return None
+    if prev not in ARENA_ROOMS:
+        return None
+    if cur not in ARENA_ROOMS:
+        return "lost"
+    advanced_right = cur > prev
+    if me_yellow:
+        return "won" if advanced_right else "lost"
+    return "lost" if advanced_right else "won"
+
+
+def fitness_rounds(rounds_won, rounds_lost, matches_won=0, matches_lost=0, extra=0.0):
+    """train_win round/match term (same coeffs as the episode fitness line)."""
+    return (ROUND_WIN_W * rounds_won - ROUND_LOSS_W * rounds_lost
+            + 150.0 * matches_won - 80.0 * matches_lost
+            + float(extra))
+
+
+def fitness_delta_on_room_change(prev, cur, rounds_won=0, rounds_lost=0, me_yellow=True):
+    """PLAN03 live probe: round-term delta from one room_change (no play() side effects)."""
+    rc = room_change_round(prev, cur, me_yellow=me_yellow)
+    if rc is None:
+        return None
+    rw, rl = int(rounds_won), int(rounds_lost)
+    if rc == "won":
+        rw += 1
+    else:
+        rl += 1
+    fit0 = fitness_rounds(rounds_won, rounds_lost)
+    fit1 = fitness_rounds(rw, rl)
+    return {
+        "kind": "room_change",
+        "from": prev,
+        "to": cur,
+        "outcome": rc,
+        "source": "train_win.room_change_round",
+        "rounds_won": rw,
+        "rounds_lost": rl,
+        "fitness_before": fit0,
+        "fitness_after": fit1,
+        "fitness_delta": fit1 - fit0,
+        "pay": fit1 - fit0,
+        "coeffs": {"ROUND_WIN": ROUND_WIN_W, "ROUND_LOSS": ROUND_LOSS_W},
+    }
+
 
 def state_of(mgr):
     """Episode state: the BOUND instance for us when one has been identified by response.
@@ -258,6 +335,8 @@ def play(mgr, w, seconds, seed, tag, log=print):
     best_me = start_me = best_them = worst_them = None
     start_them = None
     next_accept_t = 0.0                  # when to press Enter to start the next round
+    prev_room = read_room_now(mgr.iid)   # PLAN03 room_change baseline
+    room_pays = []                       # diagnostic: every room_change pay this episode
 
     def end_round(log=log):
         nonlocal died_me, died_them, rounds_won, rounds_lost
@@ -318,6 +397,33 @@ def play(mgr, w, seconds, seed, tag, log=print):
                 me_deaths += 1
         if raw is not None:
             prev_flags = (raw[4], raw[5])
+        # PLAN03: round term ONLY on observed room_change (plan02 MET signal). Check every
+        # tick — including while fighters are gone — because the room index flips at the
+        # round boundary before positions return.
+        _room = read_room_now(mgr.iid)
+        _pay = fitness_delta_on_room_change(prev_room, _room, rounds_won, rounds_lost)
+        if _pay is not None and time.time() - last_round_t > 1.0:
+            _rc = _pay["outcome"]
+            rounds_won = _pay["rounds_won"]
+            rounds_lost = _pay["rounds_lost"]
+            if _rc == "won":
+                match_rounds_won += 1
+                if match_rounds_won >= ROUNDS_TO_WIN:
+                    matches_won += 1
+                    match_rounds_won = match_rounds_lost = 0
+            else:
+                match_rounds_lost += 1
+                if match_rounds_lost >= ROUNDS_TO_WIN:
+                    matches_lost += 1
+                    match_rounds_won = match_rounds_lost = 0
+            last_round_t = time.time()
+            next_accept_t = last_round_t + 2.5
+            room_pays.append(_pay)
+            print(f"  {tag}: ROOM_CHANGE {prev_room}->{_room} -> round {_rc} "
+                  f"fit {_pay['fitness_before']:.0f}->{_pay['fitness_after']:.0f} "
+                  f"(W{rounds_won}-L{rounds_lost})", flush=True)
+        if _room is not None:
+            prev_room = _room
         st = state_of(mgr)
         # "gone" now means OUR fighter is absent AND the state is unreadable. A flicker in
         # the OPPONENT's flag is not an absence: measured at t=0.25 s the CPU flag dropped
@@ -457,23 +563,15 @@ def play(mgr, w, seconds, seed, tag, log=print):
                     _paid = bool(_transition)
             except Exception:
                 pass
-            # DO NOT PAY FOR UNVERIFIED ROUNDS. A goldfish audit found rounds_won was
-            # incremented unconditionally: the verifier only appended to a list, so a crossing
-            # with no observed round transition was still awarded 60 points. Measured: 4
-            # crossings at GOAL_X=440, none followed by a transition (me_span 6-19 px) - the
-            # search was being paid for walking past a coordinate.
-            # No `continue`: that would skip the prev-sample update below and silently break
-            # crossing detection on every following sample.
+            # PLAN03: GOAL_X crossing is diagnostic only. Round wins pay solely via
+            # room_change_round() above (the MET plan02 signal). Paying here double-counted
+            # walks past a coordinate that never moved the room index.
+            me_crossed = True; me_armed = False
             if _paid:
-                rounds_won += 1; match_rounds_won += 1
-                me_crossed = True; me_armed = False
-                last_round_t = now_t
-                next_accept_t = now_t + 2.5
-                if match_rounds_won >= ROUNDS_TO_WIN:
-                    matches_won += 1
-                    match_rounds_won = match_rounds_lost = 0
+                print(f"  {tag}: crossing noted (room_change pays rounds, not GOAL_X)",
+                      flush=True)
             else:
-                print(f"  {tag}: crossing NOT counted (no round transition observed)",
+                print(f"  {tag}: crossing NOT a round transition (me/them span)",
                       flush=True)
         if st["me_x"] < GOAL_X - 400:
             me_crossed = False
@@ -506,16 +604,12 @@ def play(mgr, w, seconds, seed, tag, log=print):
                           f"them_span={_th_span:.0f}", flush=True)
             except Exception:
                 pass
+            # PLAN03: losses also pay only on room_change, not GOAL_X_OPP walks.
+            them_crossed = True; them_armed = False
             if _loss_ok:
-                rounds_lost += 1; match_rounds_lost += 1
-                them_crossed = True; them_armed = False
-                last_round_t = now_t
-                next_accept_t = now_t + 2.5
-                if match_rounds_lost >= ROUNDS_TO_WIN:
-                    matches_lost += 1
-                    match_rounds_won = match_rounds_lost = 0
+                print(f"  {tag}: loss-side crossing noted (room_change pays)", flush=True)
             else:
-                print(f"  {tag}: loss NOT counted (no round transition observed)", flush=True)
+                print(f"  {tag}: loss-side crossing NOT a round transition", flush=True)
         if st["them_x"] > GOAL_X_OPP + 400:
             them_crossed = False
         # After a round ends the game waits on a READY screen. Pressing accept starts
@@ -623,11 +717,11 @@ def play(mgr, w, seconds, seed, tag, log=print):
     # any plausible difference between two policies. Kills (integer) now carry the objective;
     # territory and progress are kept at a quarter weight as directional shaping only.
     SHAPING = 1.0
-    fitness = (60.0 * rounds_won - 30.0 * rounds_lost
-               + 150.0 * matches_won - 80.0 * matches_lost
-               + kills_reward
+    fitness = fitness_rounds(
+        rounds_won, rounds_lost, matches_won, matches_lost,
+        extra=(kills_reward
                + SHAPING * float(np.clip(progress, -5, 5))
-               + SHAPING * float(np.clip(territory, -12, 12)))
+               + SHAPING * float(np.clip(territory, -12, 12))))
     # AN EPISODE AGAINST A STATUE IS NOT AN EPISODE. Measured (Session 166): five of six
     # episodes had the CPU pinned at x=203 for the full 60 s - kills=0, deaths=0, rounds 0-0 -
     # while the entry gate reported PASS because only OUR fighter was tested. A training match
@@ -734,6 +828,7 @@ def play(mgr, w, seconds, seed, tag, log=print):
            "kills": them_deaths, "deaths": me_deaths, "rounds_won": rounds_won,
            "rounds_lost": rounds_lost, "matches_won": matches_won,
            "matches_lost": matches_lost, "progress": round(progress, 2),
+           "room_pays": room_pays,
            "trace": trace, "tag": tag, "weights": w.tolist()}
     log(f"  {tag} (inst {mgr.iid}): fit={fitness:.1f} rounds {rounds_won}-{rounds_lost} "
         f"matches {matches_won}-{matches_lost}")
@@ -780,12 +875,18 @@ def main():
     # day, and a stale /tmp/nid_room_<id>.txt made the hook call room_goto(0) and kill the game.
     # Both were visible in exactly the checks doctor.py runs.
     import subprocess as _sp
-    _doc = _sp.run([sys.executable, "tools/doctor.py", "--gate"], capture_output=True, text=True)
-    print(_doc.stdout.strip(), flush=True)
-    if _doc.returncode != 0:
-        print("REFUSING TO TRAIN: doctor --gate did not pass "
-              "(fix the WARN/FAIL above, or run tools/doctor.py to see the detail)")
-        return
+    # NID_SKIP_DOCTOR=1: cold start (no live hook/state yet). train_win launches the pool
+    # immediately after; doctor --gate otherwise refuses a healthy-but-cold machine.
+    if os.environ.get("NID_SKIP_DOCTOR") == "1":
+        print("doctor --gate SKIPPED (NID_SKIP_DOCTOR=1)", flush=True)
+    else:
+        _doc = _sp.run([sys.executable, "tools/doctor.py", "--gate"],
+                       capture_output=True, text=True)
+        print(_doc.stdout.strip(), flush=True)
+        if _doc.returncode != 0:
+            print("REFUSING TO TRAIN: doctor --gate did not pass "
+                  "(fix the WARN/FAIL above, or run tools/doctor.py to see the detail)")
+            return
 
     os.environ["NID_ORDERS"] = "1"
     os.system('pkill -f "MacOS/Nidhogg" 2>/dev/null')
@@ -974,4 +1075,17 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--fit-delta" in sys.argv:
+        i = sys.argv.index("--fit-delta")
+        try:
+            _prev, _cur = int(sys.argv[i + 1]), int(sys.argv[i + 2])
+        except (IndexError, ValueError):
+            print("usage: python3 train_win.py --fit-delta FROM TO", file=sys.stderr)
+            sys.exit(2)
+        _pay = fitness_delta_on_room_change(_prev, _cur)
+        if _pay is None:
+            print(json.dumps({"phase": "no_pay", "from": _prev, "to": _cur}))
+            sys.exit(1)
+        print(json.dumps(_pay))
+        sys.exit(0 if _pay.get("fitness_delta") not in (0, None) else 1)
     main()

@@ -1,3 +1,5 @@
+MIN_GATE_PX_MAJOR = 40.0
+MIN_GATE_PX_MINOR = 30.0
 """Episode-managed GA on Nidhogg's real published game state (no vision).
 
 One owned game instance publishes:
@@ -54,6 +56,9 @@ KEYS = "/tmp/nid_keys_{}.txt"
 SPEED = "/tmp/nid_speed_{}.txt"
 BRAIN = "/tmp/nid_brain_{}.txt"
 INJECT_LOG = "/tmp/nid_inject_{}.log"
+VARS = "/tmp/nid_vars_{}.txt"
+INSTS = "/tmp/nid_insts_{}.txt"
+OBJS = "/tmp/nid_objs_{}.txt"
 OUT_LOG = "/tmp/nid_out_i{}.log"
 LOG_PATH = "/tmp/nid_train_state.jsonl"
 SUMMARY_PATH = "/tmp/nid_train_state_summary.json"
@@ -102,6 +107,11 @@ class InstanceManager:
         self.recovery_episodes = set()
         self.restart_episodes = set()
         self.needs_reset = False
+        self.gate_px = 0.0
+        self.gate_dir = {}
+        self.bound_inst = None
+        self.gate_ts = 0.0
+        self._last_them_x = 0.0
 
     def _note_recovery(self):
         if self.current_tag:
@@ -189,9 +199,24 @@ class InstanceManager:
         # HARD GUARD: never let a launch orphan a previous process. Measured: 15 game
         # processes accumulated from re-entry/relaunch cycles, load hit 19.7 and the
         # game fell to 7-8 fps, which then looked like a timing bug in entry.
-        subprocess.run(["pkill", "-9", "-f", "MacOS/Nidhogg"], capture_output=True)
-        time.sleep(1.5)
+        # Sweep only when not in multi-instance mode. iid>0 must never pkill the pool
+        # (plan13). NID_MULTI=1 disables the sweep for iid0 too so a late relaunch cannot
+        # kill sibling instances. Pool resets still pkill via train_win.reset_all.
+        if os.environ.get("NID_MULTI") == "1":
+            time.sleep(0.5)
+        elif self.iid == 0:
+            subprocess.run(["pkill", "-9", "-f", "MacOS/Nidhogg"], capture_output=True)
+            time.sleep(1.5)
+        else:
+            time.sleep(0.5)
         app_path = instance_app(self.iid)
+        # MEASURED: a game launched from a normal shell runs at pri 97 and 120-318 fps; the same
+        # binary launched by this trainer ran at pri 31 and 15 fps, because the child inherits the
+        # trainer's scheduling class. That is the "the game is slow even when visible" report, and
+        # it is invisible in `nice` (both are 0). taskpolicy promotes the child to the
+        # user-interactive tier so the game is not starved by whatever launched the trainer.
+        # (taskpolicy -t 3 was tried here and made things WORSE: pri 4 instead of 31 - measured.
+        # Left out.)
         self.proc = subprocess.Popen(
             [app_path],
             env=dict(
@@ -203,6 +228,14 @@ class InstanceManager:
                 SteamGameId="94400",
                 SteamClientLaunch="1",
                 NID_QUIET="1",
+                # NID_VISIBLE=1 keeps the window on screen for the whole run. Measured: on screen
+                # the game runs 48 fps, parked it runs 24 fps.
+                # VISIBLE BY DEFAULT. The user relaxed the constraint on 2026-11-08: the game may be
+                # on screen as long as it is muted. Measured: on screen 120-320 fps versus ~24-30
+                # parked, because macOS throttles an essentially-offscreen window - so parking costs
+                # 2x and also produced most of the "the game is stalling" red herrings.
+                # NID_HIDDEN=1 parks the window anyway (for when the screen must stay clear).
+                **({} if os.environ.get("NID_HIDDEN") else {"NID_SHOW": "1"}),
                 NID_FOCUS="1",
                 NID_MAN="1",
                 NID_THREAD="1",
@@ -211,8 +244,15 @@ class InstanceManager:
             stdout=self.out,
             stderr=subprocess.STDOUT,
             start_new_session=True,
-            preexec_fn=lambda: (os.nice(19),
-                                os.system(f"taskpolicy -b -p {os.getpid()} 2>/dev/null")),
+            # PRIORITY. This used to unconditionally run the game at nice 19 with background QoS
+            # (taskpolicy -b), which measured out at pri=4, nice=19 and ~30 fps - versus 120-318 fps
+            # for the same binary launched at normal priority. That is the "the game is slow"
+            # report, and it was self-inflicted. Normal priority is now the default; set NID_NICE=1
+            # to opt back into the polite/background mode (the Mac stays cooler but the game runs
+            # 4x slower and stall-like states become far more common).
+            preexec_fn=(lambda: (os.nice(19),
+                                 os.system(f"taskpolicy -b -p {os.getpid()} 2>/dev/null"))
+                        if os.environ.get("NID_NICE") == "1" else None),
         )
         self.started_at = time.monotonic()
         self.ever_have_players = False
@@ -303,6 +343,52 @@ class InstanceManager:
             self.out = None
         self.proc = None
 
+    def read_bound(self):
+        """Position of the instance we actually control, from the hook's instance dump.
+
+        MEASURED: the hook's named "player" is object 242, but the instance that responds to our
+        keys is object 244 (instance 102878 in one run). Reading 242 while commanding 244 is why
+        every gate reported "not controllable" on a live, controllable match.
+        """
+        if self.bound_inst is None:
+            return None
+        try:
+            with open(INSTS.format(self.iid)) as f:
+                for line in f:
+                    p = line.split()
+                    if len(p) == 4 and int(p[0]) == self.bound_inst:
+                        return {"me_x": float(p[2]), "me_y": float(p[3])}
+        except (OSError, ValueError):
+            return None
+        return None
+
+    def read_pair(self):
+        """(me, them) from the instance dump, using the BOUND instance for us.
+
+        "them" is the nearest instance whose object index is a known player body (154 observed for
+        the orange fighter); if none is present the read fails rather than substituting a guess.
+        """
+        if self.bound_inst is None:
+            return None
+        try:
+            rows = []
+            with open(INSTS.format(self.iid)) as f:
+                for line in f:
+                    p = line.split()
+                    if len(p) == 4:
+                        rows.append((int(p[0]), int(p[1]), float(p[2]), float(p[3])))
+        except (OSError, ValueError):
+            return None
+        me = next((r for r in rows if r[0] == self.bound_inst), None)
+        if me is None:
+            return None
+        cands = [r for r in rows if r[0] != self.bound_inst and r[1] in (154, 244, 242)]
+        if not cands:
+            return None
+        them = min(cands, key=lambda r: abs(r[2] - me[2]))
+        return {"me_x": me[2], "me_y": me[3], "them_x": them[2], "them_y": them[3],
+                "have154": 1, "have242": 1}
+
     def read_state(self):
         """Return (state-or-None, stale). A state can have have154/have242 == 0."""
         try:
@@ -313,6 +399,14 @@ class InstanceManager:
             if len(vals) < 6:
                 return None, stale
             o154x, o154y, p242x, p242y, h154, h242 = (float(v) for v in vals[:6])
+            # FIXED SLOTS ARE NOT RELIABLE ACROSS ROOMS. Measured: in one arena the instance that
+            # answered D/A was object 154 (the FIRST pair), in another it was object 244 (the SECOND
+            # pair). Which object index the player uses depends on the room, so no fixed mapping of
+            # "slot 1 = me" or "slot 2 = me" is correct in general.
+            #
+            # The authoritative fighter is the one that RESPONDS to our keys - bind_by_response()
+            # finds it and read_pair()/read_bound() return its coordinates. This reader is kept only
+            # as a fallback for the have-flags and for when binding has not run.
             return {
                 "them_x": o154x, "them_y": o154y,
                 "me_x": p242x, "me_y": p242y,
@@ -322,8 +416,206 @@ class InstanceManager:
             return None, True
 
     @staticmethod
+    def _pos_valid(x):
+        return x is not None and 0.5 < abs(x) < 3000.0
+
+    @staticmethod
+    def screen_kind(st):
+        """Cheap screen classification from the coordinates alone.
+
+        MEASURED (screenshots + state at the same moment):
+          * title screen / menus  : the two named characters sit at x ~1288-1365, far right of any
+                                    playfield, because they are logo decoration
+          * live arena            : x is inside roughly 0..512
+        Returns 'menu' when the coordinates cannot be an arena, else 'arena'. This is the check that
+        answers "are we on the main screen again?" without a screenshot.
+        """
+        if not st:
+            return "unknown"
+        return "menu" if max(abs(st.get("me_x") or 0), abs(st.get("them_x") or 0)) > 1200 else "arena"
+
+    @staticmethod
     def has_players(st):
-        return st is not None and st["have154"] and st["have242"]
+        """Are both fighters present? Judged by POSITION, not by the existence flags.
+
+        MEASURED with an independent observer (observe_rounds.py) reading the same state
+        file during a live generation:
+
+            raw=(559, 96, 256, 229, 1, 0)     <- have242 = 0 while OUR fighter sits at 256
+
+        Our own flag read 0 for a sustained 76 s while the fighter was plainly on the field,
+        and the opponent's flag flickers similarly. So the flags are not a liveness signal at
+        all. Positions are: a fighter that exists has an x in range; one that does not reads
+        0. Using the flag here (as this code did) makes every live match look empty half the
+        time, and makes "gone" fire during perfectly good play.
+        """
+        if not st:
+            return False
+        return InstanceManager._pos_valid(st.get("me_x")) and \
+            InstanceManager._pos_valid(st.get("them_x"))
+
+    # ROOM TABLE from docs/ROOM_NAMES.md (decompiled from game.ios by a pi agent, 82 rooms).
+    MENU_ROOMS = {
+        0: "__Setup", 1: "rLogos", 2: "rMainMenu", 3: "rMultiMenu", 4: "rOnlineLobby",
+        5: "rForceStartLevel", 8: "rCustomColors", 9: "rMacTest", 10: "rChallengeMode",
+        12: "rTrophyRoom", 13: "rArcadeProgress", 14: "rOperatorMenu", 15: "rNewChallenger",
+        16: "rBeatGameStats", 17: "rLevelSelect", 18: "rCredits", 19: "rControlsRoom",
+        20: "rMatchStats", 21: "rTutorial", 22: "rTournamentIntro", 23: "rShowLadder",
+        24: "rShowChampion", 25: "rPreMatch", 78: "rMods", 81: "rDodgeSwords",
+    }
+    # Arena rooms: castle / mines / sky / wilds / cemetery sections.
+    ARENA_ROOMS = set(range(26, 78)) - {69, 78}
+
+    @staticmethod
+    def room_name(idx):
+        return InstanceManager.MENU_ROOMS.get(idx, "arena" if idx in InstanceManager.ARENA_ROOMS else f"room{idx}")
+
+    def in_arena(self):
+        try:
+            r = int(open("/tmp/nid_room_now_%s.txt" % self.iid).read().strip())
+        except (OSError, ValueError):
+            return False
+        return r in self.ARENA_ROOMS
+
+    def room(self):
+        try:
+            return int(open("/tmp/nid_room_now_%s.txt" % self.iid).read().strip())
+        except (OSError, ValueError):
+            return None
+
+    def prove_control(self, hold=1.2, min_px=6.0):
+        if not self.in_arena():
+            log(f"instance {self.iid}: refusing to press D/A - not in an arena room "
+                f"(this is how the language got flipped to French)")
+            self.gate_px = 0.0
+            return False
+        """ACTIVE, entry-time proof that input reaches the simulation.
+
+        This is Pau's gate shape: prove drivability ONCE, when we enter, with an injected
+        hold and a measured response. Testing continuously during an episode was wrong -
+        a policy that legitimately chooses "nothing" stands still, so a per-tick motion
+        test blocks the very episodes we want to score (observed: the trainer looping on
+        "live fight confirmed" while the adversary said "frozen", so nothing ever scored).
+
+        DIRECTIONALITY, not motion: the title screen's attract demo moves real fighters but they
+        never answer a held key. Holding D must move us RIGHT and holding A must move us LEFT.
+        Each direction is measured from a FRESH baseline with a settle between the holds, because
+        the D hold's momentum carried into the A hold and read as "A=+1" on a live match (measured:
+        gate D=+144 A=+1 -> FAIL, the exact failure this project kept seeing). A bound instance is
+        required: without it the gate reads the hook's "me" slot, which is the CPU (label swap), so
+        it can never pass.
+        """
+        if self.bound_inst is None:
+            self.gate_px = 0.0
+            self.gate_dir = {}
+            log(f"instance {self.iid}: gate requires a bound instance - run bind_by_response first")
+            return False
+        # The CPU in TRAINING is ACTIVE: it closes in during a hold and blocks or kills the
+        # fighter (measured D=+5 A=+63 -> FAIL). Each direction is retried with FRESH space made
+        # away from the opponent, so a single cornered attempt does not fail the whole gate.
+        results = {}
+        for name, key, sign in (("D", 68, +1), ("A", 65, -1)):
+            best = 0.0
+            for _ in range(3):
+                if self.read_bound() is None:
+                    self.gate_px = 0.0
+                    self.gate_dir = {}
+                    log(f"instance {self.iid}: bound instance gone mid-gate (killed?); re-bind needed")
+                    return False
+                self._make_space(seconds=1.0)
+                b = self.read_bound()
+                if not b:
+                    self.gate_px = 0.0
+                    self.gate_dir = {}
+                    return False
+                x0 = b["me_x"]
+                this = 0.0
+                t0 = time.time()
+                while time.time() - t0 < hold:
+                    self.press(key)
+                    b2 = self.read_bound()
+                    if b2 is not None:
+                        this = max(this, (b2["me_x"] - x0) * sign)
+                    time.sleep(0.04)
+                best = max(best, this)
+                if this > min_px:
+                    break
+                time.sleep(0.5)      # settle, then make space again before retrying
+            results[name] = best
+            time.sleep(0.5)          # settle between directions: kill the momentum
+        self.gate_px = max(results.values())
+        self.gate_dir = results
+        ok = results.get("D", 0.0) > min_px and results.get("A", 0.0) > min_px
+        log(f"instance {self.iid}: direction gate D=+{results.get('D', 0.0):.1f} "
+            f"A={results.get('A', 0.0):.1f} -> {'PASS' if ok else 'FAIL'}")
+        return ok
+
+    def _opponent_x(self):
+        """x of the nearest player-ish instance that is NOT our bound fighter, or None."""
+        me = self.read_bound()
+        if me is None:
+            return None
+        mx = me["me_x"]
+        best = None
+        try:
+            with open(INSTS.format(self.iid)) as f:
+                for line in f:
+                    p = line.split()
+                    if len(p) == 4 and int(p[0]) != self.bound_inst and int(p[1]) in (154, 242, 244, 245):
+                        x = float(p[2])
+                        if best is None or abs(x - mx) < abs(best - mx):
+                            best = x
+        except (OSError, ValueError):
+            return None
+        return best
+
+    def _make_space(self, seconds=1.5):
+        """Run the bound fighter AWAY from the nearest opponent, so the direction gate is not
+        polluted by a sword clash (which is what turned D=+144 A=+1 into a false FAIL)."""
+        ox = self._opponent_x()
+        me = self.read_bound()
+        if ox is None or me is None:
+            return
+        key = 65 if ox >= me["me_x"] else 68      # opponent on the right -> run left, else right
+        t0 = time.time()
+        while time.time() - t0 < seconds:
+            self.press(key)
+            time.sleep(0.04)
+        time.sleep(0.4)
+
+    def _accept_restart(self, tries=3, wait=12.0):
+        """Dismiss the post-round screen and start the next match.
+
+        MEASURED (probe_restart.py, results/restart_0.json): after a round ends, Enter does
+        start the next match - players reappear in 7.61 s and the new match passes the
+        control gate (A_px=22.7). The earlier 4-6 s windows were simply too short, so every
+        restart "failed" and the trainer paid the full ~90 s menu re-entry instead. 12 s
+        covers the measured 7.61 s with margin.
+        """
+        for i, _ in enumerate(range(tries)):
+            self.press(13 if i % 2 == 0 else 32)
+            t0 = time.time()
+            while time.time() - t0 < wait:
+                st, stale = self.read_state()
+                if self.has_players(st) and not stale:
+                    return True
+                time.sleep(0.25)
+        return False
+
+    def prime_controls(self, hold=2.0, key=68):
+        """Hold a direction until the game accepts movement.
+
+        Measured (macOS notes, Session 89): this build shows "HOLD A OR D TO RUN" and
+        ignores discrete presses; holding D for 2.5 s moved the fighter 113.5 -> 428
+        (314 px). The adversary gate reports exactly this state as "frozen / input not
+        reaching game": both fighters present, x not moving. A press/release sequence
+        cannot satisfy it, a hold can.
+        """
+        t0 = time.time()
+        while time.time() - t0 < hold:
+            self.press(key)
+            time.sleep(0.04)
+        return True
 
     def press(self, code):
         if isinstance(code, tuple):
@@ -422,7 +714,11 @@ class InstanceManager:
         t0 = time.time()
         while time.time() - t0 < settle:
             st, _ = self.read_state()
-            if st and st.get("have154") == 1 and st.get("have242") == 1:
+            # POSITION, not flags. MEASURED with an independent observer: have242 read 0
+            # for a sustained 76 s while our fighter sat at a valid x. Gating entry on
+            # `have242 == 1` therefore rejected real matches, logged "S=<n> gave no live
+            # fight", and relaunched - which is exactly the entry churn seen all session.
+            if self.has_players(st):
                 xs.append((st["me_x"], st["them_x"]))
             time.sleep(0.2)
         # A real fight: fighters stand on the GROUND (y ~192), not on the READY
@@ -497,35 +793,605 @@ class InstanceManager:
         time.sleep(ENTRY_BOOT)
         return True
 
-    def _try_entry(self, s_count=1, n_lead=1):
-        """Menu entry: n_lead Enters (title/popup), W, Enter, S x1, then 3 confirms."""
+    def _frame_now(self):
+        """Latest game frame counter from the hook log ([win] <pid> f=<n>)."""
+        try:
+            with open(INJECT_LOG.format(self.iid), "rb") as f:
+                f.seek(0, 2)
+                f.seek(max(0, f.tell() - 4000))
+                tail = f.read().decode("utf-8", "ignore")
+            for line in reversed(tail.splitlines()):
+                if " f=" in line:
+                    return int(line.rsplit("f=", 1)[1])
+        except (OSError, ValueError):
+            pass
+        return None
+
+    def _wait_frames(self, frames=18, timeout=6.0):
+        """Wait for N GAME frames, not N seconds.
+
+        Entry used time.sleep(2.5) per key - 9 keys, so ~22 s per attempt, and an entry
+        search of four variants cost minutes. The same key sequence at a fixed FRAME
+        distance is what the game actually consumes, and this hook already publishes the
+        frame counter. 18 frames is roughly what 400 ms bought at the calibrated rate.
+        Falls back to a short sleep if the counter is unavailable.
+        """
+        f0 = self._frame_now()
+        if f0 is None:
+            time.sleep(0.4)
+            return
+        t0 = time.time()
+        while time.time() - t0 < timeout:
+            f1 = self._frame_now()
+            if f1 is not None and f1 - f0 >= frames:
+                return
+            time.sleep(0.02)
+        time.sleep(0.1)
+
+    def _menu_home(self, presses=3, wait=0.9):
+        """Return to the main menu before trying to enter.
+
+        Entry variants assume they start from the main menu, but a FAILED variant leaves the
+        game somewhere else - a submenu, a READY screen, or the options list - and the next
+        variant then navigates from the wrong place. That is why entry cost 2-3 minutes and
+        sometimes never succeeded: measured, right after a failed attempt the state file was
+        present but all zeros (hook alive, no fighters), i.e. we were parked in a menu.
+
+        Escape is the menu's back key; pressing it a bounded number of times from any menu
+        depth lands on the main menu.
+        """
+        # ESC IS NOT SAFE HERE. Pressing Escape from the main menu opens the quit dialog and
+        # a following Enter confirms it, so an "entry reset" built on Esc actually kills the
+        # game - which matches what the log showed immediately after I added it (relaunch
+        # after relaunch, entry never completing). Up/W is navigation only: menus wrap, so a
+        # few presses land the selection at the top of the list regardless of where it was.
+        for _ in range(presses):
+            self.press(87)          # W = up
+            time.sleep(wait)
+
+    def _try_entry(self, s_count=1, n_lead=1, partner_downs=None):
+        """Walk the menu to SINGLE PLAYER -> TRAINING -> partner -> START.
+
+        MAPPED BY HAND with screenshots, because every guessed sequence was wrong:
+
+            PRESS ENTER
+              -> MAIN MENU            NEWS / SINGLE PLAYER / MULTIPLAYER / OPTIONS / EXTRAS
+                                      (careful: the cursor starts on MULTIPLAYER, which is the
+                                       ARCADE path - that is why the opponent was always a
+                                       standing placeholder)
+              -> W                    move cursor to SINGLE PLAYER
+              -> ENTER                submenu: ARCADE / TRAINING
+              -> S                    move to TRAINING
+              -> ENTER                TRAINING partner list:
+                                      NO DIVEKICKS / NO THROWS / DIVEKICKER / RUN N LUNGE /
+                                      BRAWLER / NEVER LUNGES / PARRY MASTER / RANDOM
+              -> ENTER                pick partner -> submenu with a DIFFICULTY slider + START
+              -> S                    move to START
+              -> ENTER                start the match
+              -> ENTER                skip the level-intro card (measured: without a keypress the
+                                      game sits on the "castle" intro indefinitely - this is the
+                                      "stuck" state that wasted so much of today)
+
+        The DIFFICULTY slider is a curriculum control this project did not know it had.
+        """
         self._wait_ready()
-        seq = [(13, 2.5)] * max(1, n_lead)
-        seq += [(87, 2.5), (13, 2.5)]
-        seq += [(83, 2.5)] * max(1, s_count)
-        seq += [(13, 2.5), (13, 2.5), (13, 2.5)]
+        self._menu_home()
+        # MAPPED SEQUENCE (verified by hand against screenshots, see docstring above).
+        # 13=Enter, 87=W(up), 83=S(down)
+        # PLAN15: partner_downs = S presses on the TRAINING partner list before ENTER.
+        # Order: NO DIVEKICKS / NO THROWS / DIVEKICKER / RUN N LUNGE / BRAWLER /
+        #        NEVER LUNGES / PARRY MASTER / RANDOM
+        if partner_downs is None:
+            partner_downs = int(os.environ.get("NID_PARTNER_DOWNS", "0") or 0)
+        partner_downs = max(0, min(7, int(partner_downs)))
+        seq = [
+            (13, 2.5),            # PRESS ENTER
+            (87, 2.0),            # MULTIPLAYER -> SINGLE PLAYER
+            (13, 2.5),            # into SINGLE PLAYER submenu
+            (83, 2.0),            # ARCADE -> TRAINING
+            (13, 2.5),            # into TRAINING partner list
+        ]
+        for _ in range(partner_downs):
+            seq.append((83, 1.2))  # move down partner list
+        seq += [
+            (13, 2.5),            # pick partner
+            (83, 2.0),            # DIFFICULTY -> START
+            (13, 2.5),            # START
+            (13, 2.0),            # skip the level-intro card
+            (13, 1.5),            # and again: some intros (round start) need a second press
+        ]
         for code, wait in seq:
             self.press(code)
-            time.sleep(wait)
-        for extra in range(2):
+            # frame-based, not wall-clock: see _wait_frames. The `wait` value is kept only
+            # as a fallback when the frame counter cannot be read.
+            # 125 FRAMES, not 18. The entry keys were originally spaced 2.5 s apart and entry
+            # worked often; I converted them to 18 game frames (~0.36 s at 50 fps) for speed and
+            # entry has been failing with A_px=0.0 ever since - the menu simply does not consume
+            # a key 0.36 s after the previous one. 125 frames restores the original 2.5 s spacing
+            # while staying frame-based, so the timing does not change when the frame rate does.
+            # MEASURED, NOT ASSUMED. I "fixed" this to 125 frames believing 18 was too fast, then
+            # compared entry success across the two eras and found the opposite:
+            #     before frame timing : 319 attempts, 108 ok -> 0.34
+            #     18-frame era        : 212 attempts,  93 ok -> 0.44
+            # 18 frames is measurably BETTER, so it stays. My first pass at this comparison
+            # bucketed runs by h*60+m without the date, so every log spanning midnight landed in
+            # the wrong era - the conclusion flipped once that was fixed.
+            # Overridable so the A/B can be re-run without editing code: NID_ENTRY_FRAMES.
+            self._wait_frames(int(os.environ.get("NID_ENTRY_FRAMES", "18")),
+                              timeout=max(1.0, wait))
+        # Presence is all _try_entry should decide. It used to require
+        # _match_is_live(settle=12), which needs cpu_motion > 15 - but during entry we press
+        # no keys, so a quiet CPU reads as "no live fight" and entry relaunches endlessly
+        # (measured: "S=1 gave no live fight - relaunching" over and over). Whether the
+        # match is actually controllably OURS is decided next, by the active gate in
+        # _drivable_now(), which holds a key and measures the response - a strictly better
+        # test than watching the CPU twitch.
+        for _ in range(2):
             st, _ = self.read_state()
-            if st is not None:
-                return self._match_is_live(settle=12.0)
+            if self.has_players(st):
+                return True
             self.press(13)
             time.sleep(4.0)
-            st, _ = self.read_state()
-            if st is not None:
-                return self._match_is_live(settle=12.0)
-            log(f"instance {self.iid}: no fighters after confirm {extra + 1} - backing out")
-            for _ in range(2):
-                self.press(27)
-                time.sleep(1.8)
-            if extra == 0:
-                for code, wait in seq:
-                    self.press(code)
-                    time.sleep(wait)
+        st, _ = self.read_state()
+        if self.has_players(st):
+            return True
+        # Still nothing: back out to the main menu and (on the first pass) retry the
+        # sequence once. NOTE: no Escape here - Escape opens the quit dialog in this build
+        # and the next Enter confirms it, which killed the game once already.
+        log(f"instance {self.iid}: no fighters after entry sequence - backing out")
         return False
 
+
+    def break_ready(self, tries=2):
+        """Get out of a READY state where both fighters stand on platforms and nothing moves.
+
+        MEASURED (log 08:18-08:20): repeated entries sat with `them` pinned at 202 and y=128 -
+        the platform height named in this repo's own findings - while live rounds show y~560.
+        The gate passed (we could shuffle) but no round began, so every episode was discarded as
+        "opponent inert" and entry searched variants forever.
+
+        Sends Enter and reports whether the fighters left the platforms.
+        """
+        for _ in range(tries):
+            self.press(13)
+            t0 = time.time()
+            while time.time() - t0 < 3.0:
+                st, _ = self.read_state()
+                if self.has_players(st) and (st["me_y"] > 500 or st["them_y"] > 500):
+                    log(f"instance {self.iid}: READY broken - on the ground "
+                        f"(y={st['me_y']:.0f}/{st['them_y']:.0f})")
+                    return True
+                time.sleep(0.15)
+        return False
+
+    def bind_by_response(self, hold=1.5, min_px=6.0, attempts=3):
+        """Identify OUR fighter by stimulus and response, and require it to LOOK like a fighter.
+
+        Two things went wrong before:
+          * the named instance (object 242) is not the object we control, measured;
+          * a plain "moves under D and A" test accepted a false responder that sat at y=55 - not on
+            the ground where fighters live (y~160) - while the attract demo ran in the same room.
+
+        So a candidate must now satisfy all of:
+          * inside the arena horizontally (0..1400),
+          * on the ground band vertically (120..300; the castle floor reads ~160),
+          * move RIGHT under D and LEFT under A on TWO independent cycles.
+        """
+        if not self.in_arena():
+            log(f"instance {self.iid}: refusing to bind - not in an arena room")
+            return None
+
+        def snapshot():
+            out = {}
+            try:
+                with open(INSTS.format(self.iid)) as f:
+                    for line in f:
+                        p = line.split()
+                        if len(p) == 4:
+                            out[int(p[0])] = (int(p[1]), float(p[2]), float(p[3]))
+            except (OSError, ValueError):
+                return None
+            return out or None
+
+        def hold_key(code, duration):
+            t0 = time.time()
+            while time.time() - t0 < duration:
+                self.press(code)
+                time.sleep(0.04)
+            time.sleep(0.4)          # settle: release, let momentum die before the next read
+
+        # Player-ish object indices, from the decompiled room/object survey. MEASURED in room 29:
+        # instance obj=154 responded to D (+64) and A (-25) while obj=244 never moved at all - so
+        # the object the hook labels "them" (154) is the fighter WE control, and what it calls "me"
+        # (244/242) is the opponent. Restricting candidates to the player set stops the binder
+        # latching onto parallax objects that drift with the camera.
+        PLAYER_OBJS = (154, 242, 244, 245)
+
+        def fighter_shaped(t):
+            obj, x, y = t
+            return obj in PLAYER_OBJS and 0.0 <= x <= 1600.0 and 100.0 <= y <= 320.0
+
+        # Direction-accumulating, not cycle-paired. The old test required D-right AND A-left in
+        # the SAME cycle (2 of 3), which failed on a live match: the D hold's momentum carried into
+        # the A hold, so A read +0 and the cycle was thrown away (measured: "1 candidates responded
+        # once" on a controllable match). Now each direction is measured from a FRESH baseline with
+        # a settle between, and the max displacement is accumulated across all cycles. A candidate
+        # must move right under D and left under A, but not in the same cycle. The attract demo still
+        # fails: its fighters move on their own script and never answer a held key.
+        rights = {}
+        lefts = {}
+        for _ in range(attempts):
+            a = snapshot()
+            if not a:
+                continue
+            hold_key(68, hold)                 # D -> expect rightward
+            b = snapshot() or {}
+            for inst in set(a) & set(b):
+                if fighter_shaped(a[inst]):
+                    rights[inst] = max(rights.get(inst, 0.0), b[inst][1] - a[inst][1])
+            c = snapshot()
+            if not c:
+                continue
+            hold_key(65, hold)                 # A -> expect leftward
+            d = snapshot() or {}
+            for inst in set(c) & set(d):
+                if fighter_shaped(c[inst]):
+                    lefts[inst] = max(lefts.get(inst, 0.0), c[inst][1] - d[inst][1])
+
+        cands = [i for i in rights if rights.get(i, 0.0) >= min_px and lefts.get(i, 0.0) >= min_px]
+        if not cands:
+            self.bound_inst = None
+            log(f"instance {self.iid}: bind found no fighter-shaped responder "
+                f"(D={ {k: round(v, 1) for k, v in rights.items()} } "
+                f"A={ {k: round(v, 1) for k, v in lefts.items()} })")
+            return None
+        best = max(cands, key=lambda i: rights[i] + lefts[i])
+        self.bound_inst = best
+        log(f"instance {self.iid}: BOUND to instance {best} "
+            f"(D +{rights[best]:.0f} A -{lefts[best]:.0f})")
+        return best
+
+    def ensure_live_round(self, tries=3, settle=1.2, min_px=5.0):
+        """Make sure a ROUND IS ACTUALLY RUNNING before measuring control.
+
+        MEASURED failure (attestation run at 00:44:36, room 28): bind succeeded but the gate read
+        D=+0.0 A=+0.0 - nothing moved at all, because the round had already ended. The harness then
+        failed a perfectly good match for the wrong reason.
+
+        A round that is over shows no movement from either fighter. If that is the case, press Enter
+        (the accept key, measured to start the next round in ~7.6 s) and wait for movement.
+        """
+        for i in range(tries):
+            st, _ = self.read_state()
+            if not self.has_players(st):
+                self.press(13)
+                time.sleep(2.0)
+                continue
+            x0_me, x0_th = st["me_x"], st["them_x"]
+            t0 = time.time()
+            moved = 0.0
+            while time.time() - t0 < settle:
+                s2, _ = self.read_state()
+                if s2 is not None:
+                    moved = max(moved, abs(s2["me_x"] - x0_me), abs(s2["them_x"] - x0_th))
+                time.sleep(0.1)
+            if moved >= min_px:
+                if i:
+                    log(f"instance {self.iid}: round is live again after {i + 1} attempts")
+                return True
+            log(f"instance {self.iid}: no movement (round over?) - pressing Enter to start the next round")
+            self.press(13)
+            time.sleep(2.5)
+        return False
+
+    def walk_until_wall(self, code, max_seconds=4.0, stall_px=6.0, window=0.35):
+        """Hold a direction until the fighter stops moving; return where it stopped.
+
+        MEASURED problem this solves: attestation kept failing with gate D=93 A=9 and dose D=93/A=9 -
+        the fighter had spawned hard against the LEFT wall, so pushing left could not move it. Re-centring
+        between measurements (the previous fix) cannot help when the measurement STARTS at a wall.
+        The cure is to find where the walls are before measuring anything.
+        """
+        st = self.read_bound() or self.read_state()[0]
+        if not st:
+            return None
+        self.press(code)
+        time.sleep(window)
+        prev = self.read_bound()
+        if prev is None:
+            return None
+        x = prev["me_x"]
+        t0 = time.time()
+        while time.time() - t0 < max_seconds:
+            self.press(code)
+            time.sleep(0.08)
+            cur = self.read_bound()
+            if cur is None:
+                continue
+            if abs(cur["me_x"] - x) < stall_px / window * 0.4:
+                # not moving much: confirm over a short window before declaring a wall
+                time.sleep(window)
+                self.press(code)
+                again = self.read_bound()
+                if again is not None and abs(again["me_x"] - x) < stall_px:
+                    return again["me_x"]
+            x = cur["me_x"]
+        return x
+
+    def arena_extent(self, force=False, ttl=90.0):
+        """Left wall, right wall and width of the current arena, measured by walking into both.
+
+        Cached per room for `ttl` seconds: the geometry does not change inside a room, and re-walking the
+        arena before every measurement would triple the cost of every episode.
+
+        Bonus: this is the honest answer to "how wide is this arena", which the observation used to guess
+        with a constant 470 measured in ONE room - the guess that made a normalised distance negative in
+        wider rooms.
+        """
+        room = self.room()
+        now = time.time()
+        c = getattr(self, "_extent", None)
+        if c and not force and c.get("room") == room and now - c["ts"] < ttl:
+            return c
+        left = self.walk_until_wall(65)          # A = left
+        right = self.walk_until_wall(68)         # D = right
+        if left is None or right is None:
+            return None
+        ext = {"room": room, "left": min(left, right), "right": max(left, right),
+               "width": abs(right - left), "ts": now}
+        self._extent = ext
+        log(f"instance {self.iid}: arena extent room {room} left={ext['left']:.0f} "
+            f"right={ext['right']:.0f} width={ext['width']:.0f}")
+        return ext
+
+    def centre(self, tolerance=0.15):
+        """Move to the middle of the measured arena before measuring control."""
+        ext = self.arena_extent()
+        if not ext or ext["width"] < 120:
+            return False                 # too narrow (or a platform) to trust positional measurements
+        mid = (ext["left"] + ext["right"]) / 2.0
+        for _ in range(12):
+            st = self.read_bound()
+            if st is None:
+                return False
+            err = st["me_x"] - mid
+            if abs(err) <= ext["width"] * tolerance:
+                return True
+            self.press(68 if err < 0 else 65)
+            time.sleep(0.10)
+        return False
+
+    def dose_response(self, short=0.45, long=1.35, ratio=1.6, min_px=8.0):
+        """Is the movement CAUSED by our key, or merely happening while we hold it?
+
+        The direction gate can be satisfied by the title screen's attract demo, which moves on its own.
+        Proportionality cannot be faked: hold the key 3x longer, travel ~3x further.
+
+        MEASURED PROBLEM with the first version: it only tested the D direction, and when the fighter was
+        already near the right edge during the long hold it hit the wall - the ratio collapsed and a
+        perfectly controllable fighter failed (seen as gate D=+149 A=+30, dose FAIL). So:
+          * re-centre between measurements by pushing back the way it came,
+          * test BOTH directions and accept proportionality in either one.
+        """
+        if not self.in_arena():
+            return False, 0.0, 0.0, 0.0
+        if self.bound_inst is None and self.bind_by_response() is None:
+            return False, 0.0, 0.0, 0.0
+        # Measure from the MIDDLE, or a hold toward the near wall reads as "no movement" and a good
+        # fighter fails. Measured failures: D=93 A=9, D=21 A=9, D=128 A=8 - all wall starts.
+        try:
+            if not self.centre():
+                log(f"instance {self.iid}: could not centre; running the dose test anyway")
+        except Exception as e:
+            log(f"instance {self.iid}: centring error: {e}")
+
+        def hold(code, seconds):
+            t0 = time.time()
+            while time.time() - t0 < seconds:
+                self.press(code)
+                time.sleep(0.03)
+            time.sleep(0.12)
+
+        def measure(code, back, seconds):
+            self.centre()                 # every hold starts from the same place
+            b0 = self.read_bound()
+            if not b0:
+                return 0.0
+            hold(code, seconds)
+            b1 = self.read_bound()
+            delta = 0.0 if not b1 else abs(b1["me_x"] - b0["me_x"])
+            hold(back, seconds * 0.9)      # re-centre so the next, longer hold has room
+            return delta
+
+        best = (False, 0.0, 0.0, 0.0)
+        for name, code, back, sign in (("D", 68, 65, +1), ("A", 65, 68, -1)):
+            d_short = measure(code, back, short)
+            d_long = measure(code, back, long)
+            observed = (d_long / d_short) if d_short > 1.0 else 0.0
+            ok = d_short >= min_px and d_long >= min_px * ratio and observed >= ratio
+            log(f"instance {self.iid}: dose-response[{name}] {short:.2f}s -> {d_short:.1f}px, "
+                f"{long:.2f}s -> {d_long:.1f}px, ratio {observed:.2f} "
+                f"{'PASS' if ok else 'no'}")
+            if ok:
+                return True, d_short, d_long, observed
+            if observed > best[3]:
+                best = (False, d_short, d_long, observed)
+        return best
+
+    def _opponent_moves(self, seconds=5.0, min_px=15.0):
+        """True if the CPU actually plays during this window.
+
+        TRAINING has a CPU that moves on its own; ARCADE/READY has a second human's slot that
+        never arrives. Measured inert case: them_x pinned at 203.00 for a full 60 s episode.
+        """
+        st, _ = self.read_state()
+        if self.has_players(st):
+            self._last_them_x = st["them_x"]
+            x0 = st["them_x"]
+        else:
+            self._last_them_x = 0.0
+            return False
+        lo = hi = x0
+        t0 = time.time()
+        while time.time() - t0 < seconds:
+            s2, _ = self.read_state()
+            if self.has_players(s2):
+                self._last_them_x = s2["them_x"]
+                lo = min(lo, s2["them_x"])
+                hi = max(hi, s2["them_x"])
+            time.sleep(0.1)
+        return (hi - lo) >= min_px
+
+    def start_from_round_boundary(self, wait=3.0):
+        """Force a fresh round so every episode begins from a comparable state.
+
+        MEASURED this session (repeated measures): one policy produced fits of -0.24, 7.49 and
+        -16.88 in three consecutive episodes - sd 12.5 on a scale whose useful range is about
+        -30..30. The GA cannot resolve differences that small. The dominant source is that each
+        episode starts wherever the previous one ended: different spawn positions, sometimes a
+        fresh round, sometimes the middle of one.
+
+        This presses Enter and waits briefly for a ROUND BOUNDARY - both fighters teleport across
+        the arena, the signature measured in Session 142.
+
+        MEASURED: Enter does NOT end or start a round from mid-round. Three consecutive attempts
+        sat 14 s without a boundary ("no round boundary within 14s - starting anyway"), while
+        Enter DOES work on a round-over screen (7.61 s, results/restart_0.json). So this is
+        opportunistic: it catches the case where the previous episode ended on a round-over
+        screen, and otherwise costs only a few seconds. It is not a true reset, and Phase 6 is
+        therefore still open - this build does not let us force a round start. It is
+        Pau's Phase 6 ("reset without the menu") reduced to what this build allows, since
+        writing x directly does not survive (writes revert; see Session 121).
+        """
+        st0, _ = self.read_state()
+        if not self.has_players(st0):
+            return False
+        x0, t0 = (st0["me_x"], st0["them_x"]), st0["them_x"]
+        self.press(13)
+        deadline = time.time() + wait
+        while time.time() < deadline:
+            st, _ = self.read_state()
+            if self.has_players(st):
+                me_jump = abs(st["me_x"] - x0[0]) > 300
+                th_jump = abs(st["them_x"] - x0[1]) > 300
+                if me_jump and th_jump:
+                    log(f"instance {self.iid}: round boundary (reset) "
+                        f"-> me={st['me_x']:.0f} them={st['them_x']:.0f}")
+                    return True
+            time.sleep(0.15)
+        log(f"instance {self.iid}: no round boundary within {wait:.0f}s - starting anyway")
+        return False
+
+    def probe_match_vars_once(self):
+        """After a fresh launch, ask the Match object for its named variables.
+
+        Phase 4 needs a round/score field, and the only route left on this build is the
+        instance's named variables (the builtin struct window 0x80..0x600 contains nothing
+        but timers). The hook caches the Match pointer from the object walk, so the query has
+        something to ask - but only in a process that loaded the fixed dylib. Doing this ONCE
+        per launch, from the trainer, means the data arrives without spawning an extra game
+        while a run is in progress.
+        """
+        if getattr(self, "_vars_probed", False):
+            return
+        self._vars_probed = True
+        try:
+            # ORDER MATTERS: the object walk is what caches the Match instance pointer, and
+            # the variable query needs it (get_inst_list returns 0 for object 106). Firing
+            # only `vars` produced "no instance" twice, which is why this is two steps.
+            with open(OBJS.format(self.iid), "w") as f:
+                f.write("Match\n")
+            time.sleep(1.5)
+            with open(VARS.format(self.iid), "w") as f:
+                f.write("vars\n")
+            time.sleep(2.5)
+            with open(INJECT_LOG.format(self.iid), errors="ignore") as f:
+                hits = [l for l in f if l.startswith("[vars]")]
+            if hits:
+                out = f"/tmp/nid_vars_out_{self.iid}.txt"
+                with open(out, "w") as f:
+                    f.write("\n".join(hits) + "\n")
+                log(f"instance {self.iid}: captured {len(hits)} Match variables -> {out}")
+        except OSError:
+            pass
+
+    def _drivable_now(self, tries=2, prime=0.7, gate=0.9, accept_wait=4.0):
+        """Entry is not finished until the gate says input reaches the simulation.
+
+        "Live fight confirmed" has been wrong before, and this session measured why: the
+        READY screen has both fighters, answers `has_players` and every other presence
+        check, and ignores input (gate A_px=3.0 while a live round gave 47-56). Entering
+        into READY therefore looked like success and produced generations with no
+        control at all.
+
+        So: prime the controls, run the ACTIVE gate, and if it fails try the cheap Enter
+        accept-restart (a round boundary is one press away) before giving up.
+        """
+        # TIMING MATTERS MORE THAN THOROUGHNESS HERE. Measured from timestamps in a
+        # pop-2/reps-10 run: episodes were ~20 s of measurement against ~2.5 min of entry
+        # overhead, so 90% of wall clock went into getting ready. The old numbers here
+        # (prime 1.0 + gate 1.2 + accept-restart waits of up to 12 s, x3 tries) could spend
+        # 40 s per attempt. Enter only ever works from a round-over screen (elsewhere it does
+        # nothing at all, measured), so a short wait distinguishes the cases just as well.
+        for _ in range(tries):
+            st, _ = self.read_state()
+            if not self.has_players(st):
+                if not self._accept_restart(tries=1, wait=accept_wait):
+                    return False
+                continue
+            # FAST READY PRE-CHECK. Measured: live rounds have both fighters at y~560; READY
+            # screens sit at y~128 (and startMatch(4) cycles among them). Discovering that by
+            # running a gate that returns A_px=0.0 costs the same time but teaches nothing, so
+            # try to leave READY first.
+            if st["me_y"] < 300 and st["them_y"] < 300:
+                log(f"instance {self.iid}: on READY platforms (y={st['me_y']:.0f}/"
+                    f"{st['them_y']:.0f}) - trying to start the round")
+                self.break_ready(tries=2)
+                st2, _ = self.read_state()
+                if self.has_players(st2):
+                    st = st2
+            # BIND BEFORE prove_control. Measured: prove_control refused with
+            # "gate requires a bound instance" while bind only ran AFTER a successful gate,
+            # so entry looped on READY forever.
+            if self.bound_inst is None and self.bind_by_response() is None:
+                log(f"instance {self.iid}: bind failed before gate - retrying")
+                self._accept_restart(tries=1, wait=accept_wait)
+                continue
+            self.prime_controls(prime)
+            if self.prove_control(gate):
+                # AN INERT OPPONENT IS NOT A TRAINING MATCH. Measured: six consecutive
+                # episodes reported "them=[203..203]" - the CPU never moved a single pixel in
+                # 60 s - with kills=0 deaths=0, and the gate still said PASS because WE could
+                # move. That is ARCADE/READY (Pau's notes: the 2-player versus screen waits
+                # for a human). I removed this check earlier because "we press no keys during
+                # entry, so a quiet CPU means nothing" - that was wrong: in TRAINING the CPU
+                # plays on its own, so a motionless CPU is exactly the discriminator.
+                # 10 s / 8 px: a live CPU can start idle for a second or two, and a false
+                # rejection here costs a whole entry cycle. The decisive test is at episode
+                # level (train_win marks an episode invalid if the opponent never moves),
+                # so this one only has to catch the blatant case.
+                if self._opponent_moves(seconds=10.0, min_px=8.0):
+                    return True
+                log(f"instance {self.iid}: gate passed but the OPPONENT is inert "
+                    f"(x stayed at {self._last_them_x:.0f}) - not a training match")
+                st_r, _ = self.read_state()
+                if self.has_players(st_r) and st_r["me_y"] < 300 and st_r["them_y"] < 300:
+                    # both on platforms => READY, not a dead match: try to start the round
+                    if self.break_ready():
+                        if self._opponent_moves(seconds=8.0, min_px=8.0):
+                            return True
+                if not self._accept_restart(tries=1, wait=accept_wait):
+                    return False
+                continue
+            if not self._accept_restart():
+                return False
+        return False
+
+    def _enter_confirmed(self, s_count, n_lead):
+        """One bounded entry attempt, accepted only if the result is drivable."""
+        if not self._try_entry(s_count, n_lead):
+            return False
+        return self._drivable_now()
 
     def run_entry(self):
         """Enter a TRAINING match (real CPU) by searching the menu once, then caching.
@@ -539,26 +1405,57 @@ class InstanceManager:
         if cached is not None:
             n_lead, s_count = cached
             log(f"instance {self.iid}: using cached entry n_lead={n_lead} S={s_count}")
-            if self._try_entry(s_count, n_lead):
+            if self._enter_confirmed(s_count, n_lead):
                 self._raise_speed()
-                log(f"instance {self.iid}: live fight confirmed")
+                log(f"instance {self.iid}: live AND drivable (gate confirmed)")
+                self.probe_match_vars_once()
                 return True
             log(f"instance {self.iid}: cached entry failed, re-searching")
-        for n_lead, s_count in ((1, 2), (2, 2), (1, 1), (2, 1)):
+        # TWO variants, then relaunch. Measured over this session: every recovery from an
+        # A_px=0.0 screen came from a FRESH LAUNCH (10:25, 10:27 both recovered within seconds
+        # of one), and no observed recovery ever came from exhausting all four variants, which
+        # cost ~4 minutes of cycling before the same relaunch. The two most common variants are
+        # enough to identify the route; the other two are a tax on every failure.
+        # ONE OF EACH S-COUNT. Restricting to two variants last hour accidentally kept only
+        # S=2 options, so the S=1 route was never tried again - and the observed READY
+        # dead-ends (y=155/160 static, Enter does not start the round) are exactly what a wrong
+        # route looks like. Two attempts, but they now differ in the dimension that matters.
+        # S=1 FIRST. Measured symptom: three quarters of episodes are being discarded because the
+        # fighters sit on platforms at y=96-160 and never leave - which is the ARCADE screen
+        # waiting for a second human (Pau's notes describe exactly that: "the 2-player route ...
+        # stand on the READY platforms and no input starts them"). If so, S=2 selects ARCADE on
+        # this build and S=1 selects TRAINING, and the preference has been backwards all day.
+        for n_lead, s_count in ((1, 1), (1, 2)):
             log(f"instance {self.iid}: trying entry n_lead={n_lead} S={s_count}")
-            if self._try_entry(s_count, n_lead) or self._try_entry(s_count, n_lead):
+            # (the duplicate `or self._try_entry(...)` here ran entry TWICE on the first
+            # variant, doubling entry cost for nothing)
+            if self._enter_confirmed(s_count, n_lead):
                 InstanceManager.ENTRY = (n_lead, s_count)
                 self._raise_speed()
+                self.probe_match_vars_once()
                 log(f"instance {self.iid}: TRAINING reached n_lead={n_lead} S={s_count}; cached")
                 return True
-            log(f"instance {self.iid}: S={s_count} gave no live fight - relaunching")
-            try:
-                self.close()
-            except Exception:
-                pass
-            time.sleep(1.5)
-            self.launch()
-            time.sleep(BOOT_WAIT)
+            # DO NOT RELAUNCH AFTER EVERY FAILED VARIANT. That cost BOOT_WAIT (55 s) per
+            # attempt, so a four-variant search spent 3-4 minutes in menu navigation while
+            # the game was running perfectly well. Menu navigation does not need a fresh
+            # process: try every variant on the SAME process first, and relaunch once only if
+            # all of them fail. Measured context: episodes were ~20 s against ~2.5 min of
+            # entry, i.e. 90% overhead.
+            log(f"instance {self.iid}: S={s_count} gave no live fight - trying next variant")
+        log(f"instance {self.iid}: no variant worked on this process - one relaunch")
+        try:
+            self.close()
+        except Exception:
+            pass
+        time.sleep(1.5)
+        self.launch()
+        time.sleep(BOOT_WAIT)
+        # last chance on the fresh process, using the most common variant
+        if self._enter_confirmed(2, 1):
+            InstanceManager.ENTRY = (1, 2)
+            self._raise_speed()
+            log(f"instance {self.iid}: TRAINING reached after relaunch")
+            return True
         log(f"instance {self.iid}: no entry variant produced a live fight")
         return False
 
@@ -602,6 +1499,12 @@ class InstanceManager:
         """Called before each individual. Never leaves a dead game running."""
         for attempt in range(2):
             st, stale = self.read_state()
+            # ATTRIBUTION: every branch decision is logged, because "the match vanished"
+            # has been the least checkable claim in this project. One line per call is
+            # cheap next to a 6-minute entry search.
+            log(f"instance {self.iid}: ensure_match alive={self.alive()} stale={stale} "
+                f"players={self.has_players(st)} ever={self.ever_have_players} "
+                f"attempt={attempt} state={st}")
             if self.alive() and not stale and self.has_players(st):
                 self.ever_have_players = True
                 return True
@@ -613,6 +1516,13 @@ class InstanceManager:
             if uptime < BOOT_WAIT:
                 time.sleep(BOOT_WAIT - uptime)
             if self.ever_have_players:
+                # CHEAP RESTART FIRST. After a round ends the fighters leave the state
+                # file, and one Enter press starts the next match in ~0.4 s, versus a
+                # menu re-entry (~10-20 s) or a relaunch (~22 s boot). Measured on this
+                # build. Trying it first is why the remaining individuals no longer abort
+                # instantly as "no match".
+                if self._accept_restart():
+                    return True
                 if self.recover_match():
                     return True
             else:
