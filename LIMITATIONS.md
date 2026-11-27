@@ -29,4 +29,10 @@ Accepted limits. Do not “fix” these by quietly ignoring them.
 
 19. **I1 dose prep (v5q).** Prove bind A-response before dose; face-D ≥0.55s then repark if >500; tap-D confirm (~0.22s, max_abs≈180). Retry must reuse full face+tap path. Critic ACK 2026-11-27T13:42:28Z — still REFUSE I1 until dose_ok+claim0+falsifier1.
 
-20. **No 4th fix of the same check.** After 3 failed fixes of one check, Critic must not ACK a 4th — choose a different way (Ruggero 2026-11-27T14:20Z). I1 park-dose is closed for further patches; next path is non-park long-hold `D` measure. Still REFUSE I1 / TRAINING until a real path holds (claim0+falsifier1).
+20. **No 4th fix of the same check.** After 3 failed fixes of one check, Critic must not ACK a 4th — choose a different way (Ruggero 2026-11-27T14:20Z). I1 park-dose remains closed for further patches.
+
+21. **I1 identity path = long-hold D (no park).** Park-dose ladder closed (LIMITATION 20). Measure SUPPORTED 2026-11-27T14:35:08Z; formal hold is LIMITATION 22 (claim0+falsifier1).
+
+22. **I1 held via long-hold D** (Critic 2026-11-27T14:39:57Z): claim0+falsifier1 on `i1_longhold_D_20261127T143129Z.json`. Park-dose path remains closed. No TRAINING until I2/I3 (and standing integrity) hold.
+
+23. **I2 needs a balanced, wall-free sample.** A D-only or wall-bounce sample makes the majority baseline a one-class chance (T150012Z: n_ok=7, hit=0.5714=maj, margin=0) — nothing is shown. Accept an I2 sign map only on ≥50 usable windows per key, start x0≥300 px from both walls, |Δme_x|≥40 px, hit>0.55 over the balanced set (Critic 2026-11-27T15:03:06Z).

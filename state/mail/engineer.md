@@ -2136,3 +2136,391 @@ N5 prep_fail park=576; N10 **dme_le_0** (−472 after drive_ok D); N20 prep_fail
 1. **Dose-fix only (no probe):** root-cause line — why prep leaves me≳500 (A_no_drive/still_too_right) and why hold-D after drive_ok can yield dme≤0. Short diff (face-right+hard park me≲500 before dose; refuse dose if prep_fail; ensure D→+dme).
 2. Critic ACK → HARD 00:56 fresh nav → **≤1** v5k only.
 3. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Orchestrator 2026-11-27T09:51Z
+Morning resume: eng ctx blown (~5M) — soft-/new RESTART → Critic plan **02:00** dose-fix only (no probe). **REFUSE I1** until dose_ok.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T09:54:15Z
+Critic plan **02:00** dose-fix only (no probe).
+
+**ROOT-CAUSE (T013029Z):** prep left me≳500 because face-D-then-A → A_no_drive / still_too_right (A often wrong-way or teleport 904→0 counted as drive). N10 dme_le_0: drive_ok(D,0.9s) overshot park 127→655 then dose from me0=655 → me1=183 dme=−472 (too_right gate was 700).
+
+**FIX v5l** `pau86/results/runs/i1_dosefix_v5l.diff` (**7620** B) / Mac `state/i1_dosefix_v5l.diff`: A-first hard park me≲500 + face-right only after; refuse prep_fail; drive_ok max_abs reject teleports; short D drive_ok(0.28s) then re-park ≤500 before dose; too_right gate 500. Live tool probe=**v5l** COMPILE_OK. **No probe** until Critic ACK → then HARD **00:56** fresh nav → ≤1 v5l. No TRAINING.
+
+
+## Critic (pi cursor-auto) 2026-11-27T09:56:17Z
+Own print eng 09:54 + `i1_dosefix_v5l.diff` **7620** B (md5 4c357823… Mac≡pippi) + live `i1_fighter_identity.py` probe=**v5l** COMPILE_OK COUNT=0:
+- ROOT matches T013029Z: face-D-then-A → A_no_drive/still_too_right; drive_ok(D,0.9s) 127→655 then dose me0=655→183 dme=−472 (gate was 700).
+- FIX: A-first hard park me≲500 + face-right after; refuse prep_fail; drive_ok max_abs reject tele; short D 0.28s then re-park ≤500; too_right gate **500**.
+**ACK v5l dose-fix.** Still **REFUSE I1** until dose_ok+claim0+falsifier1. No TRAINING. No probe until this plan's HARD 00:56.
+
+## Critic plan 2026-11-27T09:56:17Z
+1. **HARD 00:56:** fresh `i1_nav_ready_*.json` nav_ok=true stamp **after** this ACK.
+2. Immediately **≤1** v5l probe. Kill if COUNT>1 or wall=None.
+3. Exit one result line. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+## Critic (pi cursor-auto) 2026-11-27T09:59:58Z
+Hygiene: appended DECISIONS + LIMITATIONS §13 for **ACK v5l** 09:56 (A-first park me≤500; too_right 500; short D). Plan **09:56** stands — HARD 00:56 fresh nav → ≤1 v5l. Own-print boot `T095816Z` in flight. **REFUSE I1** until dose_ok. COUNT pending. No TRAINING.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T10:03:11Z
+NAV-DONE room=4 fv+on_ready+central wall=**319.5** (stamp **T100016Z** post-ACK); shot `pau86/art/i1_nav_ready_20261127T100016Z.png`. Launched ≤1 v5l `T100338Z` py **3007217** wall_gate ok wall=**319.5** — **not claiming** (result on exit).
+
+## Critic (pi cursor-auto) 2026-11-27T10:05:15Z
+Own print: NAV `T100016Z` **nav_ok=true** wall=319.5 (post-ACK HARD 00:56 OK). ≤1 v5l `T100338Z` py **3007217** COUNT=1 LIVE — json still stale v5k. **REFUSE I1** until dose_ok. No 2nd probe. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T10:13:27Z
+Own print v5l `T100338Z` LIVE COUNT=1: entry+arena+bind+**stable_ok** but dose **N5** struggling — no_drive_pre; rebind_before_hold_failed; A_no_drive prep_fail park≈895; still_too_right prep_fail 992. Json still stale v5k. **REFUSE I1** until dose_ok. **No 2nd probe.** No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T10:13:52Z
+STANDARDS: `docs/STATE.md` banner → NAV `T100016Z` + ≤1 v5l `T100338Z` LIVE (dose phase; REFUSE until dose_ok+claim0+falsifier1). Own-print EXIT when probe ends. No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T10:32:31Z
+v5l `T100338Z` EXIT: `i1_probe.json` + `i1_probe_20261127T100338Z.log` — entry=enter_match_v2 wall=319.5 stable_ok=True **dose_ok=False** (N5 prep_fail park≈788; N10 prep_fail park=784; N20 no_drive) mono=False — **not claiming**. COUNT=0. No 2nd probe. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T10:33:37Z
+Own print v5l `T100338Z` EXIT COUNT=0: probe=`i1_fighter_identity_v5l` wall_gate ok wall=319.5 entry=enter_match_v2 in_arena=29 bind+**stable_ok** but **dose_ok=false** mono=false —
+N5 prep_fail park≈**788**; N10 prep_fail park=**784**; N20 **no_drive** (dme_probe≈+386 tele/reject). Eng 10:32 result line matches.
+**REFUSE I1.** No claim/falsifier. **No 2nd probe until this plan.** No TRAINING.
+
+## Critic plan 2026-11-27T10:33:37Z
+1. **Dose-fix only (no probe):** root-cause why A-first park still leaves me≳780 (prep_fail) and why N20 drive_ok rejects +dme≈386 as no_drive. Short diff (stronger left corridor / face before A; clarify tele vs wrong-sign; park target ≪500).
+2. Critic ACK → HARD 00:56 fresh nav → **≤1** probe only.
+3. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T10:35:54Z
+Critic plan **10:33** dose-fix only (no probe).
+
+**ROOT-CAUSE (T100338Z):** prep left me≳780 because A-probe fail (`A_no_drive` dme=0 / wrong-sign / soft-tele) **returned False before the pull loop**, so hard park never ran; still_too_right after rare A-ok (960→896 then me=1232). N20 **no_drive** on dme_probe≈**+386**: `drive_ok(D,0.28s,max_abs=280)` flagged soft-tele — real +dme rejected as no_drive.
+
+**FIX v5m** `pau86/results/runs/i1_dosefix_v5m.diff` (**6951** B) / Mac `state/i1_dosefix_v5m.diff`: A-probe advisory only (always pull+corridor); park target≪500; hard_tele vs wrong_sign; D pre-dose max_abs **700**. Live probe=**v5m** COMPILE_OK. **No probe** until Critic ACK → HARD **00:56** fresh nav → ≤1 v5m. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T10:37:44Z
+Own print eng 10:35 + `i1_dosefix_v5m.diff` **6951** B (md5 c0db00e5… Mac≡pippi) + live `i1_fighter_identity.py` probe=**v5m** COMPILE_OK COUNT=0:
+- ROOT matches T100338Z: A-probe fail aborted before pull loop → prep_fail me≳780; D max_abs=280 soft-tele rejected real +dme≈386 as no_drive.
+- FIX: A-probe advisory (always pull+corridor); park target≪500 (max_x−180); hard_tele≠soft_tele≠wrong_sign; D pre-dose max_abs **700**.
+**ACK v5m dose-fix.** Still **REFUSE I1** until dose_ok+claim0+falsifier1. No TRAINING. No probe until HARD 00:56 below.
+
+## Critic plan 2026-11-27T10:37:44Z
+1. **HARD 00:56:** fresh `i1_nav_ready_*.json` nav_ok=true stamp **after** this ACK.
+2. Immediately **≤1** v5m probe. Kill if COUNT>1 or wall=None.
+3. Exit one result line. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T10:41:51Z
+NAV-DONE room=4 fv+on_ready+central wall=**319.5** (stamp **T103902Z** post-ACK); shot `pau86/art/i1_nav_ready_20261127T103902Z.png`. Launched ≤1 v5m `T104147Z` py **3085990** wall_gate ok — **not claiming** (result on exit).
+
+## Critic (pi cursor-auto) 2026-11-27T10:45:01Z
+Own print: NAV `T103902Z` **nav_ok=true** wall=319.5 (HARD 00:56 OK). ≤1 v5m `T104147Z` py **3085990** COUNT=1 LIVE — **REFUSE I1** until dose_ok. No 2nd probe. No TRAINING.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T11:22:33Z
+v5m `T104147Z` EXIT: `i1_probe.json` + `i1_probe_20261127T104147Z.log` — entry=enter_match_v2 wall=319.5 stable_ok=True **dose_ok=False** (N5 no_drive park≈322; N10 no_drive park=15; N20 prep_fail) mono=False — **not claiming**. COUNT=0. No 2nd probe. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T11:22:48Z
+Own print v5m `T104147Z` EXIT COUNT=0: probe=`i1_fighter_identity_v5m` wall_gate ok wall=319.5 entry=enter_match_v2 bind+**stable_ok** but **dose_ok=false** mono=false —
+N5 **no_drive** dme_probe=0 park≈**322**; N10 **no_drive** dme_probe=0 park=**15**; N20 **prep_fail** park=null. Eng 11:22 matches. A_probe_fail_continue worked; D→+dme still fails after park.
+**REFUSE I1.** No claim/falsifier. **No 2nd probe until this plan.** No TRAINING.
+
+## Critic plan 2026-11-27T11:22:48Z
+1. **Dose-fix only (no probe):** root-cause why prep can leave me≲500 yet hold-D gives dme=0 (facing/bind/dead read), and N20 prep_fail null. Short diff (re-face D after park; verify drive before dose; refuse dead me_x=0).
+2. Critic ACK → HARD 00:56 fresh nav → **≤1** probe only.
+3. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T11:24:35Z
+Critic plan **11:22** dose-fix only (no probe).
+
+**ROOT-CAUSE (T104147Z):** N5/N10 park got me≲500 (park≈322 / 15) but `drive_ok(D)` dme=0 — face lost after A-park / dead `me_x=0` reads counted valid. N20 prep_fail null = read_me None mid-prep.
+
+**FIX v5n** `pau86/results/runs/i1_dosefix_v5n.diff` (**3396** B) / Mac `state/i1_dosefix_v5n.diff`: `valid_x` rejects `|x|<5`; after park re-face D + verify D→+dme (retry once) then re-park ≤500; dead_me→prep_fail. Live probe=**v5n** COMPILE_OK. **No probe** until Critic ACK → HARD **00:56** → ≤1 v5n. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T11:27:50Z
+Own print eng 11:24 + `i1_dosefix_v5n.diff` **3396** B (md5 ebd5df0e… Mac≡pippi) + live `i1_fighter_identity.py` probe=**v5n** COMPILE_OK COUNT=0:
+- ROOT matches T104147Z: park me≲500 but drive_ok(D) dme=0 (face lost / me_x≈0 counted valid); N20 prep null.
+- FIX: `valid_x` rejects `|x|<5`; after park re-face D + verify D→+dme (retry once) then re-park ≤500; dead_me→prep_fail.
+**ACK v5n dose-fix.** Still **REFUSE I1** until dose_ok+claim0+falsifier1. No TRAINING. No probe until HARD 00:56 below.
+
+## Critic plan 2026-11-27T11:27:50Z
+1. **HARD 00:56:** fresh `i1_nav_ready_*.json` nav_ok=true stamp **after** this ACK.
+2. Immediately **≤1** v5n probe. Kill if COUNT>1 or wall=None.
+3. Exit one result line. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T11:32:35Z
+NAV-DONE room=4 fv+on_ready+central wall=**319.5** (stamp **T112948Z** post-ACK); shot `pau86/art/i1_nav_ready_20261127T112948Z.png`. Launched ≤1 v5n `T113232Z` py **3182088** wall_gate ok — **not claiming** (result on exit).
+
+## Critic (pi cursor-auto) 2026-11-27T11:33:25Z
+Own print: NAV `T112948Z` **nav_ok=true** + ≤1 v5n `T113232Z` COUNT=1 LIVE — **REFUSE I1** until dose_ok. No 2nd probe. No TRAINING. Own-print EXIT when probe ends.
+
+## Critic (pi cursor-auto) 2026-11-27T11:58:17Z
+RESTART engineer (soft): idle/hung mid-watch since ~11:48 while v5n `T113232Z` LIVE on N20 (N5+N10 prep_fail). Ordered: one EXIT line+json when COUNT=0. **No 2nd probe.** **REFUSE I1** until dose_ok. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T12:04:46Z
+Own print v5n `T113232Z` EXIT COUNT=0: probe=`i1_fighter_identity_v5n` wall_gate ok + bind+**stable_ok** but **dose_ok=false** mono=false —
+N5 **prep_fail** (D_no_drive_after_park / park null); N10 **prep_fail** park=**896**; N20 **prep_fail** park≈**318**. Soft-RESTART eng still owes one result line if not posted.
+**REFUSE I1.** No claim/falsifier. **No 2nd probe until this plan.** No TRAINING.
+
+## Critic plan 2026-11-27T12:04:46Z
+1. **Dose-fix only (no probe):** root-cause `D_no_drive_after_park` with me≲500 (facing/bind dead after A-pull; park 318 then D dme=0). Short diff.
+2. Critic ACK → HARD 00:56 fresh nav → **≤1** probe only.
+3. Eng: if EXIT line missing, post **one** result line now (paths + dose_ok=false). No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T12:06:40Z
+v5n `T113232Z` EXIT: `pau86/results/runs/i1_probe.json` + `pau86/results/runs/i1_probe_20261127T113232Z.log` (Mac `state/i1_probe_v5n_T113232Z.json` + `state/i1_probe_20261127T113232Z.log`) — entry=enter_match_v2 wall=319.5 stable_ok=True **dose_ok=False** (N5 prep_fail; N10 prep_fail park=896; N20 prep_fail park≈318) mono=False — **not claiming**. COUNT=0. No 2nd probe. No TRAINING.
+
+Critic plan **12:04** dose-fix only (no probe).
+
+**ROOT-CAUSE (T113232Z):** after A-pull park me≲500 (≈301–322), `drive_ok(D,0.30s)` dme=0 (`D_no_drive_after_park`). Short 0.20s re-face left fighter facing left; retry face-flip often jumped x (301→1216) = bind dead/flipped. One hard_tele 319→1396 then stuck.
+
+**FIX v5o** `pau86/results/runs/i1_dosefix_v5o.diff` (**4714** B, md5 7210ff60…) / Mac `state/i1_dosefix_v5o.diff`: rebind after A-park; face-D **0.45s** + verify hold **0.55s**; on fail rebind+repark+longer face (not A/D flip). Live probe=**v5o** COMPILE_OK. **No probe** until Critic ACK → HARD **00:56** fresh nav → ≤1 v5o. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T12:08:04Z
+Own print eng 12:06 EXIT + `i1_dosefix_v5o.diff` **4714** B (md5 7210ff60… Mac≡pippi) + live `i1_fighter_identity.py` probe=**v5o** COMPILE_OK COUNT=0:
+- EXIT T113232Z matches: dose_ok=false N5/N10/N20 prep_fail (D_no_drive_after_park / park≈318–896).
+- ROOT: after A-park me≲500, short face-D left dme=0; face-flip jumped x (bind dead).
+- FIX: rebind after A-park; face-D **0.45s** + verify hold **0.55s**; on fail rebind+repark+longer face (not A/D flip).
+**ACK v5o dose-fix.** Still **REFUSE I1** until dose_ok+claim0+falsifier1. No TRAINING. No probe until HARD 00:56 below.
+
+## Critic plan 2026-11-27T12:08:04Z
+1. **HARD 00:56:** fresh `i1_nav_ready_*.json` nav_ok=true stamp **after** this ACK.
+2. Immediately **≤1** v5o probe. Kill if COUNT>1 or wall=None.
+3. Exit one result line. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T12:12:10Z
+NAV-DONE room=4 fv+on_ready+central wall=**319.5** (stamp **T120905Z** post-ACK); shot `pau86/art/i1_nav_ready_20261127T120905Z.png`. Launched ≤1 v5o `T121159Z` py **3257742** wall_gate ok wall=**319.5** — **not claiming** (result on exit). COUNT=1. No TRAINING.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T12:13:12Z
+v5o `T121159Z` EXIT: `pau86/results/runs/i1_probe.json` + `pau86/results/runs/i1_probe_20261127T121159Z.log` (Mac `state/i1_probe_v5o_T121159Z.json`) — wall_gate ok wall=319.5 → enter_match_v2 stage-select-during-park → **fail=enter_or_in_match_false** entry=null (no bind/dose) — **not claiming**. COUNT=0. No 2nd probe. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T12:15:27Z
+Own print v5o `T121159Z` EXIT COUNT=0: NAV `T120905Z` HARD 00:56 OK; wall_gate ok wall=319.5 → enter_match_v2 stage-select-during-park → **fail=enter_or_in_match_false** entry=null — no bind/dose. Eng 12:13 matches. Dose path untested this run.
+**REFUSE I1.** No claim/falsifier. **No 2nd probe until this plan.** No TRAINING.
+
+## Critic plan 2026-11-27T12:15:27Z
+1. **Diagnose entry (no probe):** why stage-select-during-park → enter_or_in_match_false (lost READY / park abandon). One Engineer line + short fix if needed.
+2. Critic ACK → HARD 00:56 fresh nav → **≤1** v5o only.
+3. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T12:16:05Z
+Critic plan **12:15** diagnose entry (no probe).
+
+**ROOT-CAUSE (T121159Z):** stage-select during park (yel+ora True) → Return → single `sleep(3.0)` then `in_match` False (“accepted but not live”). Attempt2 `enter_ready` fails (“not on READY”) while already live/transitioning → **return False without checking in_match**. Probe then saw `entry False in_match True`.
+
+**FIX** `pau86/results/runs/i1_entryfix_v5o.diff` (**1963** B, md5 130d571b…) / Mac `state/i1_entryfix_v5o.diff`: poll `in_match` ≤7.5s after Return; if `enter_ready` fails but `in_match` → True; final in_match after attempts. `nidstate.py` COMPILE_OK. **No probe** until Critic ACK → HARD **00:56** → ≤1 v5o. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T12:17:39Z
+Own print eng 12:16 + `i1_entryfix_v5o.diff` **1963** B (md5 130d571b… Mac≡pippi) + live `nidstate.py` COMPILE_OK COUNT=0:
+- ROOT matches T121159Z: stage-select→Return→3s `in_match` miss; attempt2 `enter_ready` fail while live → False without checking `in_match` (probe: entry False in_match True).
+- FIX: poll `in_match` ≤7.5s after Return; if `enter_ready` fails but `in_match` → True; final in_match after attempts.
+**ACK entryfix_v5o.** Still **REFUSE I1** until dose_ok+claim0+falsifier1. No TRAINING. No probe until HARD 00:56 below.
+
+## Critic plan 2026-11-27T12:17:39Z
+1. **HARD 00:56:** fresh `i1_nav_ready_*.json` nav_ok=true stamp **after** this ACK.
+2. Immediately **≤1** v5o probe (dose-fix + entryfix). Kill if COUNT>1 or wall=None.
+3. Exit one result line. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T12:20:45Z
+NAV-DONE room=4 fv+on_ready+central wall=**319.5** (stamp **T121749Z** post-ACK entryfix); shot `pau86/art/i1_nav_ready_20261127T121749Z.png`. Launched ≤1 v5o `T122037Z` py **3285028** wall_gate ok wall=**319.5** — **not claiming** (result on exit). COUNT=1. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T12:24:55Z
+Own print: NAV `T121749Z` **nav_ok=true** (HARD 00:56 OK). ≤1 v5o `T122037Z` py **3285028** COUNT=1 LIVE — entryfix path engaged (eng: entry ok; dosing). **REFUSE I1** until dose_ok. No 2nd probe. No TRAINING.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T12:49:30Z
+v5o `T122037Z` EXIT: `pau86/results/runs/i1_probe.json` + `pau86/results/runs/i1_probe_20261127T122037Z.log` (Mac `state/i1_probe_v5o_T122037Z.json` + `state/i1_probe_20261127T122037Z.log`) — entry=enter_match_v2 wall=319.5 (**entryfix ok**, in_match after Return +8.8s) stable_ok=True **dose_ok=False** (N5 prep_fail park≈1037; N10 prep_fail park≈143; N20 prep_fail) mono=False — **not claiming**. COUNT=0. No 2nd probe. No TRAINING. No DECISIONS (await Critic).
+
+## Critic (pi cursor-auto) 2026-11-27T12:50:07Z
+Own print v5o `T122037Z` EXIT COUNT=0: probe=`i1_fighter_identity_v5o` entry=**enter_match_v2** (entryfix OK: in_match after Return) bind+**stable_ok** but **dose_ok=false** mono=false —
+N5 **prep_fail** park≈**1037** (still_too_right / D_no_drive soft_tele +718 / rebind_after_park_failed);
+N10 **prep_fail** park≈**143** (D_no_drive hard_tele +1012 / rebind fails);
+N20 **prep_fail** park=null (D_no_drive dme=0 / still_too_right).
+**REFUSE I1.** Entry path improved; dose prep still broken. **No 2nd probe until this plan.** No TRAINING.
+
+## Critic plan 2026-11-27T12:50:07Z
+1. **Dose-fix only (no probe):** root-cause why post-park D-verify yields dme=0 **or** tele/soft_tele overshoot (+700–1000) / rebind_after_park_failed. Short diff (shorter D verify hold; hard repark ≤500 after verify; rebind before verify must succeed or abort clean).
+2. Critic ACK → HARD 00:56 fresh nav → **≤1** probe only.
+3. Eng: one EXIT result line if missing. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T12:51:06Z
+Critic plan **12:50** dose-fix only (no probe). EXIT T122037Z already posted 12:49; json confirmed dose_ok=false COUNT=0.
+
+**ROOT-CAUSE (T122037Z):** D-verify hold **0.55–0.70s** → soft_tele **+718** / hard_tele **+1012** counted D_no_drive; post-verify park left me≳800 (`still_too_right`). Also `rebind_after_park_failed` after good park≈320 aborted cleanly but often. Entry path OK.
+
+**FIX v5p** `pau86/results/runs/i1_dosefix_v5p.diff` (**5877** B, md5 e4ae14fd…) / Mac `state/i1_dosefix_v5p.diff`: D-verify hold **0.18s** max_abs **160**; `_hard_repark` ≤500 post-rebind/post-verify; rebind-before-verify or abort clean (no long retry hold). Live probe=**v5p** COMPILE_OK. **No probe** until Critic ACK → HARD **00:56** → ≤1 v5p. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T12:54:06Z
+Own print eng 12:51 + `i1_dosefix_v5p.diff` **5877** B (md5 e4ae14fd… Mac≡pippi) + live `i1_fighter_identity.py` probe=**v5p** COMPILE_OK COUNT=0:
+- ROOT matches T122037Z: D-verify 0.55–0.70s → soft_tele +718 / hard_tele +1012; post-verify park me≳800; rebind_after_park_failed.
+- FIX: D-verify hold **0.18s** max_abs **160**; `_hard_repark` ≤500 post-rebind/post-verify; rebind-before-verify or abort clean.
+**ACK v5p dose-fix.** Still **REFUSE I1** until dose_ok+claim0+falsifier1. No TRAINING. No probe until HARD 00:56 below.
+
+## Critic plan 2026-11-27T12:54:06Z
+1. **HARD 00:56:** fresh `i1_nav_ready_*.json` nav_ok=true stamp **after** this ACK.
+2. Immediately **≤1** v5p probe. Kill if COUNT>1 or wall=None.
+3. Exit one result line. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T12:57:15Z
+NAV-DONE room=4 fv+on_ready+central wall=**319.5** (stamp **T125427Z** post-ACK); shot `pau86/art/i1_nav_ready_20261127T125427Z.png`. Launched ≤1 v5p `T125707Z` py **3355057** wall_gate ok wall=**319.5** — **not claiming** (result on exit). COUNT=1. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T13:01:23Z
+Own print: NAV `T125427Z` **nav_ok=true** (HARD 00:56 OK). ≤1 v5p `T125707Z` py **3355057** COUNT=1 LIVE — **REFUSE I1** until dose_ok. No 2nd probe. No TRAINING. (Note: eng ctx >>200k — soft-RESTART after EXIT if hung.)
+
+## Critic (pi cursor-auto) 2026-11-27T13:01:56Z
+RESTART engineer (soft): orch — ctx overflow 1.3M mid v5p `T125707Z` LIVE. Eng back at ~31k; ordered watch → one EXIT line. Own print: COUNT=1 py **3355057** entry=enter_match_v2 stable_ok; dose N5 attempt0 **prep_fail** D_no_drive park≈464 (retrying). Json still stale v5o. **REFUSE I1** until dose_ok. **No 2nd probe.** No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T13:37:44Z
+Own print v5p `T125707Z` EXIT COUNT=0: probe=`i1_fighter_identity_v5p` entry=**enter_match_v2** bind+**stable_ok** but **dose_ok=false** mono=false —
+N5 **prep_fail** park≈**792** (D_no_drive / still_too_right / rebind_after_park_failed);
+N10 **prep_fail** park=**592** (D_no_drive dme=0 / soft_tele);
+N20 **prep_fail** park=**320** (D_verify dme=0 after park≤500).
+**REFUSE I1.** Short D-verify still leaves dme=0 at me≲500. **No 2nd probe until this plan.** No TRAINING.
+
+## Critic plan 2026-11-27T13:37:44Z
+1. **Dose-fix only (no probe):** root-cause D→+dme=0 after short verify at park≤500 (facing/bind dead, not tele). Short diff (face longer without walking; or tap-D then confirm; ensure bound inst responds before dose).
+2. Critic ACK → HARD 00:56 fresh nav → **≤1** probe only.
+3. Eng: one EXIT result line if missing. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+## Engineer (pi cursor-auto) 2026-11-27T13:38:30Z
+v5p `T125707Z` EXIT: `pau86/results/runs/i1_probe.json` + `pau86/results/runs/i1_probe_20261127T125707Z.log` (Mac `state/i1_probe_v5p_T125707Z.json` + `state/i1_probe_20261127T125707Z.log`) — entry=enter_match_v2 wall=319.5 stable_ok=True **dose_ok=False** (N5 prep_fail park≈792; N10 prep_fail park=592; N20 prep_fail park=320) mono=False — **not claiming**. COUNT=0. No 2nd probe. No TRAINING.
+
+Critic plan **13:37** dose-fix only (no probe).
+
+**ROOT-CAUSE (T125707Z):** after park me≲500, short D-verify (0.22 face + 0.18 drive) → **dme=0** (not tele) → D_no_drive / D_verify_retry; A-pull often dead too (bind facing dead). N5 park≈792 still_too_right; N10 park=592; N20 park=320 D_verify dme=0. Entry/stable OK.
+
+**FIX v5q** `pau86/results/runs/i1_dosefix_v5q.diff` (**4582** B, md5 5132c92d…) / Mac `state/i1_dosefix_v5q.diff`: prove bind A-response before dose; face-D **0.55s** then repark if >500; tap-D confirm hold **0.22s** max_abs **180**; retry uses same path. Live probe=**v5q** COMPILE_OK. **No probe** until Critic ACK → HARD **00:56** → ≤1 v5q. No TRAINING.
+
+
+## Critic (pi cursor-auto) 2026-11-27T13:42:28Z
+Own print eng 13:38 + `i1_dosefix_v5q.diff` **4582** B (md5 5132c92d… Mac≡pippi) + live `i1_fighter_identity.py` probe=**v5q** COMPILE_OK COUNT=0:
+- Critic 13:37 addressed: prove bind A-response (drive_ok A 0.20s max_abs140 → repark); face-D **0.55s** then repark if >500; tap-D confirm **0.22s** max_abs **180**; retry = same `_face_d_verify` (not bare short hold).
+- Live own-print: docstring v5q / Critic 13:37; `bind_no_A_response`; `hold(68,0.55)`; `drive_ok(68, hold_s=0.22, max_abs=180)`; probe=`i1_fighter_identity_v5q`.
+**ACK v5q dose-fix.** Still **REFUSE I1** until dose_ok+claim0+falsifier1. No TRAINING. No probe until HARD 00:56 below.
+
+## Critic plan 2026-11-27T13:42:28Z
+1. **HARD 00:56:** fresh `i1_nav_ready_*.json` nav_ok=true stamp **after** this ACK.
+2. Immediately **≤1** v5q probe only. Kill if COUNT>1 or wall=None.
+3. One EXIT line + json when COUNT=0. SUPPORTED needs dose_ok+claim0+falsifier1. No spam. No TRAINING.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T13:48:20Z
+NAV-DONE room=4 fv+on_ready+central wall=**319.5** (stamp **T134527Z** post-ACK 13:42:28; T125427Z stale unused). Launched ≤1 v5q `T134804Z` py **3446942** wall_gate ok wall=**319.5** — **not claiming** (result on exit). COUNT=1. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T13:48:51Z
+Own print: NAV `T134527Z` **nav_ok=true** (HARD 00:56 OK). ≤1 v5q `T134804Z` py **3446942** COUNT=1 LIVE — **REFUSE I1** until dose_ok. No 2nd probe. No TRAINING.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T14:21:39Z
+v5q `T134804Z` EXIT: `pau86/results/runs/i1_probe.json` + `pau86/results/runs/i1_probe_20261127T134804Z.log` (Mac `state/i1_probe_v5q_T134804Z.json` + `state/i1_probe_20261127T134804Z.log`) — entry=enter_match_v2 wall=319.5 (NAV T134527Z) stable_ok=True **dose_ok=False** (N5/N10/N20 prep_fail; parks N10≈320/1223 N20≈1040/79; bind_no_A_response / D_verify_retry / rebind_after_park_failed) mono=False — **not claiming**. COUNT=0. **No v5r / no further park-dose patch** (Orch steer B). Next: Critic plan → STATE.md Verified long-hold D ~20s (x 8→245) as fighter-identity without parking. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T14:21:39Z
+Own print v5q `T134804Z` EXIT COUNT=0: probe=`i1_fighter_identity_v5q` entry=**enter_match_v2** bind+**stable_ok** but **dose_ok=false** mono=false —
+N5/N10/N20 all **prep_fail** (park_x=null; log: bind_no_A_response / A_probe_fail / rebind_after_park_failed / soft_tele).
+**REFUSE I1.** Park-dose path exhausted (≥3 ACKed fixes v5o/v5p/v5q of same check; ≥16 tries 0 pass). **No 4th+ park-dose patch.** No TRAINING.
+
+## Critic plan 2026-11-27T14:21:39Z (Ruggero steer B 14:20Z)
+1. **Different way (no parking):** measure whether long-hold `D` answers fighter-identity on Pau `enter_match_v2` **without** the park/dose prep. Anchor already in `docs/STATE.md`: Holding `D` 20s moved x **8→245** (+237 px, ~12 px/s). Eng: one short measure script/one-liner on live bind after entry — print x0, x1, dt, dme; write json under `pau86/results/runs/` + Mac `state/`. **No park≤500 / no N=5/10/20 dose ladder.**
+2. Critic rules with **those numbers** (own-print). Claim+falsifier only if numbers hold.
+3. **Standing:** after 3 failed fixes of the same check, Critic will **not ACK** a 4th of that check — choose a different way. **REFUSE** further I1 park-dose patches (no v5r park). No TRAINING until a real I1 path holds. Sleeps ≤600s.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T14:32:55Z
+Long-hold D measure (Critic plan **14:21** steer B; **no park / no N dose**): NAV `T142844Z` nav_ok wall=319.5 → `enter_match_v2` room=29 bind=1 → hold D **20.15s** → **x0=936.4 x1=1344.0 dme=+407.6** (~20.2 px/s). Json `pau86/results/runs/i1_longhold_D_20261127T143129Z.json` (Mac `state/`). Anchor STATE 8→245 not matched endpoints (started mid-arena) but **+dme holds**. **not claiming** — Critic rules. No v5r. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T14:35:08Z
+Own print `i1_longhold_D_20261127T143129Z.json` (Mac≡pippi md5 0c90812b… 470 B) + log:
+- entry=`enter_match_v2` room=29 bind=1; NAV `T142844Z` nav_ok wall=319.5; **no_park=true** **no_dose_ladder=true**
+- hold D **dt=20.153s** **x0=936.39 → x1=1344.0 dme=+407.61** (~20.2 px/s); ok=true
+- Log: BOUND inst1 (D+625 A−873) then hold; RESULT matches json. Mac hard-rules OK. COUNT=0.
+**SUPPORTED** fighter-identity **without parking**: bound me moves +dme under long-hold D on Pau versus (same class as STATE.md keys-control; endpoints differ mid-arena start, sign/magnitude hold).
+Still **REFUSE** closing full I1 / TRAINING until claim0+falsifier1 on this path. **REFUSE** further park-dose patches.
+
+## Critic plan 2026-11-27T14:35:08Z
+1. Eng: add `state/_claim_i1_longhold.sh` (exit 0 on this json: ok + no_park + entry=enter_match_v2 + dme≥200 + dt∈[18,22]) and `state/_falsify_i1_longhold.sh` (exit 1 when those fail). Point at `state/i1_longhold_D_20261127T143129Z.json` / farm twin. One mail line with paths.
+2. Critic re-runs claim0 + falsifier1. No park-dose. No TRAINING until both hold. Sleeps ≤600s.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T14:36:40Z
+Claim hooks for Critic plan **14:35**: `state/_claim_i1_longhold.sh` (rc=0) + `state/_falsify_i1_longhold.sh` (rc=1) on `state/i1_longhold_D_20261127T143129Z.json` (farm twin `pau86/state/` + `pau86/results/runs/`). Checks: ok + no_park + no_dose_ladder + entry=enter_match_v2 + dme≥200 + dt∈[18,22]. claim.py sha **c9d82e59**. **No park-dose. No TRAINING.** Await Critic re-run.
+
+## Critic (pi cursor-auto) 2026-11-27T14:39:57Z
+Own-print claim hooks eng 14:36:40:
+- `bash state/_claim_i1_longhold.sh` → **rc=0** OK probe=i1_longhold_D stamp=T143129Z entry=enter_match_v2 no_park dme=407.61 dt=20.153
+- `bash state/_falsify_i1_longhold.sh` → **rc=1** (holds)
+Mac hard-rules OK. **SUPPORTED I1** long-hold D path (claim0+falsifier1). Park-dose still closed. **No TRAINING** until Critic plan below (I2/I3 next) — do not start train.
+RESTART engineer (soft): orch — ctx overflow 4.2M. After /new: brief Current priority + newest Critic plan only. No park-dose. No TRAINING.
+
+## Critic plan 2026-11-27T14:39:57Z
+1. Eng (post-RESTART): confirm I1 long-hold claim hooks still on disk; one line. Then **I2 next** only — from memory + pressed key, predict **sign of next Δme_x** (and one other field) on Pau versus; short measure + claim/falsifier shape. **No park-dose. No TRAINING.**
+2. Sleeps ≤600s.
+
+## Critic (pi cursor-auto) 2026-11-27T14:40:27Z
+I2 plan wording fix: I2 = key→**sign Δme_x** prediction (brief), not hit/strike. Soft-RESTART nudge re-sent. No park-dose. No TRAINING.
+
+## Engineer (pi cursor-auto) 2026-11-27T14:45:58Z
+I1 hooks on disk confirm claim0/falsify1. I2 `T144236Z` **bind FAIL** (D={1:0,2:0} A tele ~719/1443; already_in_match room29) — log `pau86/results/runs/i2_sign_dx_20261127T144236Z.log`. Retry: leave match → fresh nav → enter_match_v2 → key→sign Δme_x ≥200 + claim/falsifier. No park-dose. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T14:48:24Z
+Orch hygiene 14:47: merged DECISIONS park-stop (kept 14:21:39; dropped 14:20Z dup); tightened LIMITATIONS §21→points at §22 I1 held; collapsed duplicate Critic headers at 14:39:57Z.
+Own print I2 `T144236Z` bind FAIL: already_in_match room29; D={1:0,2:0} A tele ~719/1443; bound None — eng retry (leave→fresh nav→enter_match_v2). **REFUSE I2** until numbers. No park-dose. No TRAINING.
+
+## Engineer (pi cursor-auto) 2026-11-27T14:52:54Z
+I2 pulsed fails (Orch 14:52): `T144932Z` hold=0.08 n_ok=151 **hit_me_x=0.0265** ≪ maj0=0.947; `T145105Z` hold=0.28 n_ok=93 **hit_me_x=0.0323** ≪ maj0=0.8925 — samples **dx=0** (ok=false). Next: **one** different measure = continuous-hold sample (not 3rd pulse). No park-dose. No TRAINING.
+
+## Critic (pi cursor-auto) 2026-11-27T14:53:05Z
+Own print farm I2 (eng mail lagging):
+- `T144932Z` ok=**false** hit_me_x=**0.0265** maj=0.947 margin=**−0.9205** (hold 0.08s; n_ok=151; sample dx≈0)
+- `T145105Z` ok=**false** hit_me_x=**0.0323** maj=0.8925 margin=**−0.8602** (hold 0.28s; n_ok=93; n_nonzero_dx=10 hit_nz=0.3; sanity_D_dme=**+291.7** so bind moves, step-sign fails)
+Mac≡pippi mirrored. Prior `T144236Z` bind FAIL. Identical fail count on sign-dx hit≪maj = **2/3**.
+**REFUSE I2.** No TRAINING. No park-dose.
+Standing: **3rd identical** sign-dx fail → force a **different** I2 measure (do not ACK a 4th of same check).
+
+## Critic plan 2026-11-27T14:53:05Z
+1. Eng: post one result line for T144932Z+T145105Z if missing. Then **one** more sign-dx attempt **only if** a concrete fix (e.g. longer coherent walk blocks / score only |dx|≥deadband steps) — else skip to different I2 measure now.
+2. After any 3rd identical hit≪maj fail: **different measure** (e.g. block-hold key→sign over 1–2s windows like I1 long-hold, not 0.08–0.28s micro-steps). Claim+falsifier only on ok=true beating majority.
+3. No park-dose. No TRAINING. Sleeps ≤600s.
+
+## Critic (pi cursor-auto) 2026-11-27T14:53:12Z
+Eng 14:52:54 already posted fails + chose **continuous-hold** (not 3rd pulse) — accepted as different I2 measure under standing rule. Watch that json. **REFUSE I2** until ok>majority. No TRAINING.
+
+## Engineer (pi cursor-auto) 2026-11-27T14:55:00Z
+I2 different measure `T145248Z` continuous-hold sample (not 3rd pulse): n_ok=**216** hit_me_x=**0.0231** ≪ maj0=**0.9444** (sign_counts 0:204 +1:7 -1:5) — fighter at **x≈1296–1408** wall, samples dx=0. ok=false. Json `pau86/results/runs/i2_sign_dx_20261127T145248Z.json` (Mac `state/`). Fig `results/figures/i2_sign_dx_20261127T145248Z.png`. Claim shape `state/_claim_i2_sign_dx.sh` rc≠0 + `_falsify_i2_sign_dx.sh` rc=0 (claim broken — **not claiming**). **No 3rd identical.** No park-dose. No TRAINING. Await Critic.
+
+## Critic (pi cursor-auto) 2026-11-27T14:56:12Z
+Own print `i2_sign_dx_20261127T145248Z.json` (Mac≡pippi): method=**continuous_hold_sample** ok=**false** n_ok=216 hit_me_x=**0.0231** maj=**0.9444** margin=**−0.9213** (sign_counts 0-dominated; n_nonzero_dx=12 hit_nz≈0.42). Eng 14:55 matches; claim hooks rc≠0 / falsify rc=0 — **not claiming**.
+**REFUSE I2.** DECISIONS appended (pulse-fail + continuous attempt). LIMITATIONS §22 kept. No TRAINING. No park-dose.
+
+## Critic plan 2026-11-27T14:56:12Z
+1. Eng: stop repeating 0.1s-sample / pulse sign-dx. Next I2 measure must be **different again** (e.g. score only |dx|≥deadband over **1–2s block holds**, or predict sign of net Δme_x over a multi-second hold like I1). One json + mail line.
+2. Critic own-prints → SUPPORTED only if hit>majority + claim0+falsifier1. No park-dose. No TRAINING. Sleeps ≤600s.
+
+## Engineer (pi cursor-auto) 2026-11-27T15:00:12Z
+I2 block-hold attempt `T145857Z` NAV `T145843Z` nav_ok wall=319.5 enter_match_v2 OK → **bind FAIL** D={1:0,2:0} A≈169/994 (same class as T144236Z). No numbers. Retry once: face-D then bind hold=1.5 → 1.2s block-hold nonzero-only. No park-dose. No TRAINING.
+
+## Engineer (pi cursor-auto) 2026-11-27T15:01:47Z
+I2 Critic-14:55 block-hold `T150012Z`: face-D+bind hold=1.5 → bound=1; method=block_hold_1_2s_nonzero_only hold=1.2s dead=0.5; **n_ok=7**≪200 (n_windows=14 n_zero=3; A phase 0 usable — me invalid after early D); hit_me_x=**0.5714** = maj+1 **0.5714** margin=0 (ok=false). Samples show real |dx| 67–240 when valid. Json `pau86/results/runs/i2_sign_dx_20261127T150012Z.json` (Mac `state/`) fig `results/figures/i2_sign_dx_20261127T150012Z.png`. **not claiming** (n_ok≪200). No park-dose. No TRAINING. Await Critic — no more identical hammering.
+
+## Critic (pi cursor-auto) 2026-11-27T15:03:06Z
+Own-print eng 15:00:12 (`T145857Z`) + 15:01:47 (`T150012Z`):
+- `T145857Z` bind FAIL (log `pau86/results/runs/i2_sign_dx_20261127T145857Z.log`, md5 781766cbf3280d29f1955ae7cc407cf6): pre in_match=False ready=True wall=319.5; enter True in_match True; bind no responder **D={1:0.0,2:0.0} A={1:169.3,2:994.0}**; bound None. No numbers. Eng line matches.
+- `T150012Z` json (Mac md5 **5c3edbdc22aa05d84a9ce56ecdc2bd1b** ≡ farm `pau86/results/runs/…`): method=**block_hold_1_2s_nonzero_only** ok=**false** entry=enter_match_v2 bound=1 hold=1.2 deadband=0.5 **n_windows=14 n_zero=3 n_ok=7** keys_used **D=7 A=0** hit_me_x=**0.5714** (4/7) maj=**0.5714** margin=**0.0** me_y hit=0.0. Log: already_in_match True; BOUND inst1 D+129 A−272; x0=1130→1072; sample 3/7 D-windows negative (dx −96, −96, −37.75) at right wall x≈1248–1392; one window +240 then −96 (bounce).
+**REFUSE I2.** Reason: n_ok=7 ≪ 200, A phase yields 0 usable windows (me invalid after early D, so only D counted → majority is one-class chance 4/7), and margin = 0.0 exactly. Nothing beats a baseline. No park-dose. No TRAINING.
+Hooks on disk `state/_claim_i2_sign_dx.sh` / `_falsify_i2_sign_dx.sh` still point at **T145248Z** (re-run: claim rc=1 / falsify rc=0) — stale; flag for housekeeping, but no claim was made. Hard rules OK (no Nidhogg/train/SelfPlay on Mac; steps 01/02/03 still open).
+Housekeeping: Mac `/tmp/nid_*` and farm `/tmp/nid_cmd_*` are legacy (dated ≤Nov 26, pre-rule); no new load-bearing helper in /tmp this round — flag for cleanup.
+
+## Critic plan 2026-11-27T15:03:06Z  (different I2 only)
+1. **Different I2 measure — balanced two-key, wall-free net-sign block test.** For each window: require start `x0 ∈ [400,1000]` (≥300 px from either wall; else skip), hold one key **1.5 s**, then **settle 1.0 s with no keys**, re-verify me instance each window (same BOUND path, no park). Alternate D and A windows. Predict sign(Δme_x)=+1 for D, −1 for A; count only **|Δme_x| ≥ 40 px**.
+2. **Balanced sample is the point:** need **n_ok ≥ 200 total AND ≥50 usable windows per key**. With both keys present the majority baseline is 0.5, so a real key→sign map must reach hit > 0.55. Report dropped windows per key; never let only one key survive. One json under `pau86/results/runs/` + Mac `state/`, one fig, one mail line.
+3. Point claim+falsifier at **the new stamp's json** (not T145248Z). SUPPORTED only if claim rc=0 + falsifier rc=1 and hit>majority+0.05.
+4. **Standing:** no pulse / no 0.1s-sample / no D-only block-hold repeats; no park-dose; no TRAINING. Sleeps ≤600s.

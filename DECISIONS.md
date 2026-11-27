@@ -141,16 +141,46 @@ Dated forks. Format: **Chosen / Alternatives / Why / Decided by / Change if / Ev
 
 ## 2026-11-27T14:21:39Z — I1: stop park-dose patches; try long-hold D without parking (Ruggero B)
 
-- **Chosen:** After ≥3 failed ACKed fixes of the same I1 park/dose check (v5o/v5p/v5q; ≥16 tries 0 pass), **do not ACK a 4th** park-dose patch. Next proof path: measure long-hold `D` fighter-identity on Pau `enter_match_v2` **without** park≤500 / N-dose ladder (anchor: STATE.md Holding D 20s 8→245).
+- **Chosen:** After ≥3 failed ACKed fixes of the same I1 park/dose check (v5o/v5p/v5q; ≥16 tries 0 dose_ok), **do not ACK a 4th** park-dose patch. Critic standing: after 3 failed fixes of one check, refuse a 4th — choose a different measurement. Next proof path: long-hold `D` fighter-identity on Pau `enter_match_v2` **without** park≤500 / N-dose ladder (anchor: STATE.md Holding D 20s 8→245).
 - **Alternatives:** Keep iterating park-dose v5r+; abandon I1.
-- **Why:** Ruggero steer B 2026-11-27T14:20Z — same check patched out; different way required. v5q T134804Z EXIT dose_ok=false (N5/10/20 prep_fail).
-- **Decided by:** Critic 2026-11-27T14:21:39Z under orch/Ruggero B.
+- **Why:** Ruggero steer B 2026-11-27T14:20Z — same check patched out; failing step is parking, not memory read. v5q T134804Z EXIT dose_ok=false (N5/10/20 prep_fail).
+- **Also:** Mac rewrite of train_state/train_win/evaluate committed on `wip/mac-rewrite` (pushed to fork); `code_pau/` imported from pippi into git.
+- **Decided by:** Critic 2026-11-27T14:21:39Z under orch/Ruggero B (steer stamped 14:20Z).
 - **Change if:** a non-park measure fails to show control and a *different* (non-park) check is proposed.
 - **Evidence:** `i1_probe_v5q_T134804Z.json` / `i1_probe_20261127T134804Z.log`; docs/STATE.md keys-control row; engineer.md Critic plan 2026-11-27T14:21:39Z.
 
-## 2026-11-27T14:20Z — Stop park/dose patching after v5q; long-hold path next (Ruggero steer B)
+## 2026-11-27T14:35:08Z — I1 fighter-identity via long-hold D (no parking)
 
-- **Chosen:** After live v5q EXIT, no further ACK of park/dose prep patches for I1. Critic rule: after 3 failed fixes of the same check, refuse a 4th; require a different measurement. First alternative: docs/STATE.md long-hold D (x 8→245 in 20 s) as fighter-identity without parking.
-- **Why:** ≥16 park/dose tries, 0 dose_ok; failing step is parking, not memory read.
-- **Also:** Mac rewrite of train_state/train_win/evaluate committed on `wip/mac-rewrite` (pushed to fork); `code_pau/` imported from pippi into git.
-- **Decided by:** Ruggero steer B 2026-11-27 via orchestrator.
+- **Chosen:** Accept long-hold `D` (~20s) on Pau `enter_match_v2` **without** park/dose ladder as the fighter-identity proof path. T143129Z: x0=936.4→x1=1344 dme=+407.6.
+- **Alternatives:** Keep iterating park-dose N=5/10/20 (closed by Ruggero B); require exact STATE endpoints 8→245.
+- **Why:** ≥3 failed park-dose fixes; measure shows bound me +dme under D; STATE table already had long-hold D as keys-control evidence.
+- **Decided by:** Critic SUPPORTED 2026-11-27T14:35:08Z (eng 14:32:55 / plan 14:21 steer B).
+- **Change if:** claim+falsifier fail on re-run, or a later measure shows dme≈0 / wrong-sign under the same protocol.
+- **Evidence:** `i1_longhold_D_20261127T143129Z.json` + `.log`; docs/STATE.md keys-control row; engineer.md 2026-11-27T14:35:08Z.
+
+## 2026-11-27T14:39:57Z — I1 SUPPORTED via long-hold D claim+falsifier
+
+- **Chosen:** Close I1 on long-hold `D` path: claim0 rc=0 + falsifier1 rc=1 on `i1_longhold_D_20261127T143129Z.json`.
+- **Alternatives:** Keep I1 open pending park-dose (rejected); require STATE endpoints 8→245 exactly.
+- **Why:** Own-print scripts pass; measure dme=+407.6 no_park on Pau enter_match_v2.
+- **Decided by:** Critic 2026-11-27T14:39:57Z (eng hooks 14:36:40).
+- **Change if:** claim/falsifier stop passing on re-run or json overwritten.
+- **Evidence:** `state/_claim_i1_longhold.sh` / `_falsify_i1_longhold.sh`; json+log T143129Z; engineer.md 2026-11-27T14:39:57Z.
+
+## 2026-11-27T14:56:00Z — I2 sign-dx: pulse fails + continuous-hold still hit≪majority
+
+- **Chosen:** REFUSE I2 on pulsed sign-dx (`T144932Z`/`T145105Z` hit_me_x≈0.03 ≪ majority≈0.9) and on the different continuous-hold sample (`T145248Z` method=continuous_hold_sample hit_me_x=0.0231 ≪ maj=0.9444). Do not treat micro-step or 0.1s-sample sign prediction as held while dx≈0 dominates.
+- **Alternatives:** Keep pulsing; claim on nonzero-dx-only subset; abandon I2.
+- **Why:** Own-print farm jsons ok=false; I1 long-hold still moves (+dme) but step-sign prediction loses to majority-0. Standing: after identical fails, change measure — continuous was the change; it also failed.
+- **Decided by:** Critic 2026-11-27T14:56:00Z (orch standards 14:55Z; eng 14:55:00).
+- **Change if:** a later measure beats majority with claim0+falsifier1 on Pau enter_match_v2.
+- **Evidence:** `i2_sign_dx_20261127T144932Z.json`, `…T145105Z.json`, `…T145248Z.json` (+logs); engineer.md 14:52–14:55.
+
+## 2026-11-27T15:03:06Z — I2 refused on D-only block-hold; balanced wall-free measure chosen
+
+- **Chosen:** REFUSE I2 on `T150012Z` block-hold (n_ok=7, A phase 0 usable, hit=0.5714=maj, margin=0) and on the earlier pulse/continuous fails. Next measure = **balanced two-key, wall-free net-sign block test**: start x0∈[400,1000], hold 1.5 s, settle 1.0 s, re-verify me each window, alternate D/A, count |Δme_x|≥40 px, need n_ok≥200 and ≥50/key, hit>0.55.
+- **Alternatives:** repeat D-only block holds / 0.1 s sampling (closed); claim on the nonzero-D subset (rejected: one-class baseline, wall bounces give wrong sign).
+- **Why:** D-only sample makes majority a one-class chance (4/7) so nothing is demonstrated; 3 of 7 D windows negative at the right wall (bounce), A windows unusable. A balanced two-key set puts majority at 0.5, so a real key→sign map must beat it.
+- **Decided by:** Critic 2026-11-27T15:03:06Z (own-print of T145857Z log + T150012Z json).
+- **Change if:** the balanced test cannot keep ≥50 A-windows usable after re-verify, in which case fix the A-phase validity (re-bind each window) before re-running, or switch to net Δme_x over a multi-second hold like I1.
+- **Evidence:** `state/i2_sign_dx_20261127T150012Z.json` (md5 5c3edbdc… Mac≡farm) + `.log`; `…T145857Z.log`; engineer.md Critic 2026-11-27T15:03:06Z.
