@@ -2577,3 +2577,30 @@ Housekeeping: Mac `state/` has **no** `i1_nav_ready_20261127T150552Z.json` (farm
 Quiet round: nothing new to rule on since 15:26:27Z (last eng post 15:05:52Z). Hard rules OK — Mac pgrep match was the checking shell's own argv (self-match; ps with `grep -vE "grep|pgrep"` shows no Nidhogg/train/SelfPlay proc); steps 01/02/03 still open. **PAU_TRAIN_SETUP.md still absent** (checked mirror `docs/` and farm `~/nf-p/code_pau/docs/`; no farm output newer than 15:10:27Z `i2_recov_t0.png`). No probes started.
 ## Critic plan 2026-11-27T16:34:06Z  (unchanged, item 1 only)
 Eng: the survey is the gating item and the pane is idle — write **`docs/PAU_TRAIN_SETUP.md`** now (items a–f from 15:26:27Z plan), one short inventory, no probe, no new check, then one mail line. I2 stays REFUSED/open until (a) entry/instance health is answered. No park-dose, no TRAINING, no wall/nav hammering.
+
+## Engineer (pi cs2) 2026-11-27T16:34:18Z
+Critic plan 15:26:27Z item 1: wrote **docs/PAU_TRAIN_SETUP.md** — one inventory, no probe. Six sections a–f:
+(a) entry `enter_match_v2` exists (nidstate.py:1191) but **no instance-restart/health gate**; T150552Z/T150912Z stale pid 3553939 + `wall:null ora:2980` recorded as the known gap.
+(b) P1 a/d + P2 Left/Right exist (nidstate.py:764/765, key API nidlinux.py:217); **P2 attack/jump/crouch missing**.
+(c) bridge reads P1+P2 every tick (tools/nid_state_bridge.py:64); published fields x,y,flags,room; **facing/sword/round fields missing**.
+(d) next round by Enter exists (train_state.py:641/1129/1320); versus equivalent of room_change_round partial (train_win.py:119); **no round-counter field**.
+(e) kills/deaths **still unreliable (always 0)**; round win only room heuristic.
+(f) train loop still enters via `run_entry`/`_try_entry` at train_win.py:65,319,925 + train_state.py:1604; **no nidstate import** in train_win/train_state — the swap target.
+Blocking for the fork: (1) entry health+relaunch gate, (3) swap entry to `enter_match_v2`; (2) P2 full keys + round/outcome fields for self-play + I4.
+Next: await Critic ruling; no I2 re-run until (a) answered.
+
+## Critic (pi cursor-auto) 2026-11-27T16:36:23Z
+Ruling on **docs/PAU_TRAIN_SETUP.md** (engineer 16:34:18Z). md5 mirror==farm `bf6c4c6f958af652f53109bb15c97b17`. Spot-checked every load-bearing file:line myself (one ssh, grep/sed only):
+- `nidstate.py`: enter_match_v2 **:1191**, enter_ready **:824**, find_players_by_input **:1116**, _wall_x **:860**, P1_KEYS **:764**, P2_KEYS **:765** — match.
+- enter_match_v2 body: on enter_ready False + not in_match → **`return False`** (no restart) — doc's "missing relaunch" confirmed.
+- `nidlinux.key` **:217** / keydown **:248** / keyup **:253** — match.
+- `tools/nid_state_bridge.py:64` find_players_by_input → P1/P2 tracked each tick — match.
+- `train_win.py` run_entry **:65/:319/:925**; `train_state.py` run_entry **:1471**+call **:1604**, _try_entry **:927**, _accept_restart **:641**, ensure_live_round **:1129**, start_from_round_boundary **:1320**; room_change_round **:119**; ARENA_ROOMS range(26,78) **:96** — match.
+- **no `import nidstate`** in train_win.py or train_state.py — confirmed.
+**SUPPORTED.** Three blockers (a entry/relaunch, c/f self-play swap+fields) correctly identified; no number claimed, so nothing to re-run. Two notes, not blocking: (i) item (a) says "relaunch the instance" but names **no launch/restart command** — the gate can't be built until that path is named; (ii) bridge publishes `/tmp/nid_state_0.txt` (existing design, predates rule 4) — record it, do not extend /tmp.
+
+## Critic plan 2026-11-27T16:36:23Z  (first step = item a, reliable entry)
+1. Engineer: name the exact **instance launch/restart path** on pippi (how game_pid 3553939 was started; the command/wrapper that brings up a fresh `:88` instance).
+2. Implement **one durable helper under `code_pau/tools/`** (not /tmp) that, before `enter_match_v2`: reads the stuck signature (`in_match` False + `wall:null` + `fv:false` + `yel:0 ora:2980`) and, if unhealthy, **relaunches the instance** and waits for READY.
+3. Deliverable: **one run** — health snapshot (pid/wall/fv/ora before → pid after), then `enter_match_v2` → fresh **in_match True with a new pid**. One json under `pau86/results/runs/` + Mac `state/`, claim rc=0 + falsifier rc=1 pointing at the new stamp. If fresh entry still fails, keep the json and report the failing field.
+4. **Do not edit `train_win`/`train_state` this step** (item f swap only after entry is proven). No park-dose, no TRAINING, no I2 re-run. Sleeps ≤600s.
