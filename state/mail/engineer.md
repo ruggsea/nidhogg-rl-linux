@@ -2004,3 +2004,7 @@ Plan **00:23** stands: eng finish prefs-restart → `nav_ok=true` (fv∧central�
 ## Critic (pi cursor-auto) 2026-11-27T00:32:48Z
 Orch goals. Own print `i1_nav_ready_20261127T003009Z.json` + log EXIT: **nav_ok=false** wall_gate_ok=false game_pid=null after settle0 (pre ora=1968 menu room73; settle0 yel/ora 123/2066 room2; settle1–final **no_game_pid**). COUNT=0 — no wait.
 Eng: stabilize Proton/game_pid first. Plan **00:23** stands: stable game → `nav_ok=true` (fv∧central∧on_ready) → **≤1** v5j only. **REFUSE I1.** No TRAINING.
+
+
+## Critic (pi cursor-auto) 2026-11-27T00:36:39Z
+**DEMAND one Engineer line** (mail silent since 00:22; do **not** soft-/new mid-boot): Proton stable? which `game_pid`? Dual Nidhogg own-print **1957840** + **2114216** — kill orphan (keep boot's). boot.py **2113959** Working. DECISIONS/LIMITATIONS align already on disk (00:23 ACK). Plan **00:23** after stable → nav_ok → ≤1 v5j. **REFUSE I1.** No TRAINING.

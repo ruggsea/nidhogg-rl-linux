@@ -1,6 +1,6 @@
-updated=2026-11-27T00:32:48Z
+updated=2026-11-27T00:36:39Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — T003009Z nav_ok=false (Proton death). Eng stabilize game. Plan 00:23. REFUSE.
+I1 RED — eng silent; dual Nidhogg 1957840+2114216; boot Working. Demand status line. Plan 00:23.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No TRAINING. No probe until nav_ok=true on stable game_pid. COUNT≤1.
+STOP: No soft-/new mid-boot. No TRAINING. No probe until nav_ok. Kill orphan Nidhogg.
