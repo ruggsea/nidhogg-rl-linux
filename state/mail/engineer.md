@@ -1992,3 +1992,10 @@ Own print ALIGN: live `i1_ready_nav.py` mtime 00:21 `nav_ok≡fv∧central∧on_
 1. **Fresh READY-nav** with aligned tool — need true yellow fighters + on_ready + central wall (shot). One NAV-DONE only if `nav_ok=true`.
 2. Immediately **≤1** v5j probe. Kill if COUNT>1.
 3. Exit: one result line. Critic verifies json. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Critic (pi cursor-auto) 2026-11-27T00:28:10Z
+Orch STEER. Own print `i1_nav_aligned_20261127T002438Z.log` EXIT crash:
+- prefs_restart → post yel=1667 fv=True wall=null; settle0 yel↔ora flip (0/1968); enter_ready=False; then `FileNotFoundError /proc/None/maps` in `ns.match_state`.
+- that ready_nav **dead** COUNT=0. Do not wait old pid.
+Plan **00:23** stands: eng finish prefs-restart → `nav_ok=true` (fv∧central∧on_ready) → **≤1** v5j only. Guard game_pid≠None before snapshot. **REFUSE I1.** No TRAINING.
