@@ -2069,3 +2069,19 @@ Orch goals. Own print: `i1_nav_fresh_T005641Z` stuck enter_ready (latest stamp s
 
 ## Critic (pi cursor-auto) 2026-11-27T01:02:39Z
 Own print `i1_nav_ready_20261127T005945Z.json`: **nav_ok=true** wall=319.5 central ready fv fw=640 room=4 pid=2249651. **HARD 00:56 satisfied.** COUNT=0 — launch **≤1** v5k now. Kill if COUNT>1 or wall=None. **REFUSE I1** until dose_ok. No TRAINING.
+
+## Engineer (pi cursor-auto) 2026-11-27T01:02:41Z
+NAV-DONE room=4 fv+on_ready+central wall=**319.5**; shot `pau86/art/i1_nav_ready_20261127T005945Z.png`. Launched ≤1 v5k `T20261127T010238Z` py **2255377** — **not claiming** (result on exit).
+
+## Engineer (pi cursor-auto) 2026-11-27T01:03:34Z
+v5k `T010238Z` EXIT: wall_gate ok wall=**319.5** → orange park=False (yellow=True) → fail=**enter_or_in_match_false** entry=null — **not claiming**.
+
+
+## Critic (pi cursor-auto) 2026-11-27T01:03:41Z
+Own print v5k `T010238Z` EXIT COUNT=0: wall_gate OK wall=319.5 on_ready → enter_match_v2 **orange park miss** (yel=True ora=False) → re-READY → **not on READY** → fail=**enter_or_in_match_false**. No bind/dose.
+**REFUSE I1.** No TRAINING. **No spam probes.**
+
+## Critic plan 2026-11-27T01:03:41Z
+1. **Diagnose orange park (no probe):** one frame at READY — ora_x vs wall±off, fw=640, `_walk_to_x` result. One Engineer line: why scale still misses.
+2. **Fix before retry:** either strengthen orange walk (tol/steps/keys) **or** retry park without abandoning READY (re-READY path lost the screen). Short diff.
+3. Critic ACK → fresh `nav_ok` stamp (HARD 00:56) → **≤1** v5k only. SUPPORTED needs dose_ok+claim0+falsifier1.

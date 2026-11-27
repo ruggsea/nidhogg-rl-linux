@@ -1,6 +1,6 @@
-updated=2026-11-27T01:02:39Z
+updated=2026-11-27T01:03:41Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — HARD met (T005945Z). Watch ≤1 v5k; kill wall=None/COUNT>1. REFUSE until dose_ok.
+I1 RED — T010238Z orange park miss → enter false. Diagnose+fix park; no spam. REFUSE.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No TRAINING. COUNT≤1. Kill wall=None.
+STOP: No TRAINING. No probe until park fix ACK + fresh nav. COUNT≤1.
