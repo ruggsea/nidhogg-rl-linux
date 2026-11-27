@@ -184,3 +184,26 @@ Dated forks. Format: **Chosen / Alternatives / Why / Decided by / Change if / Ev
 - **Decided by:** Critic 2026-11-27T15:03:06Z (own-print of T145857Z log + T150012Z json).
 - **Change if:** the balanced test cannot keep ≥50 A-windows usable after re-verify, in which case fix the A-phase validity (re-bind each window) before re-running, or switch to net Δme_x over a multi-second hold like I1.
 - **Evidence:** `state/i2_sign_dx_20261127T150012Z.json` (md5 5c3edbdc… Mac≡farm) + `.log`; `…T145857Z.log`; engineer.md Critic 2026-11-27T15:03:06Z.
+
+## 2026-11-27T15:05Z — Ruggero steer C: term map (rule 6) + Pau PR discipline (rule 4)
+
+- **Chosen:** Map Ruggero's training terms from the repo (not guess): *multi-player route* / *Pau's routes* = `code_pau` `nidstate.enter_match_v2` MULTIPLAYER local versus (2P) per `docs/PROVEN.md` §1 and AGENTS.md; *memory checks* = I1–I4 claim+falsifier on that versus stack. TRAINING/`run_entry` is not the train path. Standing rules 1–6 written once into AGENTS.md + briefs.
+- **Pau PR plan (draft for Ruggero — do not open until he picks):** fork `contrib/replication-and-protocol` is ~89 ahead / 94 behind Pau `main`; ~76 commits are mail/state-only ("Critic:…") and stay **fork-only**. Candidate future branches **from Pau `origin/main`** (new branches, no force-push): (A) thin notes PR — DECISIONS/LIMITATIONS lines that document I1 park-dose failure → long-hold versus path (docs only); (B) any future small code+test that lands a versus I1–I4 helper Pau does not already have; (C) Mac rewrite stays on fork `wip/mac-rewrite` unless Ruggero asks. `code_pau/` already exists on Pau main — do not re-PR the bulk import.
+- **Why:** steer-2026-11-27c rules 4 and 6.
+- **Change if:** Ruggero names different PR slices or clarifies terms.
+
+## 2026-11-27T15:07Z — Ruggero steer D: fork goal + multiplayer route clarified
+
+- **Chosen:** Fork goal order = finish Pau's training setup, then reward designs. *Multiplayer route* = enter via game MULTIPLAYER mode (`nidstate.enter_match_v2`) so policies face each other (self-play); always train through that route. Exact sequence written once in `docs/STATE.md` §Multiplayer entry. Standing rules 6–7 updated in AGENTS.md. Pre-training I1–I4 still apply; "unclear → no train" from steer C is lifted.
+- **13:29Z note:** 2026-11-26 train_win pid 3636610 "no fighters after entry sequence" used **TRAINING** `_try_entry` (n_lead/S), not multiplayer — finishing setup includes wiring multiplayer entry into the trainer.
+- **Why:** steer-2026-11-27d (Ruggero's words).
+- **Change if:** Ruggero names a different self-play entry.
+
+## 2026-11-27T15:08:14Z — Fork goal order (rule 7): finish Pau's multiplayer train setup, then reward designs
+
+- **Chosen:** After the live balanced two-key I2 run reports, the engineer's next work is **`docs/PAU_TRAIN_SETUP.md`** — a setup inventory for self-play through `enter_match_v2` (entry freshness, P1/P2 control map + where injected, per-tick state for both fighters, round span/restart, round-outcome truth, train-loop swap off the forbidden TRAINING path). No probe, no new check. Plan step 02 (round transition) then works off it.
+- **Alternatives:** keep iterating I2 checks (rule 7 says no); jump straight to reward designs (order says setup first).
+- **Why:** Ruggero steer C+D: canonical train entry = `enter_match_v2` multiplayer; the 13:29Z fail was TRAINING `_try_entry`, not multiplayer; when a check keeps failing ask what Pau's setup still needs.
+- **Decided by:** Ruggero steer C+D relayed by Orchestrator 2026-11-27T15:07Z; Critic plan written 2026-11-27T15:08:14Z.
+- **Change if:** the inventory shows multiplayer entry itself is broken (then fix entry first); or Ruggero reorders (a)/(b).
+- **Evidence:** AGENTS.md standing rules 1–7; `docs/STATE.md` §Multiplayer entry; engineer.md Orchestrator 2026-11-27T15:07Z + Critic 2026-11-27T15:08:14Z.

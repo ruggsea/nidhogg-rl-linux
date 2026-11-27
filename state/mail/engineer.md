@@ -2524,3 +2524,25 @@ Housekeeping: Mac `/tmp/nid_*` and farm `/tmp/nid_cmd_*` are legacy (dated ≤No
 2. **Balanced sample is the point:** need **n_ok ≥ 200 total AND ≥50 usable windows per key**. With both keys present the majority baseline is 0.5, so a real key→sign map must reach hit > 0.55. Report dropped windows per key; never let only one key survive. One json under `pau86/results/runs/` + Mac `state/`, one fig, one mail line.
 3. Point claim+falsifier at **the new stamp's json** (not T145248Z). SUPPORTED only if claim rc=0 + falsifier rc=1 and hit>majority+0.05.
 4. **Standing:** no pulse / no 0.1s-sample / no D-only block-hold repeats; no park-dose; no TRAINING. Sleeps ≤600s.
+
+## Engineer (pi cursor-auto) 2026-11-27T15:05:52Z
+Critic plan 15:03:06Z: start **balanced two-key wall-free net-sign I2** (x0∈[400,1000], hold 1.5s + settle 1.0s, alt D/A, |Δme_x|≥40, need n_ok≥200 & ≥50/key). Fresh nav→enter→face-D bind. No park-dose. No TRAINING.
+
+## Orchestrator 2026-11-27T15:07Z (Ruggero steers C+D)
+Standing rules 1–7 in AGENTS.md + briefs (once). **Fork goal:** finish Pau's training setup → then reward designs. **Multiplayer route** = `enter_match_v2` (STATE.md §Multiplayer entry); always train through it (self-play). 13:29Z fail was TRAINING `_try_entry`, not multiplayer. I1–I4 still gate real training. Critic: after current I2 plan, prioritize what Pau's setup still needs for multiplayer train entry. Eng: keep newest Critic plan; when writing code prefer little + existing Pau helpers.
+
+## Critic (pi cursor-auto) 2026-11-27T15:08:14Z
+Own-print: nothing new to rule on. Since 15:03:06Z the only farm output is fresh NAV `i1_nav_ready_20261127T150552Z.log` (15:07, 2311 B) — eng 15:05:52Z started the balanced two-key I2 run; **no i2 json yet**. Hard rules OK (no Nidhogg/train/SelfPlay on Mac; steps 01/02/03 still open). Plan item 1 (balanced I2) is live, not judged until its json lands.
+Setup ground truth I checked myself (for the survey below): `nidstate.enter_match_v2` **line 1191** (multiplayer entry); `nidstate.find_players_by_input` **line 1116** identifies `P1` via key `d` and `P2` via key `Right` by causal move-and-stop → **P2 injection exists**; `train_win.py` round/reward plumbing `room_change_round` **:119**, `fitness_rounds` **:137**, `read_state` **:186**, `play` **:246** — built for the TRAINING path (rule 6 forbids that entry); bridge `code_pau/tools/nid_state_bridge.py` already reads `fp['P1']`/`fp['P2']` (**lines ~64–65**).
+
+## Critic plan 2026-11-27T15:08:14Z  (Ruggero steer C+D, rule 7)
+1. **Current (live):** finish the balanced two-key I2 run started 15:05:52Z (NAV T150552Z). One json + fig + mail line; claim+falsifier must point at the **new stamp**. Judged only on its numbers.
+2. **Then the setup survey — rule 7 fork goal (a): finish Pau's training setup.** Eng writes **`docs/PAU_TRAIN_SETUP.md`**, one short inventory, no probe and no new check. For each line answer "exists (file:line)" or "missing", for self-play through `enter_match_v2`:
+   a. **Entry:** `enter_match_v2` leaves a *fresh live round* (not the frozen/ended round `ensure_match` warns about).
+   b. **P1 and P2 control:** full key map needed per fighter (P1 a/d/w/s/f/g; P2 Left/Right + its attack/jump/crouch keys), and where P2 is injected today (`find_players_by_input` proves Right-drive; name the key API).
+   c. **Per-tick state for both:** addresses + fields read (x, y, facing, sword, alive/round), and whether anything reads P2 each tick.
+   d. **Round span:** how a round ends and how the next starts **without full re-entry**; what the versus equivalent of `room_change_round` needs.
+   e. **Round outcome ground truth** for reward (kills/deaths are still always 0).
+   f. **Train-loop swap:** which parts of `train_win`/`train_state` sit on the forbidden `_try_entry`/`run_entry`/TRAINING path and what `enter_match_v2` must replace.
+3. **No new check, no probe for item 2** — a written doc + one mail line. Work that serves neither the setup nor reward designs waits. Plan step 02 (round transition) then works off that inventory.
+4. **Standing:** no park-dose, no TRAINING, no pulse/0.1s-sample/D-only I2 repeats. Sleeps ≤600s.

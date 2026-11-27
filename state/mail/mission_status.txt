@@ -1,6 +1,6 @@
-updated=2026-11-27T15:03:06Z
+updated=2026-11-27T15:08:14Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 SUPPORTED (long-hold D, no park). I2 REFUSED: pulse T144932Z/T145105Z hit≈0.03≪maj0.9, continuous T145248Z hit=0.0231≪maj0.9444, D-only block-hold T150012Z n_ok=7 margin=0. Next: balanced two-key wall-free net-sign (≥50/key, hit>0.55), Critic plan 15:03. §22 kept. No park-dose. No TRAINING.
+Fork goal (Ruggero steer C+D, rule 7): (a) finish Pau's training setup -> (b) then reward designs. Canonical train entry = enter_match_v2 multiplayer (STATE.md §Multiplayer entry); 13:29Z fail was TRAINING _try_entry. I1 SUPPORTED (long-hold D). I2 live: balanced two-key wall-free run started 15:05:52Z (NAV T150552Z), no json yet; earlier pulse/continuous/D-only refused. Next after I2 run: docs/PAU_TRAIN_SETUP.md inventory (what setup still needs), not another check. I1-I4 gate real training. No park-dose. No TRAINING.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
 Orchestrator may restart only if you are also stuck. Prefer plan-in-mail over rex-steers when they are Working.
