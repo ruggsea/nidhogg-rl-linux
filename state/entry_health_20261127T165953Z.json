@@ -1,0 +1,49 @@
+{
+  "probe": "entry_health_v1",
+  "stamp": "20261127T165953Z",
+  "iid": 0,
+  "ok": true,
+  "stuck_before": true,
+  "in_match_before": false,
+  "relaunched": true,
+  "game_pid_before": 3553939,
+  "game_pid_after": 3871643,
+  "pid_changed": true,
+  "entry": "enter_match_v2",
+  "entered": true,
+  "in_match_after": true,
+  "before": {
+    "ready": true,
+    "fv": false,
+    "wall": null,
+    "central": false,
+    "yel": 0,
+    "ora": 2980,
+    "blu": 0,
+    "room": 29,
+    "match_state": "ready"
+  },
+  "after": {
+    "ready": true,
+    "fv": true,
+    "wall": null,
+    "central": false,
+    "yel": 2980,
+    "ora": 490,
+    "blu": 0,
+    "room": 29,
+    "match_state": "unknown"
+  },
+  "after_relaunch": {
+    "ready": true,
+    "fv": true,
+    "wall": 319.5,
+    "central": true,
+    "yel": 984,
+    "ora": 976,
+    "blu": 0,
+    "room": 4,
+    "match_state": "ready"
+  },
+  "note": "stuck = fv false and wall null and yel 0 (in_match not trusted); relaunch = stop_id+start_ids; settle_ready before enter"
+}

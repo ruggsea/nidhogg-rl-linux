@@ -31,6 +31,9 @@ IMPORT_ERROR = None
 HERE = os.path.dirname(os.path.abspath(__file__))
 APP = "/Users/ruggsea/Library/Application Support/Steam/steamapps/common/Nidhogg/Nidhogg.app/Contents/MacOS/Nidhogg"
 HERE_DIR = os.path.dirname(os.path.abspath(__file__))
+# entry_health.py (tools/) is the train entry gate: helper + nidstate.enter_match_v2 (rule 6).
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
 
 
 def instance_app(iid):
@@ -924,99 +927,6 @@ class InstanceManager:
             self.press(87)          # W = up
             time.sleep(wait)
 
-    def _try_entry(self, s_count=1, n_lead=1, partner_downs=None):
-        """Walk the menu to SINGLE PLAYER -> TRAINING -> partner -> START.
-
-        MAPPED BY HAND with screenshots, because every guessed sequence was wrong:
-
-            PRESS ENTER
-              -> MAIN MENU            NEWS / SINGLE PLAYER / MULTIPLAYER / OPTIONS / EXTRAS
-                                      (careful: the cursor starts on MULTIPLAYER, which is the
-                                       ARCADE path - that is why the opponent was always a
-                                       standing placeholder)
-              -> W                    move cursor to SINGLE PLAYER
-              -> ENTER                submenu: ARCADE / TRAINING
-              -> S                    move to TRAINING
-              -> ENTER                TRAINING partner list:
-                                      NO DIVEKICKS / NO THROWS / DIVEKICKER / RUN N LUNGE /
-                                      BRAWLER / NEVER LUNGES / PARRY MASTER / RANDOM
-              -> ENTER                pick partner -> submenu with a DIFFICULTY slider + START
-              -> S                    move to START
-              -> ENTER                start the match
-              -> ENTER                skip the level-intro card (measured: without a keypress the
-                                      game sits on the "castle" intro indefinitely - this is the
-                                      "stuck" state that wasted so much of today)
-
-        The DIFFICULTY slider is a curriculum control this project did not know it had.
-        """
-        self._wait_ready()
-        self._menu_home()
-        # MAPPED SEQUENCE (verified by hand against screenshots, see docstring above).
-        # 13=Enter, 87=W(up), 83=S(down)
-        # PLAN15: partner_downs = S presses on the TRAINING partner list before ENTER.
-        # Order: NO DIVEKICKS / NO THROWS / DIVEKICKER / RUN N LUNGE / BRAWLER /
-        #        NEVER LUNGES / PARRY MASTER / RANDOM
-        if partner_downs is None:
-            partner_downs = int(os.environ.get("NID_PARTNER_DOWNS", "0") or 0)
-        partner_downs = max(0, min(7, int(partner_downs)))
-        seq = [
-            (13, 2.5),            # PRESS ENTER
-            (87, 2.0),            # MULTIPLAYER -> SINGLE PLAYER
-            (13, 2.5),            # into SINGLE PLAYER submenu
-            (83, 2.0),            # ARCADE -> TRAINING
-            (13, 2.5),            # into TRAINING partner list
-        ]
-        for _ in range(partner_downs):
-            seq.append((83, 1.2))  # move down partner list
-        seq += [
-            (13, 2.5),            # pick partner
-            (83, 2.0),            # DIFFICULTY -> START
-            (13, 2.5),            # START
-            (13, 2.0),            # skip the level-intro card
-            (13, 1.5),            # and again: some intros (round start) need a second press
-        ]
-        for code, wait in seq:
-            self.press(code)
-            # frame-based, not wall-clock: see _wait_frames. The `wait` value is kept only
-            # as a fallback when the frame counter cannot be read.
-            # 125 FRAMES, not 18. The entry keys were originally spaced 2.5 s apart and entry
-            # worked often; I converted them to 18 game frames (~0.36 s at 50 fps) for speed and
-            # entry has been failing with A_px=0.0 ever since - the menu simply does not consume
-            # a key 0.36 s after the previous one. 125 frames restores the original 2.5 s spacing
-            # while staying frame-based, so the timing does not change when the frame rate does.
-            # MEASURED, NOT ASSUMED. I "fixed" this to 125 frames believing 18 was too fast, then
-            # compared entry success across the two eras and found the opposite:
-            #     before frame timing : 319 attempts, 108 ok -> 0.34
-            #     18-frame era        : 212 attempts,  93 ok -> 0.44
-            # 18 frames is measurably BETTER, so it stays. My first pass at this comparison
-            # bucketed runs by h*60+m without the date, so every log spanning midnight landed in
-            # the wrong era - the conclusion flipped once that was fixed.
-            # Overridable so the A/B can be re-run without editing code: NID_ENTRY_FRAMES.
-            self._wait_frames(int(os.environ.get("NID_ENTRY_FRAMES", "18")),
-                              timeout=max(1.0, wait))
-        # Presence is all _try_entry should decide. It used to require
-        # _match_is_live(settle=12), which needs cpu_motion > 15 - but during entry we press
-        # no keys, so a quiet CPU reads as "no live fight" and entry relaunches endlessly
-        # (measured: "S=1 gave no live fight - relaunching" over and over). Whether the
-        # match is actually controllably OURS is decided next, by the active gate in
-        # _drivable_now(), which holds a key and measures the response - a strictly better
-        # test than watching the CPU twitch.
-        for _ in range(2):
-            st, _ = self.read_state()
-            if self.has_players(st):
-                return True
-            self.press(13)
-            time.sleep(4.0)
-        st, _ = self.read_state()
-        if self.has_players(st):
-            return True
-        # Still nothing: back out to the main menu and (on the first pass) retry the
-        # sequence once. NOTE: no Escape here - Escape opens the quit dialog in this build
-        # and the next Enter confirms it, which killed the game once already.
-        log(f"instance {self.iid}: no fighters after entry sequence - backing out")
-        return False
-
-
     def break_ready(self, tries=2):
         """Get out of a READY state where both fighters stand on platforms and nothing moves.
 
@@ -1462,78 +1372,20 @@ class InstanceManager:
                 return False
         return False
 
-    def _enter_confirmed(self, s_count, n_lead):
-        """One bounded entry attempt, accepted only if the result is drivable."""
-        if not self._try_entry(s_count, n_lead):
-            return False
-        return self._drivable_now()
-
     def run_entry(self):
-        """Enter a TRAINING match (real CPU) by searching the menu once, then caching.
+        """Enter a multiplayer (policy-vs-policy) match via tools/entry_health.py.
 
-        The submenu order decides whether we land in ARCADE (2-player, which waits
-        forever for a second human - the READY screen that ate whole training runs)
-        or TRAINING (a real CPU fight). Rather than hard-code a fragile S count, try
-        the plausible ones on a freshly launched process and remember the winner.
+        The helper checks the screen for the stuck signature and relaunches the instance
+        if unhealthy, then calls nidstate.enter_match_v2. The old SINGLE PLAYER -> TRAINING
+        menu walk, its InstanceManager.ENTRY cache and the entry-time drivable gate are
+        retired (rule 6): drivability is decided by the episode gate, not by entry.
         """
-        cached = getattr(InstanceManager, "ENTRY", None)
-        if cached is not None:
-            n_lead, s_count = cached
-            log(f"instance {self.iid}: using cached entry n_lead={n_lead} S={s_count}")
-            if self._enter_confirmed(s_count, n_lead):
-                self._raise_speed()
-                log(f"instance {self.iid}: live AND drivable (gate confirmed)")
-                self.probe_match_vars_once()
-                return True
-            log(f"instance {self.iid}: cached entry failed, re-searching")
-        # TWO variants, then relaunch. Measured over this session: every recovery from an
-        # A_px=0.0 screen came from a FRESH LAUNCH (10:25, 10:27 both recovered within seconds
-        # of one), and no observed recovery ever came from exhausting all four variants, which
-        # cost ~4 minutes of cycling before the same relaunch. The two most common variants are
-        # enough to identify the route; the other two are a tax on every failure.
-        # ONE OF EACH S-COUNT. Restricting to two variants last hour accidentally kept only
-        # S=2 options, so the S=1 route was never tried again - and the observed READY
-        # dead-ends (y=155/160 static, Enter does not start the round) are exactly what a wrong
-        # route looks like. Two attempts, but they now differ in the dimension that matters.
-        # S=1 FIRST. Measured symptom: three quarters of episodes are being discarded because the
-        # fighters sit on platforms at y=96-160 and never leave - which is the ARCADE screen
-        # waiting for a second human (Pau's notes describe exactly that: "the 2-player route ...
-        # stand on the READY platforms and no input starts them"). If so, S=2 selects ARCADE on
-        # this build and S=1 selects TRAINING, and the preference has been backwards all day.
-        for n_lead, s_count in ((1, 1), (1, 2)):
-            log(f"instance {self.iid}: trying entry n_lead={n_lead} S={s_count}")
-            # (the duplicate `or self._try_entry(...)` here ran entry TWICE on the first
-            # variant, doubling entry cost for nothing)
-            if self._enter_confirmed(s_count, n_lead):
-                InstanceManager.ENTRY = (n_lead, s_count)
-                self._raise_speed()
-                self.probe_match_vars_once()
-                log(f"instance {self.iid}: TRAINING reached n_lead={n_lead} S={s_count}; cached")
-                return True
-            # DO NOT RELAUNCH AFTER EVERY FAILED VARIANT. That cost BOOT_WAIT (55 s) per
-            # attempt, so a four-variant search spent 3-4 minutes in menu navigation while
-            # the game was running perfectly well. Menu navigation does not need a fresh
-            # process: try every variant on the SAME process first, and relaunch once only if
-            # all of them fail. Measured context: episodes were ~20 s against ~2.5 min of
-            # entry, i.e. 90% overhead.
-            log(f"instance {self.iid}: S={s_count} gave no live fight - trying next variant")
-        log(f"instance {self.iid}: no variant worked on this process - one relaunch")
-        try:
-            self.close()
-        except Exception:
-            pass
-        time.sleep(1.5)
-        self.launch()
-        time.sleep(BOOT_WAIT)
-        # last chance on the fresh process, using the most common variant
-        if self._enter_confirmed(2, 1):
-            InstanceManager.ENTRY = (1, 2)
+        from tools import entry_health
+        if entry_health.ensure_entry(self.iid):
             self._raise_speed()
-            log(f"instance {self.iid}: TRAINING reached after relaunch")
+            self.probe_match_vars_once()
             return True
-        log(f"instance {self.iid}: no entry variant produced a live fight")
         return False
-
 
     def wait_for_match(self, timeout=MATCH_READY_TIMEOUT):
         deadline = time.monotonic() + timeout

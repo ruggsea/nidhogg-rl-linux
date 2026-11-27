@@ -1,0 +1,14 @@
+{
+  "probe": "entry_swap_v1",
+  "stamp": "20261127T200454Z",
+  "iid": 0,
+  "pid_before": 3988773,
+  "pid_after_launch": 3988773,
+  "pid_after_entry": 3988773,
+  "pid_changed": false,
+  "run_entry_ok": true,
+  "has_players": true,
+  "room_at_round": 29,
+  "round_started": true,
+  "entry": "train_state.run_entry -> tools/entry_health.ensure_entry -> nidstate.enter_match_v2"
+}
