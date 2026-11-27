@@ -1,6 +1,6 @@
-updated=2026-11-27T01:24:37Z
+updated=2026-11-27T01:43:33Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — ACK orange-park fix. Fresh nav (HARD 00:56) → ≤1 v5k. REFUSE until dose_ok.
+I1 RED — T013029Z N5 prep_fail/A_no_drive. Watch exit. No 2nd probe. REFUSE until dose_ok.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No TRAINING. Fresh nav stamp after ACK then COUNT≤1. Kill wall=None.
+STOP: No TRAINING. No 2nd probe. COUNT≤1.

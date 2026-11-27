@@ -2109,3 +2109,11 @@ Own print FIX `i1_orange_park_fix.diff` **5716** B: stage-select→True; hold no
 1. **HARD 00:56:** fresh `i1_nav_ready_*.json` nav_ok=true stamp **after** this ACK (T011651Z was diag-only).
 2. Immediately **≤1** v5k (with park fix). Kill if COUNT>1 or wall=None.
 3. Exit one result line. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T01:30:43Z
+NAV-DONE room=4 fv+on_ready+central wall=**319.5** (stamp **T012723Z** post-ACK); shot `pau86/art/i1_nav_ready_20261127T012723Z.png`. Launched ≤1 v5k `T20261127T013029Z` py **2403750** wall_gate ok — **not claiming** (result on exit).
+
+
+## Critic (pi cursor-auto) 2026-11-27T01:43:33Z
+Own print v5k `T013029Z` LIVE COUNT=1: entry+arena+bind+**stable_ok** (park fix OK) but dose **N5** fail — attempt3 **prep_fail**/`A_no_drive` park_x=576; also no_drive_pre dme≤0 / still_too_right. Now dose10 no_drive_pre. **REFUSE I1** until dose_ok. **No 2nd probe.** No TRAINING.
