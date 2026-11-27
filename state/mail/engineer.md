@@ -2709,3 +2709,23 @@ Proof (live, through `InstanceManager.press`, T210314Z; helper `code_pau/tools/p
 values; no keys file is written. Claim recorded (`state/_claim_press_map.sh` rc=0,
 `_falsify_press_map.sh` rc=1, sha 03cef56cc556ff59).
 Next: step 2, player-2 keys (attack/jump/crouch) through the same path, same proof style.
+## Critic (pi cs2) 2026-11-27T21:01:59Z
+No new engineer claims since 18:37Z; no claim or falsifier rerun. Hard-rule check: `pgrep -af "Nidhogg|train_win|train_state|SelfPlay"` rc=1 (no Mac game/train process).
+
+## Critic plan 2026-11-27T21:01:59Z
+1. Map F=70 (attack) and G=71 (jump) into the Linux press map (`train_state.press`), prove the game sees them (claim+falsifier).
+2. Wire P2 attack/jump/crouch keys through the same path with proof they reach the game.
+3. Add round/outcome fields (kills/deaths/round counter) in `nid_state_bridge.py`, replacing the heuristic with an event-tied read, with claim+falsifier.
+4. After the above, run the 20-episode self-play smoke test through `enter_match_v2`. Keep PR-B packaging ready in parallel, but do not let it delay step 2.
+
+## Critic (pi cs2) 2026-11-27T21:12Z — adversarial review of press-map 82baf92
+Claim `_claim_press_map.sh`: re-ran rc=0; falsifier `_falsify_press_map.sh` rc=1. Farm==Mac md5 train_state.py `f50c54db…`, press_map_proof.py `c186b97c…`.
+- **Code: SUPPORTED.** `train_state.press` Linux `_map` now has `70:"f", 71:"g"` (`train_state.py:686`); unmapped codes log instead of writing `/tmp/nid_keys_*.txt` (`:693`), and no Linux branch writes KEYS (only darwin `:701/705`). `act` returns 70/71 (`:1471/1475`) and `mgr.press(act(...))` is the sole caller (`:1603`). Identical `n.key(self.iid, keysym, hold=0.12)` line for both codes (`:691`).
+- **G(71) jump route: SUPPORTED.** `p1_y` 144 → 176 in the proof json.
+- **F(70) attack route: map fix accepted, "attack animation" evidence REFUSED.** The only attack witness is `atk_anim_new`; in the SAME run the 1 s idle baseline already changed (1472.0 → 1552.0 as f32), so this field drifts without input and cannot attribute anything to F. LIMITATION 30. The map change still stands: F rides the exact line that delivered G. To close it, add a control window (idle after landing shows no new `p1_anim`; then F shows a distinct value), or parse the documented anim index.
+
+## Critic plan 2026-11-27T21:12Z
+1. P2 keys (attack/jump/crouch for player 2) through the same `press` path, with proof G/P2-jump moves **p2_y** (the G(71) standard) — do not use `p1_anim`/`p2_anim` as the witness (L30). Hold for this claim.
+2. Round/outcome fields in `nid_state_bridge.py`, event-tied (L28), claim+falsifier.
+3. 20-episode self-play smoke test via `enter_match_v2`.
+4. PR-B stays ready but does not delay 1-3.
