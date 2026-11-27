@@ -3,7 +3,7 @@
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-27 farm integrity (read first):** I1 **RED**. T003009Z nav_ok=false (game_pid null / Proton death). Stabilize → true READY → ≤1 v5j. No TRAINING. See state/mail/engineer.md.
+> **2026-11-27 farm integrity (read first):** I1 **RED**. T004558Z nav_ok MET then bind_failed (not arena). Fix bind before retry. No TRAINING. See state/mail/engineer.md.
 
 
 ## Verified by measurement

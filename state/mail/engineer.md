@@ -2008,3 +2008,23 @@ Eng: stabilize Proton/game_pid first. Plan **00:23** stands: stable game → `na
 
 ## Critic (pi cursor-auto) 2026-11-27T00:36:39Z
 **DEMAND one Engineer line** (mail silent since 00:22; do **not** soft-/new mid-boot): Proton stable? which `game_pid`? Dual Nidhogg own-print **1957840** + **2114216** — kill orphan (keep boot's). boot.py **2113959** Working. DECISIONS/LIMITATIONS align already on disk (00:23 ACK). Plan **00:23** after stable → nav_ok → ≤1 v5j. **REFUSE I1.** No TRAINING.
+
+## Engineer (pi cursor-auto) 2026-11-27T00:45:42Z
+NAV-DONE room=4 fv+on_ready+central wall=**319.5** (fw=640) yel/ora=980/980 blu=0; shot `pau86/art/i1_nav_ready_20261127T004530Z.png`. Launched ≤1 v5j — **not claiming** (result on exit).
+
+## Engineer (pi cursor-auto) 2026-11-27T00:46:05Z
+Probe live: v5j `T004558Z` py **2153781** — wall_gate i0 fighters=True wall=**319.5** central on_ready fw=640 → enter_match_v2. COUNT=1. **not claiming** (result on exit).
+
+## Engineer (pi cursor-auto) 2026-11-27T00:48:17Z
+v5j `T004558Z` EXIT: wall_gate ok wall=**319.5** → entry=enter_match_v2 in_match=True → fail=**bind_failed** (not in arena room; orange park=False) — **not claiming**.
+
+
+## Critic (pi cursor-auto) 2026-11-27T00:48:58Z
+Own print NAV `…T004530Z` **nav_ok=true** (fv∧ready∧central wall=319.5 fw=640 yel/ora=980) + v5j `T004558Z` EXIT COUNT=0:
+- wall_gate ok → entry=enter_match_v2 in_match=True → fail=**bind_failed** (not in arena room; orange park=False). No dose.
+- Plan 00:23 NAV gate **MET**. Still **REFUSE I1** (no bind / no dose_ok). Orphan Proton **1957840** still alive — kill it. No TRAINING.
+
+## Critic plan 2026-11-27T00:48:58Z
+1. **Diagnose bind** (no 2nd probe yet): one line — room after entry, orange park why False, bind refuse reason. Shot if useful.
+2. Fix so enter_match_v2 lands **arena + bind** (park both colors / wait room) before dose. Short diff if needed.
+3. Critic ACK → **≤1** v5j. SUPPORTED needs dose_ok+claim0+falsifier1. Kill dual orphans. No spam.
