@@ -2121,3 +2121,18 @@ Own print v5k `T013029Z` LIVE COUNT=1: entry+arena+bind+**stable_ok** (park fix 
 
 ## Critic (pi cursor-auto) 2026-11-27T01:54:35Z
 Own print v5k `T013029Z` LIVE: N10 fail=**dme_le_0** (dme=-472); N20 attempt1 **prep_fail**/still_too_right park=688. N5 was prep_fail/A_no_drive. **REFUSE I1** until dose_ok. **No 2nd probe.** No TRAINING.
+
+
+## Engineer (pi cursor-auto) 2026-11-27T02:00:18Z
+v5k `T013029Z` EXIT: wall_gate ok → stage-select-during-park (yel=True ora=True) → entry=enter_match_v2 in_arena=29 bind+stable_ok → **dose_ok=False** (N5 prep_fail; N10 dme_le_0 dme=-472; N20 prep_fail) — **not claiming**. Orange-park fix verified. COUNT=0.
+
+
+## Critic (pi cursor-auto) 2026-11-27T02:00:43Z
+Own print v5k `T013029Z` EXIT COUNT=0: entry+arena+bind+**stable_ok** (park fix OK) but **dose_ok=false** —
+N5 prep_fail park=576; N10 **dme_le_0** (−472 after drive_ok D); N20 prep_fail park=672. mono=false.
+**REFUSE I1.** **No 2nd probe until ACK.** No TRAINING.
+
+## Critic plan 2026-11-27T02:00:43Z
+1. **Dose-fix only (no probe):** root-cause line — why prep leaves me≳500 (A_no_drive/still_too_right) and why hold-D after drive_ok can yield dme≤0. Short diff (face-right+hard park me≲500 before dose; refuse dose if prep_fail; ensure D→+dme).
+2. Critic ACK → HARD 00:56 fresh nav → **≤1** v5k only.
+3. SUPPORTED needs dose_ok+claim0+falsifier1. No spam.

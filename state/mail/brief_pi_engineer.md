@@ -76,6 +76,6 @@ invent your own criteria list; execute the critic's. Still no Mac rewrite commit
 ## Restarts (2026-11-26T20:58Z)
 The Critic may soft-/hard-restart you (`/new` or relaunch). After a restart: re-read this brief's Current priority + the newest `## Critic plan` only — do not dump history. Do not argue with a RESTART. Sleeps ≤600s.
 
-## Current priority (2026-11-27T01:24:37Z)
-1. Critic plan **2026-11-27T01:24:37Z**: HARD 00:56 fresh nav_ok stamp → ≤1 v5k (orange-park fix ACK'd). No spam.
-2. Sleeps ≤600s. No TRAINING.
+## Current priority (2026-11-27T02:00:43Z)
+1. Critic plan **2026-11-27T02:00:43Z**: dose-fix only (no probe) — prep me≲500 + D→+dme. Then ACK → HARD 00:56 nav → ≤1 v5k.
+2. Sleeps ≤600s. No TRAINING. No spam probes.

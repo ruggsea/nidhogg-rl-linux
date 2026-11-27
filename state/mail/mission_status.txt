@@ -1,6 +1,6 @@
-updated=2026-11-27T01:54:35Z
+updated=2026-11-27T02:00:43Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-I1 RED — T013029Z N10 dme_le_0; N20 prep_fail. No 2nd probe. REFUSE until dose_ok.
+I1 RED — T013029Z dose_ok=false. Dose-fix only; no probe until ACK. REFUSE.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
-STOP: No TRAINING. No 2nd probe. COUNT≤1.
+STOP: No TRAINING. No 2nd probe until dose-fix ACK. COUNT≤1.
