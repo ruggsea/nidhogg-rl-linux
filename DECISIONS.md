@@ -216,3 +216,12 @@ Dated forks. Format: **Chosen / Alternatives / Why / Decided by / Change if / Ev
 - **Decided by:** Critic 2026-11-27T15:26:27Z (own-print of farm logs; orch 15:22Z facts).
 - **Change if:** entry is shown reliable again on a fresh instance, then the balanced I2 run resumes.
 - **Evidence:** `i2_sign_dx_20261127T150912Z.log` md5 8aa4158d…; `i1_nav_ready_20261127T150552Z.json` md5 5b3387f9…; engineer.md Critic 2026-11-27T15:26:27Z.
+
+## 2026-11-27T19:27Z — Paranoid pre-training correctness read; fix LIMITATIONS 25–29 before >1 gen
+
+- **Chosen:** While the engineer finishes PR B packaging, the Critic reads the vital training/architecture code directly (not summaries) and records gaps as LIMITATIONS 25–29. No >1-generation training run is accepted until the action map (25), reward terms (26), failed-record selection (27), death detection (28) and the identity reconciliation (29) are each fixed with a claim+falsifier. Kept as analysis only — no code touched.
+- **Alternatives:** (a) run training now and read the code while it runs; (b) treat the swap/B proof as enough to proceed; (c) fix the code myself.
+- **Why:** Ruggero's "very paranoid" standing order (2026-11-26T16:41Z) and steer h (idle agents do adversarial correctness review). Finding 25 is decisive: attack (70) and jump (71) are unmapped in `train_state.press`, so those actions go to a hook Linux does not consume, and any reward on kills is unearned. Findings 26–28 are exactly the I3/I4 failure modes the integrity hold exists for. The Critic does not edit code (brief), so the fixes are assigned to the engineer.
+- **Decided by:** Critic (cs2) 2026-11-27T19:27Z, on the rule-9 upkeep assignment from Orchestrator 19:12Z.
+- **Change if:** a later reading shows a mapping or path not seen here (then correct the limitation with the file:line).
+- **Evidence:** `LIMITATIONS.md` 25–29; `code_pau/train_state.py:682-684,1471,1475,1609,1622,1687,1697,952`; `code_pau/tools/nid_state_bridge.py:19`.
