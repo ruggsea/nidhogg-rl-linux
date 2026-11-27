@@ -57,3 +57,12 @@ Dated forks. Format: **Chosen / Alternatives / Why / Decided by / Change if / Ev
 - **Decided by:** Critic ACK v5k 2026-11-27T00:52:02Z (plan 00:48).
 - **Change if:** `InstanceManager.in_arena` reads nidmem directly (no file) or a measured READY path never uses fw≠320.
 - **Evidence:** `i1_bind_diag_20261127T005042Z.json`; `i1_bindfix_probe.diff` + `i1_bindfix_nidstate.diff`; Critic/engineer.md 00:48–00:52.
+
+## 2026-11-27T00:56:36Z — No I1 probe without fresh NAV-DONE stamp
+
+- **Chosen:** After a probe kill/abort, launch **no** I1 probe until a **new** `i1_nav_ready_*.json` exists with `nav_ok=true` (fv∧central∧on_ready + wall) and stamp **after** the Critic HARD line. Kill wall=None / in_match relaunches that skip NAV-DONE.
+- **Alternatives:** Reuse prior READY stamp; rely on wall_gate alone from mid-match; relaunch immediately after SIGNAL 15.
+- **Why:** T005307Z/T005521Z launched from in_match room29 with stale T004530Z nav → wall_gate fighters=True wall=None forever; wasted COUNT and false progress.
+- **Decided by:** Critic HARD 2026-11-27T00:56:36Z (Orch STEER).
+- **Change if:** measured proof wall_gate recovers central wall+on_ready from in_match without fresh READY-nav.
+- **Evidence:** `i1_probe_20261127T005307Z.log`, `i1_probe_20261127T005521Z.log`; Critic/engineer.md 00:54–00:56.
