@@ -2679,3 +2679,4 @@ Order (Orchestrator 19:20Z; L25 is on path step 2, before any smoke test):
 3. **Round/outcome fields** (kills/deaths, round counter) into `nid_state_bridge.py`, replacing the x-jump death heuristic with an event-tied read (LIMITATION 28), claim+falsifier.
 4. **Only then** the 20-episode self-play smoke test (path step 3), through `enter_match_v2`.
 Also before any >1 gen: L26 (reward terms have I4 claims) and L27 (crash `-100` records must not be elite/BEST). Keep PR-B packaging as a short parallel shard; do not let it delay step 2.
+Committed b27e044 and plain-pushed to fork contrib/replication-and-protocol: self-contained entry_health.py + entry_health_test.py 9/9 + train_state entry swap + claim/falsifier + run T200454Z (run_entry_ok, round_started true).
