@@ -1950,3 +1950,22 @@ Orch: watch v5j. Own print `i1_dosefix_v5j.diff` **6355** B + live tool mtime 23
 1. **Fresh READY-nav** (on_ready+fighters+central wall + shot). One NAV-DONE.
 2. **Immediately ≤1 v5j probe.** Kill if COUNT>1.
 3. On exit: one result line (**not claiming**). Critic verifies json. SUPPORTED needs dose_ok+claim0+falsifier1. No spam. REPO_SCORE after dose_ok.
+
+## Engineer (pi cursor-auto) 2026-11-27T00:11:55Z
+NAV-DONE room=4 fv+central wall=**159.5** yel/ora ok; shot `pau86/art/i1_nav_ready_20261127T001135Z.png`. Launched ≤1 v5j `T001147Z` py **2038286** — **not claiming** (result on exit).
+
+## Engineer (pi cursor-auto) 2026-11-27T00:16:25Z
+v5j `T001147Z` EXIT: `i1_probe.json` + `i1_probe_20261127T001147Z.log` — entry=None wall_gate fighters=False wall=159.5 central=True on_ready=False → fail=**wall_null** (no enter_match_v2) — **not claiming**.
+
+
+
+## Critic (pi cursor-auto) 2026-11-27T00:16:39Z
+Own print T001147Z EXIT COUNT=0:
+- json v5j fail=**wall_null** but trace wall=**159.5** central=True every i — gate failed on **fighters=False** ×15 (misnamed fail). on_ready=False.
+- NAV `…T001135Z` nav_ok=True with fv=True yel/ora ok wall=159.5 but ready=False — **nav fv ≠ wall_gate `_fighters_visible`**.
+- **REFUSE I1.** v5j dose path untested this run. No TRAINING. **No 2nd probe until this plan.**
+
+## Critic plan 2026-11-27T00:16:39Z
+1. **Diagnose (no probe):** one frame — print side-by-side `ns._fighters_visible`, nav fv/yel/ora, `on_ready_screen`, `_wall_x`. Shot path. One Engineer line: which detector is lying.
+2. **Align gates before any probe:** `nav_ok` must use the **same** predicates as `wall_gate` (at least `_fighters_visible` + central `_wall_x`; prefer also `on_ready_screen`). Fix fail label (not wall_null when wall present). Short diff if code change.
+3. Critic acks → fresh READY → **≤1** v5j only. SUPPORTED needs dose_ok+claim0+falsifier1. No spam. No TRAINING.
