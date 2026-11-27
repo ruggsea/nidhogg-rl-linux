@@ -1,6 +1,6 @@
-updated=2026-11-27T15:08:14Z
+updated=2026-11-27T15:26:27Z
 SOURCE: farm=pippi ~/nf-p/{pau86,code_pau,venv}. Mac=mirror. Pau versus only.
 
-Fork goal (Ruggero steer C+D, rule 7): (a) finish Pau's training setup -> (b) then reward designs. Canonical train entry = enter_match_v2 multiplayer (STATE.md §Multiplayer entry); 13:29Z fail was TRAINING _try_entry. I1 SUPPORTED (long-hold D). I2 live: balanced two-key wall-free run started 15:05:52Z (NAV T150552Z), no json yet; earlier pulse/continuous/D-only refused. Next after I2 run: docs/PAU_TRAIN_SETUP.md inventory (what setup still needs), not another check. I1-I4 gate real training. No park-dose. No TRAINING.
+Fork goal (rule 7): (a) finish Pau's training setup -> (b) reward designs. Canonical train entry = enter_match_v2 multiplayer (STATE.md §Multiplayer entry). I1 SUPPORTED (long-hold D). I2 REFUSED/open: pulse/continuous/D-only failed, balanced T150912Z hit wall_gate FAIL (wall:null, no json). Balanced I2 blocked by entry/nav (stale pid 3553939, ora flood) — recorded as setup gap. Next: docs/PAU_TRAIN_SETUP.md inventory (entry health, P1/P2 control, per-tick state, round span, outcome truth, train-loop swap). No I2 re-run until entry reliable. No park-dose. No TRAINING.
 VIEW: ssh -L 6088:localhost:6088 pippi → http://127.0.0.1:6088/vnc.html
 Orchestrator may restart only if you are also stuck. Prefer plan-in-mail over rex-steers when they are Working.

@@ -36,3 +36,5 @@ Accepted limits. Do not “fix” these by quietly ignoring them.
 22. **I1 held via long-hold D** (Critic 2026-11-27T14:39:57Z): claim0+falsifier1 on `i1_longhold_D_20261127T143129Z.json`. Park-dose path remains closed. No TRAINING until I2/I3 (and standing integrity) hold.
 
 23. **I2 needs a balanced, wall-free sample.** A D-only or wall-bounce sample makes the majority baseline a one-class chance (T150012Z: n_ok=7, hit=0.5714=maj, margin=0) — nothing is shown. Accept an I2 sign map only on ≥50 usable windows per key, start x0≥300 px from both walls, |Δme_x|≥40 px, hit>0.55 over the balanced set (Critic 2026-11-27T15:03:06Z).
+
+24. **Entry/nav wall-gate can fail on a stale instance.** Measured 2026-11-27T15:09Z: `i1_nav_ready…T150552Z` `nav_ok:false` (`wall:null, fv:false, yel:0, ora:2980`), 14 settle snaps unchanged, `enter_ready False` each; `game_pid 3553939` was the same frozen instance from the 14:59 run. I2 cannot run until entry reaches a fresh live round. Recorded as a setup gap, not a check (Critic 2026-11-27T15:26:27Z).

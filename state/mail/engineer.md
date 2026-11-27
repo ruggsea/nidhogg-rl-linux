@@ -2546,3 +2546,29 @@ Setup ground truth I checked myself (for the survey below): `nidstate.enter_matc
    f. **Train-loop swap:** which parts of `train_win`/`train_state` sit on the forbidden `_try_entry`/`run_entry`/TRAINING path and what `enter_match_v2` must replace.
 3. **No new check, no probe for item 2** — a written doc + one mail line. Work that serves neither the setup nor reward designs waits. Plan step 02 (round transition) then works off that inventory.
 4. **Standing:** no park-dose, no TRAINING, no pulse/0.1s-sample/D-only I2 repeats. Sleeps ≤600s.
+
+## Orchestrator 2026-11-27T15:22Z
+Facts (my own reads, pippi `~/nf-p/pau86/results/runs/`): the balanced two-key I2 attempt after NAV `T150552Z` is `i2_sign_dx_20261127T150912Z.log` (151 B) → `pre {in_match:True, ready:True, wall:None}` / `wall_gate {wall:None, fv:False, central:False, ready:True}` → **FAIL wall_gate**; NAV json `i1_nav_ready_20261127T150552Z.json` has `nav_ok:false, wall:null, ora:2980` (false orange flood). No i2 json from the balanced run. Eng pane then hit context-overflow and posted nothing since 15:05:52Z (it is healthy now, idle).
+
+Critic: rule on this in your next `## Critic plan` (one different way, not a repeat of the wall/nav hammering):
+- either a single different fix path for the wall/nav gate, written as its own check with a falsifier, or
+- **move to plan item 2** (`docs/PAU_TRAIN_SETUP.md` survey) and record the wall/nav gate itself as a **missing piece of Pau's setup** (fork goal (a) per steer D: what does Pau's training setup still need). Item 2 is a written inventory, no probe.
+Standing: no park-dose, no TRAINING, I1–I4 still gate real training. Sleeps ≤600s.
+
+## Critic (pi cursor-auto) 2026-11-27T15:26:27Z
+Own-print the balanced-I2 attempt (orch 15:22Z), both files on farm `~/nf-p/pau86/results/runs/`:
+- `i2_sign_dx_20261127T150912Z.log` (151 B, md5 **8aa4158d99c7a97d9446d3870f3147b1**) → `pre {in_match:True, ready:True, wall:None, fv:False}` / `wall_gate {wall:None, fv:False, central:False, ready:True}` / **FAIL wall_gate**. No i2 json.
+- `i1_nav_ready_20261127T150552Z.json` (md5 **5b3387f960d2d1f9d68a0d684fae308c**) → `nav_ok:false, wall_gate_ok:false`, state `ready:true, fv:false, wall:null, central:false, **yel:0 ora:2980 blu:0**, room:29`; 14 settle snaps all identical, `enter_ready False` each; `game_pid **3553939**` — **same pid as the 14:59 T145857Z run**, i.e. the instance was never restarted and is stuck on an orange-flood screen (not READY, not live).
+**REFUSE I2** (no numbers). No new wall/nav fix check — per rule 7 this is a **missing piece of Pau's setup**, not a check to pass. Hard rules OK (no Nidhogg/train/SelfPlay on Mac; steps 01/02/03 open).
+Housekeeping: Mac `state/` has **no** `i1_nav_ready_20261127T150552Z.json` (farm-only) — copy it for the mirror.
+
+## Critic plan 2026-11-27T15:26:27Z  (move to item 2 — survey)
+1. **Move to the setup survey now (rule 7 fork goal (a)).** Eng writes **`docs/PAU_TRAIN_SETUP.md`**, one short inventory, no probe, no new check. For each line: "exists (file:line)" or "missing":
+   a. **Entry/instance health:** `enter_match_v2` must start from a *fresh, restartable* instance; record the T150552Z/T150912Z failure (stale pid 3553939, `wall:null fv:false ora:2980`, `enter_ready False` ×14) as the known entry gap and state what a reliable ready/wall gate + instance restart needs.
+   b. **P1/P2 control map:** full keys per fighter (P1 a/d/w/s/f/g; P2 Left/Right + attack/jump/crouch), and where P2 is injected (`find_players_by_input` nidstate.py:1116 proves Right-drive; name the key API).
+   c. **Per-tick state for both:** addresses + fields read (x, y, facing, sword, alive/round); does anything read P2 each tick (`tools/nid_state_bridge.py` reads `fp['P1']`/`fp['P2']`)?
+   d. **Round span:** round end + next round without full re-entry; what the versus equivalent of `train_win.room_change_round:119` needs.
+   e. **Round-outcome truth** for reward (kills/deaths still always 0).
+   f. **Train-loop swap:** which `train_win`/`train_state` parts sit on the forbidden `_try_entry`/`run_entry`/TRAINING path and what `enter_match_v2` replaces.
+2. **No probe for item 1.** One doc + one mail line. I2 stays REFUSED/open pending a reliable entry; do not re-run I2 until (a) is answered.
+3. **Standing:** no park-dose, no TRAINING, no wall/nav hammering. Sleeps ≤600s.

@@ -207,3 +207,12 @@ Dated forks. Format: **Chosen / Alternatives / Why / Decided by / Change if / Ev
 - **Decided by:** Ruggero steer C+D relayed by Orchestrator 2026-11-27T15:07Z; Critic plan written 2026-11-27T15:08:14Z.
 - **Change if:** the inventory shows multiplayer entry itself is broken (then fix entry first); or Ruggero reorders (a)/(b).
 - **Evidence:** AGENTS.md standing rules 1–7; `docs/STATE.md` §Multiplayer entry; engineer.md Orchestrator 2026-11-27T15:07Z + Critic 2026-11-27T15:08:14Z.
+
+## 2026-11-27T15:26:27Z — Balanced I2 blocked by entry/nav gate; move to the setup survey
+
+- **Chosen:** Do not patch the wall/nav gate again (rule 7). Record it as a **missing piece of Pau's setup** and move to the survey **`docs/PAU_TRAIN_SETUP.md`**: entry/instance health first, then P1/P2 control map, per-tick state for both, round span, round-outcome truth, train-loop swap. I2 stays REFUSED/open until entry is reliable; no I2 re-run before that.
+- **Alternatives:** a fourth wall/nav fix with its own claim+falsifier (rejected: same-check repetition, rule 7); repeat the balanced I2 run as-is (rejected: entry cannot reach a fresh instance).
+- **Why:** Balanced I2 attempt `T150912Z` failed wall_gate (wall:null, fv:false, no json); NAV `T150552Z` `nav_ok:false` with `yel:0 ora:2980`, `enter_ready False` ×14, `game_pid 3553939` = the frozen 14:59 instance. Entry reliability is setup work (fork goal (a)), not a check to hammer.
+- **Decided by:** Critic 2026-11-27T15:26:27Z (own-print of farm logs; orch 15:22Z facts).
+- **Change if:** entry is shown reliable again on a fresh instance, then the balanced I2 run resumes.
+- **Evidence:** `i2_sign_dx_20261127T150912Z.log` md5 8aa4158d…; `i1_nav_ready_20261127T150552Z.json` md5 5b3387f9…; engineer.md Critic 2026-11-27T15:26:27Z.
