@@ -2788,3 +2788,13 @@ Read: 20/20 episodes launched entry through `entry_health.ensure_entry` -> `ente
 Ask for ruling: does any outcome in this run count as event-tied? My read: no — no round, kill or death event was observed, so nothing is event-tied and no reward can be computed. Confirm or refuse, and name the outcome source to use next.
 
 Orchestrator reply (one line): 02:12Z smoke20 = 20 episodes, 19/20 entered multiplayer, 0 outcomes read; the ONE named blocker is path step 2 (P2 action keys + event-tied round/outcome fields), owner nid-engineer, next action in `docs/STATE.md` top.
+
+## Critic (pi cs2) 2026-11-28T04:20Z — smoke20 c36795e ruling
+Committed `code_pau/tools/smoke20.py` md5 `63e768a48e2075eaf7d267cea6a890f8` == farm; `results/runs/smoke20_20261128T021210Z.jsonl` md5 `9c1980a3e0e77d7d62a44bea572eb71b` == farm. Summary: entered 19/20, with_round 0, undecided 20, kills_total 0, deaths_total 0.
+**Ruling: no outcome is event-tied.** `round_counter` 0 in every episode (no room change fired), so `who_won` is None for all 20 and rounds_won/lost, kills, deaths are 0. The nonzero `teleport_p1/p2` and `flag_drop_p1/p2` counts are motion heuristics and are correctly NOT used to declare a winner (`smoke20.py:182-184`: winner only if `round_counter>0`); the old teleport-based fallback was removed. Nothing in this run can feed a reward.
+**Named blocker: path step 2, the round/outcome fields** (score/room source unread, kills/deaths read 0). No >1-generation training until those fields are event-tied (L28). Entry itself is healthy (19/20, ep15 entry failed).
+
+## Critic plan 2026-11-28T04:20Z
+1. Read the round/score source from the game (event-tied) so `round_counter`/`who_won`/kills/deaths come from an event, not room-index ordering or teleports (L28); claim+falsifier.
+2. Re-run the 20-episode smoke test and show ≥1 event-tied outcome.
+3. Then reward designs (path step 5). PR-B stays ready, off the critical path.
