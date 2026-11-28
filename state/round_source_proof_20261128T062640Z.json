@@ -1,0 +1,22 @@
+{
+ "stamp": "20261128T062640Z",
+ "entered": true,
+ "bound": true,
+ "pid": 1873592,
+ "mem_room": 29,
+ "spy_room": 29,
+ "match": true,
+ "flags": [
+  1,
+  1
+ ],
+ "events": [],
+ "summary": {
+  "rounds": 0,
+  "kills": 0,
+  "deaths": 0,
+  "room": 29,
+  "room_name": "arena_29"
+ },
+ "debounce": 3
+}

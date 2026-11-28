@@ -684,6 +684,7 @@ class InstanceManager:
                 13: "Return", 27: "Escape", 32: "space",
                 65: "a", 68: "d", 83: "s", 87: "w",
                 70: "f", 71: "g",   # F = attack, G = jump (were unmapped -> written to a file the game never reads)
+                77: "m", 78: "n",   # P2 attack / jump (P2 walk/sword are the arrows above)
                 37: "Left", 38: "Up", 39: "Right", 40: "Down",
             }
             codes = code if isinstance(code, tuple) else (code,)
