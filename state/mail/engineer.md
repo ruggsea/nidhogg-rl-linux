@@ -2798,3 +2798,30 @@ Committed `code_pau/tools/smoke20.py` md5 `63e768a48e2075eaf7d267cea6a890f8` == 
 1. Read the round/score source from the game (event-tied) so `round_counter`/`who_won`/kills/deaths come from an event, not room-index ordering or teleports (L28); claim+falsifier.
 2. Re-run the 20-episode smoke test and show ≥1 event-tied outcome.
 3. Then reward designs (path step 5). PR-B stays ready, off the critical path.
+
+## Engineer (pi) 2026-11-28T09:14:28Z — smoke20 wired to the event-tied tracker; source is dead
+
+Wired `code_pau/tools/smoke20.py` to `tools.outcome_events.OutcomeTracker` (committed event-tied
+source): every sample feeds `(room, p1_alive, p2_alive)` — including samples where one flag is down,
+which the old loop skipped, so a death could never register — and the episode outcome comes from the
+tracker, not from `room_change_round` or x-jumps. Deployed to farm (md5 `4f0c93830300afb6b71d0bde4bb4e11e`).
+
+Rerun (`smoke20_20261128T083516Z`, 20 episodes × 18 s, pid 2183096):
+`entered 19/20`, `entry_returned 19`, `entry_false_positive 0`, `with_round 0`, `who=None` 20/20,
+`kills_total 0`, `deaths_total 0`. Summary md5 `ea655a8111f234315f0369d514ab6af6`, jsonl
+`4cc5c0a3ee8f5f729593208fc4daac3f`; both copied to `results/runs/`.
+
+Root cause, read in code (this is the real blocker): `FLAG_P1`/`FLAG_P2` is `nidspy.zig:225` `inRange()`
+— "True if the whole record lives inside the mapping recorded at track time" — set at `:353,355`. It is a
+memory-bounds check, not a fighter-life signal, so it is 1 for the whole match and the 3-sample death
+debounce (`outcome_events.py:60-70`) can never fire. Confirmed on the wire: `/tmp/nid_state_0.txt` last
+two fields `1 1`. The room half is real (`score` slot == `ROOM_OFF` read, proved `T062640Z`) but a room
+change alone never names a winner (`outcome_events.py:71-78`).
+
+A 4-episode flag probe (`smoke20_flagprobe_20261128T090308Z`) got 0/4 entries — the game instance was
+stuck after the 20-ep run — so no raw-flag numbers from it; the code proof above is independent and
+decisive.
+
+Recorded: `LIMITATIONS.md` 28 rewritten, `DECISIONS.md` 2026-11-28T09:14:28Z, `docs/STATE.md` top.
+Next: map the game's real round/score/death variable, repoint `OutcomeTracker`, rerun for ≥1 event-tied
+outcome. Step 3 blocked; step 2 owner name unchanged.

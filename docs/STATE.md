@@ -2,8 +2,8 @@
 
 ## Path to training (Ruggero 2026-11-27g — keep this list true)
 1. **DONE** (2026-11-28): critic ruled the PR-B diff (6bb5bcd) and the engineer committed the staged work (c36795e).
-2. **CURRENT BLOCKER** (owner: nid-engineer): the event-tied round/outcome fields — read the game's room value and fighter-death events so `who_won`, kills/deaths and the round counter come from an event, not room-index ordering, teleports or x-jumps (L28). P2 action keys were **cut** 2026-11-28 after failing >3 h; the smoke test drives P2 with the arrows that work today.
-3. One short end-to-end training smoke test: about 20 self-play episodes entered through `enter_match_v2`, with outcomes recorded. Blocked by step 2 (02:12Z run: 19/20 entered, 0 event-tied outcomes).
+2. **CURRENT BLOCKER** (owner: nid-engineer): the event-tied round/outcome fields. `smoke20` is now wired to `tools.outcome_events.OutcomeTracker` (09:14Z), but the tracker's death source is invalid: `FLAG_P1/P2` is `nidspy.zig:225` `inRange()`, a mapping-bounds check that never drops, so no death can fire (L28). Need the game's real round/score/death memory variable. P2 action keys remain **cut** 2026-11-28; the smoke test drives P2 with the arrows that work today.
+3. One short end-to-end training smoke test: about 20 self-play episodes entered through `enter_match_v2`, with outcomes recorded. Blocked by step 2: 08:35Z rerun = 19/20 entered, 0 event-tied outcomes (wiring done; source invalid).
 4. Open PR B to Pau (new branch from Pau `origin/main`; helper + test + short docs only).
 5. Reward designs.
 No new pre-checks or probes outside these five. A step that fails 3 times is cut down or done another way. "Nidhogg is working" means (a) a multiplayer-route training run is writing real outcomes, or (b) there is exactly one named blocker on this path, with an owner and a next action, less than 60 minutes old.
@@ -13,7 +13,7 @@ Every line here was measured on the real game. The second half lists the checks 
 
 > **2026-11-27 farm integrity (read first):** I1 **SUPPORTED**. I2 **REFUSED** (pulse/continuous/block-hold; next = Critic plan balanced two-key). Fork goal: finish Pau's training setup → then reward designs. See state/mail/engineer.md.
 
-> **Path blocker (2026-11-28T04:30Z, owner: nid-engineer): path step 2, the event-tied round/outcome fields** — `who_won`, kills/deaths and the round counter must come from a game event (room value + death event), not from room-index ordering, teleports or x-jumps. The 02:12Z `smoke20` run (20 episodes, `results/runs/smoke20_20261128T021210Z.jsonl`) entered multiplayer in 19/20 (ep15 `entered=False`) but read no outcome: `who=None` 20/20, `kills=0`, `deaths=0`, `round_counter=0`. P2 action keys were cut 2026-11-28 (>3 h failed); the smoke test drives P2 with the arrows that work today. Next action: read the round/score and death events in `nid_state_bridge.py`+`tools/outcome_events.py`, then re-run the smoke test with ≥1 event-tied outcome. Needs a claim+falsifier. Path step 3 cannot pass until then.
+> **Path blocker (2026-11-28T09:14Z, owner: nid-engineer): path step 2, the event-tied round/outcome fields** — `smoke20` is wired to `OutcomeTracker`, and the 08:35Z rerun (20 episodes, `results/runs/smoke20_20261128T083516Z.jsonl`) entered multiplayer in 19/20 but read 0 outcomes (`who=None` 20/20, `kills=0`, `deaths=0`, `round_counter=0`). Root cause measured and read in code: the tracker's `p1_alive/p2_alive` is `nidspy.zig:225` `inRange()`, a mapping-bounds check set at `:353,355`; it is 1 for the whole match, so the debounced death in `outcome_events.py:60-70` can never fire. Only the room half of the source is real (spy score slot == `ROOM_OFF` read). Next action: map the game's real round/score/death variable, repoint `OutcomeTracker` at it, rerun for ≥1 event-tied outcome. Needs a claim+falsifier. Path step 3 cannot pass until then.
 
 ## Multiplayer entry (Ruggero 2026-11-27d — write once)
 

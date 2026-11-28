@@ -225,3 +225,12 @@ Dated forks. Format: **Chosen / Alternatives / Why / Decided by / Change if / Ev
 - **Decided by:** Critic (cs2) 2026-11-27T19:27Z, on the rule-9 upkeep assignment from Orchestrator 19:12Z.
 - **Change if:** a later reading shows a mapping or path not seen here (then correct the limitation with the file:line).
 - **Evidence:** `LIMITATIONS.md` 25–29; `code_pau/train_state.py:682-684,1471,1475,1609,1622,1687,1697,952`; `code_pau/tools/nid_state_bridge.py:19`.
+
+## 2026-11-28T09:14:28Z — smoke20 wired to the event-tied tracker; the tracker's alive-flag source is invalid
+
+- **Chosen:** Wire `code_pau/tools/smoke20.py` to `tools.outcome_events.OutcomeTracker` (the committed event-tied source): every sample feeds `(room, p1_alive, p2_alive)`, including samples where one flag is down, and the episode outcome (`who_won`, kills, deaths, round counter) is read from the tracker, not from x-jumps or `room_change_round`. Then rerun 20 self-play episodes. The rerun gave 19/20 entered, 0 event-tied outcomes (`results/runs/smoke20_20261128T083516Z.jsonl`).
+- **Alternatives:** (a) keep smoke20's old flag-drop/teleport counting; (b) accept the 0-outcome run as just "no death happened" and rerun longer; (c) implement a real round/score read first.
+- **Why:** The critic asked for ≥1 event-tied outcome through the tracker. Reading the tracker's source shows it cannot produce one: the "alive" flag is `nidspy.zig:225` `inRange()`, a mapping-bounds check, not a life signal; the flag is 1 for the whole match, so the debounced death at `outcome_events.py:60-70` never fires. Verified in code (`nidspy.zig:347-362`) and on the wire (flags `1 1`). Reporting a "wired" run with 0 outcomes without this would hide that the source itself is dead.
+- **Decided by:** nid-engineer (pi), on the Orchestrator's 2026-11-28 next action; root cause read by the engineer.
+- **Change if:** a real round/death/score variable is mapped and the tracker is repointed at it; then a rerun with ≥1 event-tied outcome is the test.
+- **Evidence:** `code_pau/tools/smoke20.py` (tracker wiring); `code_pau/spy/nidspy.zig:225,347-362`; `code_pau/tools/outcome_events.py:60-78`; `results/runs/smoke20_20261128T083516Z.jsonl` + `_summary.json` (md5 4cc5c0a3…, ea655a81…); `LIMITATIONS.md` 28.

@@ -5,7 +5,9 @@ Purpose: the end-to-end check that says whether Pau's training setup is finished
 Each episode enters a live multiplayer match (entry_health.ensure_entry -> enter_match_v2),
 binds the two fighters with the existing input test, drives P1 with the keys that work today
 (a/d/w/s/f/g) and P2 with the documented arrows (Left/Right), samples the spy state, and
-records the outcome: who won, kills, deaths, round counter. Every field that could not be
+records the outcome: who won, kills, deaths, round counter. Those four fields come from
+tools/outcome_events.OutcomeTracker, an event-tied source (game room + fighter alive
+flags with a 3-sample death debounce), never an x-jump. Every field that could not be
 read is listed in `missing`.
 
 Writes one JSONL row per episode under results/runs/smoke20_<stamp>.jsonl and prints a
@@ -31,14 +33,15 @@ os.environ.setdefault("NID_DISPLAY_BASE", "88")
 
 import nidlinux as n                     # noqa: E402
 import nidstate as s                     # noqa: E402
-import train_win as tw                   # noqa: E402
+from nidmem import ROOM_OFF, exe_base     # noqa: E402
 from tools import entry_health as eh     # noqa: E402
+from tools.outcome_events import OutcomeTracker  # noqa: E402
 
 IID = int(os.environ.get("NID_IID", "0"))
 RUN = Path(os.environ.get("NIDRUN", os.path.expanduser("~/nf-p/pau86/results/runs")))
 TELEPORT = 300.0                          # train_state.SPAWN_JUMP: walk is <3 px/sample
 DECIDE = 0.15                             # key hold + sample interval
-EDGE = 60.0                               # train_win kill/respawn lands at arena ends
+EDGE = 60.0                               # respawn/round boundary at the arena ends
 
 # Keys that work today. P1 measured (a/d/w/s/f/g). P2: arrows move; attack/jump unproven.
 P1_FWD, P1_BACK, P1_ATK, P1_JUMP = "d", "a", "f", "g"
@@ -78,7 +81,10 @@ def bind(iid):
                 n.untrack(pid)
             except Exception:
                 pass
-            n.track(pid, p1=fp["P1"], p2=fp["P2"], tick=tick)
+            # Track the game room in the spy's score slot too, so the tracker reads
+            # the room at the same tick as the alive flags (same as the bridge).
+            n.track(pid, p1=fp["P1"], p2=fp["P2"],
+                    score=exe_base(pid) + ROOM_OFF, tick=tick)
             time.sleep(0.3)
             return pid
         time.sleep(1.5)
@@ -92,7 +98,12 @@ def one_episode(ep, seconds, rng):
            "rounds_won": 0, "rounds_lost": 0,
            "p1_moved_px": 0.0, "p2_moved_px": 0.0,
            "teleport_p1": 0, "teleport_p2": 0, "flag_drop_p1": 0, "flag_drop_p2": 0,
-           "play_seconds": 0.0, "round_events": [], "missing": []}
+           "play_seconds": 0.0, "round_events": [], "missing": [],
+           # raw spy-flag diagnostics: prove whether FLAG_P1/P2 ever drop at all.
+           # nidspy.zig:225 inRange() is a mapping-bounds check, so these are expected
+           # to stay 1 for the whole match; that is the point of measuring them.
+           "flag_low_p1": 0, "flag_low_p2": 0,
+           "flag_low_streak_max_p1": 0, "flag_low_streak_max_p2": 0}
     if not entry_returned:
         rec["missing"].append("entry: enter_match_v2/ensure_entry returned False")
         return rec
@@ -111,8 +122,7 @@ def one_episode(ep, seconds, rng):
         return rec
     start = prev
 
-    prev_flags = None
-    prev_room = tw.read_room_now(IID)
+    tracker = OutcomeTracker(debounce=3)     # event-tied kills/deaths/round counter
     t0 = time.time()
     last_decide = 0.0
     blank_since = None
@@ -136,7 +146,26 @@ def one_episode(ep, seconds, rng):
                 # P2 policy: the same shape on the arrows. No P2 attack/jump key exists yet.
                 n.key(IID, P2_BACK if dx > 0 else P2_FWD, hold=0.10)
         st = n.state(pid)
-        if st is None or not (st.flags & n.FLAG_P1 and st.flags & n.FLAG_P2):
+        if st is None:
+            blank_since = blank_since or now
+            time.sleep(0.03)
+            continue
+        # Feed the event-tied tracker on every sample, including samples where one
+        # flag is down: a fighter's flag held low for 3 samples IS the death event.
+        # Skipping those samples is what made kills/deaths read 0 in 02:12Z smoke20.
+        p1_alive = bool(st.flags & n.FLAG_P1)
+        p2_alive = bool(st.flags & n.FLAG_P2)
+        room = st.score_orange if st.flags & n.FLAG_SCORE else None
+        tracker.update(room, p1_alive, p2_alive, ts=round(now - t0, 1))
+        for _who, _alive in (("p1", p1_alive), ("p2", p2_alive)):
+            if _alive:
+                rec["_streak_" + _who] = 0
+            else:
+                rec["flag_low_" + _who] += 1
+                rec["_streak_" + _who] = rec.get("_streak_" + _who, 0) + 1
+                if rec["_streak_" + _who] > rec["flag_low_streak_max_" + _who]:
+                    rec["flag_low_streak_max_" + _who] = rec["_streak_" + _who]
+        if not (p1_alive and p2_alive):
             blank_since = blank_since or now
             time.sleep(0.03)
             continue
@@ -152,28 +181,19 @@ def one_episode(ep, seconds, rng):
             if p2x < EDGE or p2x > 400.0:
                 rec["flag_drop_p2"] += 1
         prev = (p2x, p2y, p1x, p1y)
-        flags = (int(bool(st.flags & n.FLAG_P1)), int(bool(st.flags & n.FLAG_P2)))
-        if prev_flags:
-            if prev_flags[1] > 0.5 and flags[1] < 0.5:
-                rec["deaths"] += 1
-            if prev_flags[0] > 0.5 and flags[0] < 0.5:
-                rec["kills"] += 1
-        prev_flags = flags
-        room = tw.read_room_now(IID)
-        if room is not None and prev_room is not None:
-            out = tw.room_change_round(prev_room, room, me_yellow=True)
-            if out is not None:
-                rec["round_events"].append({"t": round(now - t0, 1), "from": prev_room,
-                                            "to": room, "outcome": out})
-                rec["round_counter"] += 1
-                if out == "won":
-                    rec["rounds_won"] += 1
-                else:
-                    rec["rounds_lost"] += 1
-        if room is not None:
-            prev_room = room
         time.sleep(0.03)
     rec["play_seconds"] = round(time.time() - t0, 1)
+    rec.pop("_streak_p1", None)
+    rec.pop("_streak_p2", None)
+
+    # Event-tied outcome from the tracker (game room + alive flags). Death events are
+    # rounds; with no death the winner stays None and is never guessed from a jump.
+    rec["round_counter"] = tracker.rounds
+    rec["kills"] = tracker.kills
+    rec["deaths"] = tracker.deaths
+    rec["rounds_won"] = tracker.kills
+    rec["rounds_lost"] = tracker.deaths
+    rec["round_events"] = [e for e in tracker.events if e["kind"] in ("death", "room")]
 
     end = read_pair(pid)
     if end:
@@ -189,12 +209,12 @@ def one_episode(ep, seconds, rng):
 def missing_for(recs):
     m = []
     if recs and all(r["kills"] == 0 and r["deaths"] == 0 for r in recs):
-        m.append("kills/deaths: 0 in every episode (existence-flag source fires 0 times)")
+        m.append("kills/deaths: 0 in every episode (event-tied alive-flag source fired 0 times)")
     if any(r["entered"] and r["p2_moved_px"] <= 10.0 for r in recs):
         m.append("P2 control: P2 did not move even when arrows were pressed in some episodes")
     m.append("P2 action keys: no proven P2 attack/jump (only arrows Left/Right pressed)")
     if any(r["round_counter"] == 0 for r in recs):
-        m.append("round counter/outcome: no room_change round observed (score field unmapped)")
+        m.append("round counter/outcome: no event-tied round observed (room+alive tracker)")
     if any(r["who_won"] is None for r in recs):
         m.append("who won: undecidable without a verified round/score source")
     if any(not r["entry_returned"] for r in recs):
@@ -229,7 +249,8 @@ def main():
                   f"W-L={rec['rounds_won']}-{rec['rounds_lost']} kills={rec['kills']} "
                   f"deaths={rec['deaths']} rounds={rec['round_counter']} "
                   f"p1_px={rec['p1_moved_px']} p2_px={rec['p2_moved_px']} "
-                  f"samples={rec['samples']}", flush=True)
+                  f"samples={rec['samples']} flaglow_p1={rec['flag_low_p1']} "
+                  f"flaglow_p2={rec['flag_low_p2']}", flush=True)
     summary = {
         "stamp": stamp, "episodes": args.episodes, "file": str(out),
         "entered": sum(1 for r in recs if r["entered"]),
@@ -243,6 +264,10 @@ def main():
         "kills_total": sum(r["kills"] for r in recs),
         "deaths_total": sum(r["deaths"] for r in recs),
         "p2_moved_in": sum(1 for r in recs if r["entered"] and r["p2_moved_px"] > 10.0),
+        "flag_low_p1_total": sum(r["flag_low_p1"] for r in recs),
+        "flag_low_p2_total": sum(r["flag_low_p2"] for r in recs),
+        "flag_low_streak_max": max([r["flag_low_streak_max_p1"] for r in recs]
+                                   + [r["flag_low_streak_max_p2"] for r in recs] + [0]),
         "missing": missing_for(recs),
     }
     (RUN / f"smoke20_{stamp}_summary.json").write_text(json.dumps(summary, indent=1))
