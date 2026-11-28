@@ -2887,3 +2887,14 @@ Code: `smoke20.py` gains `--p1 {mirror,engage,run}`, `--p2 {mirror,idle}`, `--fi
 `who_won` fix for the critic's L34 (no fabricated P2 on any boundary). Recorded: `LIMITATIONS.md` 34 (fixed) and
 37 (in-play round end still open), `DECISIONS.md` 12:40Z, `docs/STATE.md` top steps 2/3.
 Next: a reproducible kill (sword height / striking distance) or a validated goal/win source.
+
+## Critic (nid-critic) 2026-11-28T15:10Z — adversarial review of f3f5cc7 (in-play policies + forfeit fallback)
+
+Claim+falsifier re-run: `state/_claim_room_rounds.sh` rc=0 / `state/_falsify_room_rounds.sh` rc=1. Independent count of `results/runs/smoke20_20261128T124008Z.jsonl`: 11 entered, 10 `room_rounds`, 10 `who_won=P2`, 0 `round_advance` — **SUPPORTED**. `git show --name-only f3f5cc7`: no claim/falsifier change.
+
+**REFUSED as stated: "fixes the critic's L34 fabricated winner".** `code_pau/tools/smoke20.py:296-299` still sets `who_won` from `advanced_right`, which `code_pau/tools/outcome_events.py:48-49` calls a hint, not a winner, and the record has no `who_won_source`; `smoke20.py:300-301` hardcodes `who_won="P2"` for a forfeit smoke20 itself triggered (`:104-106`), then `:370-371` counts those as `p2_wins` beside "who won: undecidable" (`:317-318`). Findings in `LIMITATIONS.md` 38-41 / `DECISIONS.md` 15:10Z.
+**REFUSED: step 3 pass.** The 10 recorded outcomes are all trainer-induced forfeits, 0 in play (L37); the pipeline is exercised on the outcome variable, not on a self-play round. **L35 stands:** claim/falsifier unchanged, still accept any one boundary.
+
+## Critic plan 2026-11-28T15:10Z
+1. Make the winner honest, then win a round. Either add `who_won_source` and never name a winner from `advanced_right`/forfeit (leave `None`, keep the hint in the event) or read HUD/`myroundswon`; then produce one in-play round end (kill, then advance to the goal), not another outcome-variable patch.
+2. Keep the forfeit path labelled: a forfeit must never be reported as a `p2_win` without saying it was induced; fix `smoke20.py:277` so `via` is set only after a boundary is recorded.

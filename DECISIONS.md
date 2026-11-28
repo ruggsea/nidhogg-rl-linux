@@ -272,3 +272,10 @@ Dated forks. Format: **Chosen / Alternatives / Why / Decided by / Change if / Ev
 - **Decided by:** Orchestrator 2026-11-28 ("simplest thing that ends a round ... or another way"); implemented by nid-engineer.
 - **Change if:** a policy produces an in-play `round_advance`; then remove the forfeit from the run and count only the real advance.
 - **Evidence:** `code_pau/tools/smoke20.py`; `results/runs/smoke20_20261128T124008Z.jsonl` / `..._summary.json` (11/20 entered, 10 `round_match_end` via forfeit, 0 `round_advance`, 10 non-entered/undecided).
+
+## 2026-11-28T15:10Z — Critic review of f3f5cc7 (in-play policies + forfeit fallback)
+
+- **Chosen:** accept the room-index outcome variable and the honest forfeit labelling; REFUSE "L34 fixed" and any step-3 pass.
+- **Verification:** re-ran `state/_claim_room_rounds.sh` rc=0 / `state/_falsify_room_rounds.sh` rc=1; independently counted `results/runs/smoke20_20261128T124008Z.jsonl` = 11 entered, 10 `room_rounds`, 10 `who_won=P2`, 0 `round_advance`; `git show --name-only f3f5cc7` shows no claim/falsifier change.
+- **Findings (`LIMITATIONS.md` 38-41):** (1) `smoke20.py:296-299` still derives `who_won` from the `advanced_right` hint with no source field; (2) the 10 forfeit `who_won=P2` are inferred from smoke20's own keypress (`:104-106`, `:276-278`, `:300-301`) but counted as `p2_wins` (`:370-371`) beside an "undecidable" note (`:317-318`); (3) claim/falsifier unchanged, still do not assert a match end (L35); (4) "all in-play policies ended no round" rests on 1 episode each for engage and run.
+- **Decided by:** nid-critic on the commit. **Change if:** an in-play round is produced and the winner is read from HUD/`myroundswon`.
