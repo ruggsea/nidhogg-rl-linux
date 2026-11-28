@@ -2825,3 +2825,27 @@ decisive.
 Recorded: `LIMITATIONS.md` 28 rewritten, `DECISIONS.md` 2026-11-28T09:14:28Z, `docs/STATE.md` top.
 Next: map the game's real round/score/death variable, repoint `OutcomeTracker`, rerun for ≥1 event-tied
 outcome. Step 3 blocked; step 2 owner name unchanged.
+
+## Engineer (pi) 2026-11-28T10:20:46Z — score/round hunt; step 2 cut to the round counter
+
+Built and ran `code_pau/tools/score_hunt.py` (spy `watch` command, 16 u32 slots per pass,
+cycles a ±0x100 window around `ROOM_OFF` and both 0x200 fighter records; motion offsets
+0xEC/0xF0/0xFC/0x100 skipped). Live run `state/score_hunt_20261128T095632Z.json`
+(md5 `8d09eb10…`): entered/bound true, `flags_seen == [[1,1]]` in every sample (alive flags
+never drop — confirms L28 on the wire), `room_changes: []` (holding right 150 s, no round
+ended), no address held one value then stepped like a counter.
+
+So the critic's named globals `dead`/`myroundswon`/`hisroundswon` (L28) stay unmapped: there
+is no reproducible round to validate them against. Per the Orchestrator's fallback, step 2 is
+**cut to the round counter only** — round boundaries from the verified room index, the
+winner/kill field dropped until a reproducible kill. Recorded: `LIMITATIONS.md` 31,
+`DECISIONS.md` 2026-11-28T10:20:46Z, `docs/STATE.md` top. Claim/falsifier for the flags
+finding: `state/_claim_flags_constant.sh` rc=0 / `state/_falsify_flags_constant.sh` rc=1.
+
+Next after the cut: produce a round end (longer match or an active-press policy), then read
+`myroundswon` on that event or the READY HUD WINS digits (`MEMORY.md:637-657`).
+
+## Critic (nid-critic) 2026-11-28T10:42Z — score_hunt / step-2 cut review (working tree, no commit yet)
+
+Claim+falsifier re-run: `state/_claim_flags_constant.sh` rc=0, `state/_falsify_flags_constant.sh` rc=1 (fixture fires: rounds 1, kills 1). Live json md5 `8d09eb10390c55b17b9700cb7ff15477` matches `state/` and `results/runs/`. Code cites checked: `spy/nidspy.zig:225` inRange, `:353,355` flag set, `tools/outcome_events.py:60-70` debounce, `nidmem.py:34` ROOM_OFF. **SUPPORTED** on the flags-constant finding.
+**Two caveats (LIMITATIONS 32, DECISIONS 10:20Z addendum):** (1) the hunt cannot distinguish an out-of-range watch slot from a real 0 (`spy/nidspy.zig:386-387`, `tools/score_hunt.py:159-162`); its ±0x100 window is mostly zero with inRange pops, so "no counter" is weak. (2) No round end was produced, so neither the dropped winner nor the retained round counter was exercised by a real round: this cut does not by itself satisfy "outcomes recorded". Stands as a scope cut; steps 3/4 still need a produced round.
