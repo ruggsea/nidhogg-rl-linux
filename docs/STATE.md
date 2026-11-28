@@ -1,9 +1,9 @@
 # Verified state, and what is not verified
 
 ## Path to training (Ruggero 2026-11-27g — keep this list true)
-1. Critic rules on the PR-B diff; then the engineer commits the staged work.
-2. Player-2 keys plus the round and outcome fields (kills and deaths are still always 0, so no reward can be computed).
-3. One short end-to-end training smoke test: about 20 self-play episodes entered through `enter_match_v2`, with outcomes recorded. This is the check that says the setup is finished.
+1. **DONE** (2026-11-28): critic ruled the PR-B diff (6bb5bcd) and the engineer committed the staged work (c36795e).
+2. **CURRENT BLOCKER** (owner: nid-engineer): the event-tied round/outcome fields — read the game's room value and fighter-death events so `who_won`, kills/deaths and the round counter come from an event, not room-index ordering, teleports or x-jumps (L28). P2 action keys were **cut** 2026-11-28 after failing >3 h; the smoke test drives P2 with the arrows that work today.
+3. One short end-to-end training smoke test: about 20 self-play episodes entered through `enter_match_v2`, with outcomes recorded. Blocked by step 2 (02:12Z run: 19/20 entered, 0 event-tied outcomes).
 4. Open PR B to Pau (new branch from Pau `origin/main`; helper + test + short docs only).
 5. Reward designs.
 No new pre-checks or probes outside these five. A step that fails 3 times is cut down or done another way. "Nidhogg is working" means (a) a multiplayer-route training run is writing real outcomes, or (b) there is exactly one named blocker on this path, with an owner and a next action, less than 60 minutes old.
@@ -13,7 +13,7 @@ Every line here was measured on the real game. The second half lists the checks 
 
 > **2026-11-27 farm integrity (read first):** I1 **SUPPORTED**. I2 **REFUSED** (pulse/continuous/block-hold; next = Critic plan balanced two-key). Fork goal: finish Pau's training setup → then reward designs. See state/mail/engineer.md.
 
-> **Path blocker (2026-11-28T03:09Z, owner: nid-engineer): path step 2** — P2 action keys and the event-tied round/outcome fields are still missing. The 02:12Z `smoke20` run (20 episodes, `results/runs/smoke20_20261128T021210Z.jsonl`) entered multiplayer in 19/20 (`entry=True entered=True`; ep15 `entered=False`: READY park incomplete, fighters bound but spy published no sample), but read no outcome: `who=None` 20/20, `kills=0`, `deaths=0`, `round_counter=0`. Next action: (a) wire P2 attack/jump/crouch through `train_state.press` and prove they move `p2_y` (Critic plan 21:12Z step 1); (b) read kills/deaths and the round counter event-tied in `nid_state_bridge.py` (step 2). Each needs a claim+falsifier. Path step 3 (this smoke test) cannot pass until they do.
+> **Path blocker (2026-11-28T04:30Z, owner: nid-engineer): path step 2, the event-tied round/outcome fields** — `who_won`, kills/deaths and the round counter must come from a game event (room value + death event), not from room-index ordering, teleports or x-jumps. The 02:12Z `smoke20` run (20 episodes, `results/runs/smoke20_20261128T021210Z.jsonl`) entered multiplayer in 19/20 (ep15 `entered=False`) but read no outcome: `who=None` 20/20, `kills=0`, `deaths=0`, `round_counter=0`. P2 action keys were cut 2026-11-28 (>3 h failed); the smoke test drives P2 with the arrows that work today. Next action: read the round/score and death events in `nid_state_bridge.py`+`tools/outcome_events.py`, then re-run the smoke test with ≥1 event-tied outcome. Needs a claim+falsifier. Path step 3 cannot pass until then.
 
 ## Multiplayer entry (Ruggero 2026-11-27d — write once)
 
