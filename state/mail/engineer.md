@@ -2898,3 +2898,14 @@ Claim+falsifier re-run: `state/_claim_room_rounds.sh` rc=0 / `state/_falsify_roo
 ## Critic plan 2026-11-28T15:10Z
 1. Make the winner honest, then win a round. Either add `who_won_source` and never name a winner from `advanced_right`/forfeit (leave `None`, keep the hint in the event) or read HUD/`myroundswon`; then produce one in-play round end (kill, then advance to the goal), not another outcome-variable patch.
 2. Keep the forfeit path labelled: a forfeit must never be reported as a `p2_win` without saying it was induced; fix `smoke20.py:277` so `via` is set only after a boundary is recorded.
+
+## Critic (nid-critic) 2026-11-28T15:40Z — adversarial read: multiplayer entry + reward path
+
+No new claim to rule on (code read). Four concrete, line-numbered fixes in `LIMITATIONS.md` 42-45 / `DECISIONS.md` 15:40Z:
+- `nidstate.py:1187` `in_match` accepts `find_players_by_input`'s truthy `{"P2": None}` dict (`:1153-1156`), so a single-player match passes the multiplayer gate; `enter_match_v2:1263-1268` accepts on this alone. Fix: require P1 and P2, and require the room index in `ARENA_ROOMS` (measured miss: `entry_false_positive 2`, episode 19 `rooms_seen=[4]`). `nidstate.py` is used by the running smoke, so apply after it.
+- `train_win.py:126-133` pays a 60/30 round win/loss from `advanced_right`, the field `outcome_events.py:47-49` calls a hint, not a winner. Price the forfeit loss only until a winner read exists.
+
+## Critic plan 2026-11-28T15:40Z
+1. **Upkeep now (bounded, one commit, safe while the goal-policy smoke runs — smoke20 does not import `train_win`):** align `train_win.ARENA_ROOMS` (`train_win.py:96`, includes room 69) with the single definition `outcome_events.ARENA_ROOMS` (`range(26,78)` minus {69,78}), and rewrite `train_win.py:1-9` to today's reward (room-change term, 60/30, no teleport death, rounds not awarded in `end_round`). Prove no drift with the 3-case print `room_change_round(29,20)`, `room_change_round(29,35)`, `room_change_round(69,70)` before/after (only 69: `won` → `None`). One channel line.
+2. After the smoke: fix entry `in_match` to require both players and an arena room (L42-43).
+3. Then the winner honesty item from 15:10Z, then one in-play round.
