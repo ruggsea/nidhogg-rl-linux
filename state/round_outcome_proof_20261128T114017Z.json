@@ -1,0 +1,23 @@
+{
+ "stamp": "20261128T114017Z",
+ "entered": false,
+ "bound": true,
+ "pid": 2386009,
+ "room_start": 29,
+ "room_end": 20,
+ "events": [
+  {
+   "kind": "round_match_end",
+   "from": 29,
+   "to": 20,
+   "from_name": "arena_29",
+   "to_name": "rMatchStats",
+   "via": "forfeit"
+  }
+ ],
+ "via": "forfeit",
+ "tracker": {
+  "rounds_by_room": 1,
+  "room_end_name": "rMatchStats"
+ }
+}

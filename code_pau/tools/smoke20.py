@@ -35,7 +35,7 @@ import nidlinux as n                     # noqa: E402
 import nidstate as s                     # noqa: E402
 from nidmem import ROOM_OFF, exe_base     # noqa: E402
 from tools import entry_health as eh     # noqa: E402
-from tools.outcome_events import OutcomeTracker  # noqa: E402
+from tools.outcome_events import OutcomeTracker, round_boundary  # noqa: E402
 
 IID = int(os.environ.get("NID_IID", "0"))
 RUN = Path(os.environ.get("NIDRUN", os.path.expanduser("~/nf-p/pau86/results/runs")))
@@ -99,6 +99,9 @@ def one_episode(ep, seconds, rng):
            "p1_moved_px": 0.0, "p2_moved_px": 0.0,
            "teleport_p1": 0, "teleport_p2": 0, "flag_drop_p1": 0, "flag_drop_p2": 0,
            "play_seconds": 0.0, "round_events": [], "missing": [],
+           # step-2 cut: round boundaries from the verified room index (ROOM_OFF),
+           # never the FLAG_P1/P2 death debounce (commit 38c5d0e, LIMITATION 28).
+           "room_rounds": 0, "_room_bounds": [],
            # raw spy-flag diagnostics: prove whether FLAG_P1/P2 ever drop at all.
            # nidspy.zig:225 inRange() is a mapping-bounds check, so these are expected
            # to stay 1 for the whole match; that is the point of measuring them.
@@ -123,6 +126,7 @@ def one_episode(ep, seconds, rng):
     start = prev
 
     tracker = OutcomeTracker(debounce=3)     # event-tied kills/deaths/round counter
+    prev_room = None
     t0 = time.time()
     last_decide = 0.0
     blank_since = None
@@ -156,6 +160,14 @@ def one_episode(ep, seconds, rng):
         p1_alive = bool(st.flags & n.FLAG_P1)
         p2_alive = bool(st.flags & n.FLAG_P2)
         room = st.score_orange if st.flags & n.FLAG_SCORE else None
+        # Room-index round boundary (the step-2 outcome source). Navigation through
+        # menu/lobby rooms returns None, so re-entry is never counted as a round.
+        b = round_boundary(prev_room, room)
+        if b:
+            b["t"] = round(now - t0, 1)
+            rec["room_rounds"] += 1
+            rec["_room_bounds"].append(b)
+        prev_room = room
         tracker.update(room, p1_alive, p2_alive, ts=round(now - t0, 1))
         for _who, _alive in (("p1", p1_alive), ("p2", p2_alive)):
             if _alive:
@@ -186,14 +198,16 @@ def one_episode(ep, seconds, rng):
     rec.pop("_streak_p1", None)
     rec.pop("_streak_p2", None)
 
-    # Event-tied outcome from the tracker (game room + alive flags). Death events are
-    # rounds; with no death the winner stays None and is never guessed from a jump.
-    rec["round_counter"] = tracker.rounds
+    # Event-tied outcome: deaths from the (dead) alive flags plus round boundaries
+    # from the verified room index. With neither, the winner stays None and is
+    # never guessed from a jump.
+    rec["round_counter"] = tracker.rounds + rec["room_rounds"]
     rec["kills"] = tracker.kills
     rec["deaths"] = tracker.deaths
     rec["rounds_won"] = tracker.kills
     rec["rounds_lost"] = tracker.deaths
-    rec["round_events"] = [e for e in tracker.events if e["kind"] in ("death", "room")]
+    rec["round_events"] = ([e for e in tracker.events if e["kind"] in ("death", "room")]
+                           + rec.pop("_room_bounds"))
 
     end = read_pair(pid)
     if end:
@@ -248,6 +262,7 @@ def main():
                   f"entered={rec['entered']} who={rec['who_won']} "
                   f"W-L={rec['rounds_won']}-{rec['rounds_lost']} kills={rec['kills']} "
                   f"deaths={rec['deaths']} rounds={rec['round_counter']} "
+                  f"room_rounds={rec['room_rounds']} "
                   f"p1_px={rec['p1_moved_px']} p2_px={rec['p2_moved_px']} "
                   f"samples={rec['samples']} flaglow_p1={rec['flag_low_p1']} "
                   f"flaglow_p2={rec['flag_low_p2']}", flush=True)
@@ -258,6 +273,7 @@ def main():
         "entry_false_positive": sum(1 for r in recs
                                     if r["entry_returned"] and not r["entered"]),
         "with_round": sum(1 for r in recs if r["round_counter"] > 0),
+        "room_rounds_total": sum(r.get("room_rounds", 0) for r in recs),
         "p1_wins": sum(1 for r in recs if r["who_won"] == "P1"),
         "p2_wins": sum(1 for r in recs if r["who_won"] == "P2"),
         "undecided": sum(1 for r in recs if r["who_won"] is None),

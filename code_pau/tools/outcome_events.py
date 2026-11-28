@@ -22,6 +22,7 @@ from __future__ import annotations
 
 # Mirrors train_state.InstanceManager.ARENA_ROOMS. Room 69 and 78 are not arenas.
 ARENA_ROOMS = frozenset(range(26, 78)) - {69, 78}
+MATCH_STATS_ROOM = 20          # rMatchStats: the match is over (a forfeit from an arena is a loss)
 MENU_NAMES = {0: "__Setup", 1: "rLogos", 2: "rMainMenu", 3: "rMultiMenu", 4: "rOnlineLobby",
               17: "rLevelSelect", 18: "rCredits", 20: "rMatchStats", 21: "rTutorial",
               25: "rPreMatch", 78: "rMods", 81: "rDodgeSwords"}
@@ -31,6 +32,37 @@ def room_name(room):
     if room in MENU_NAMES:
         return MENU_NAMES[room]
     return f"arena_{room}" if room in ARENA_ROOMS else f"room_{room}"
+
+
+def round_boundary(prev, cur):
+    """A ROUND boundary read from the verified room index alone (step 2 cut).
+
+    The alive flags (FLAG_P1/P2) are ``nidspy.zig:225`` ``inRange()``, a mapping-bounds
+    check that stays 1 for the whole match, so no death event can fire from them
+    (commit 38c5d0e, LIMITATION 28). The room index at ``exe_base(pid) + ROOM_OFF`` is
+    the verified game variable (``state/round_source_proof_20261128T062640Z.json``:
+    ``mem_room == spy_room == 29``). Round boundaries are read from it:
+
+      * arena -> a different arena : the screen advanced. ``advanced_right`` is
+        ``cur > prev``; it is a hint, not a winner (train_win.room_change_round).
+      * arena -> rMatchStats (20)  : the match ended. A forfeit from an arena is a loss.
+      * anything touching a menu/lobby room : re-entry navigation, NOT a round.
+
+    Winner is never asserted here: the room index does not say who won. Returns the
+    boundary event, or None when the transition is not a round.
+    """
+    if prev is None or cur is None or prev == cur:
+        return None
+    if prev not in ARENA_ROOMS:
+        return None
+    if cur in ARENA_ROOMS:
+        return {"kind": "round_advance", "from": prev, "to": cur,
+                "from_name": room_name(prev), "to_name": room_name(cur),
+                "advanced_right": cur > prev}
+    if cur == MATCH_STATS_ROOM:
+        return {"kind": "round_match_end", "from": prev, "to": cur,
+                "from_name": room_name(prev), "to_name": room_name(cur)}
+    return None
 
 
 class OutcomeTracker:

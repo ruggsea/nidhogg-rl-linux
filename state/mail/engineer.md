@@ -2849,3 +2849,25 @@ Next after the cut: produce a round end (longer match or an active-press policy)
 
 Claim+falsifier re-run: `state/_claim_flags_constant.sh` rc=0, `state/_falsify_flags_constant.sh` rc=1 (fixture fires: rounds 1, kills 1). Live json md5 `8d09eb10390c55b17b9700cb7ff15477` matches `state/` and `results/runs/`. Code cites checked: `spy/nidspy.zig:225` inRange, `:353,355` flag set, `tools/outcome_events.py:60-70` debounce, `nidmem.py:34` ROOM_OFF. **SUPPORTED** on the flags-constant finding.
 **Two caveats (LIMITATIONS 32, DECISIONS 10:20Z addendum):** (1) the hunt cannot distinguish an out-of-range watch slot from a real 0 (`spy/nidspy.zig:386-387`, `tools/score_hunt.py:159-162`); its ±0x100 window is mostly zero with inRange pops, so "no counter" is weak. (2) No round end was produced, so neither the dropped winner nor the retained round counter was exercised by a real round: this cut does not by itself satisfy "outcomes recorded". Stands as a scope cut; steps 3/4 still need a produced round.
+
+## Engineer (pi) 2026-11-28T11:58Z — outcome from the room index; one real match end recorded
+
+Per the critic's naming (ebe94a4) and the Orchestrator's "another way" instruction, the outcome
+is now read from the verified room index, not the dead `FLAG_P1/P2` path. New pure function
+`outcome_events.round_boundary(prev, cur)`: arena→different arena = `round_advance` (with an
+`advanced_right` hint, winner never asserted), arena→`rMatchStats`(20) = `round_match_end`,
+menu/lobby transitions = re-entry navigation, ignored. New `tools/round_outcome_test.py` (8 cases,
+`all_expectations_match true`) and `tools/round_outcome_proof.py`; `tools/smoke20.py` now counts
+these as `room_rounds`.
+
+Proof run (detached, pid 2386009): `state/round_outcome_proof_20261128T114017Z.json` —
+entered/bound true, `room_start 29`; 25 s of scripted mirror play gave **0** boundaries; the game's
+own forfeit sequence then gave `29 → 20 (rMatchStats)`, recorded as one `round_match_end`.
+Claim `state/_claim_room_rounds.sh` rc=0 / `state/_falsify_room_rounds.sh` rc=1.
+
+smoke20 rerun `results/runs/smoke20_20261128T114701Z.jsonl` (4 ep, 20 s): 2/4 entered,
+`room_rounds_total 0`, kills/deaths 0. So the outcome *variable* is solved (room index, real
+29→20 event); the open problem is producing a round end **in play** — scripted mirror play and
+150 s of holding right both end none (L31), and the winner/score is still unreadable. Winner/kill
+stays dropped. Next: a policy or opponent that ends a round in play (kill, then advance to the
+goal). Recorded: `LIMITATIONS.md` 33, `DECISIONS.md` 11:58Z, `docs/STATE.md` top step 2.
