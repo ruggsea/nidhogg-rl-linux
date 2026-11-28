@@ -2729,3 +2729,62 @@ Claim `_claim_press_map.sh`: re-ran rc=0; falsifier `_falsify_press_map.sh` rc=1
 2. Round/outcome fields in `nid_state_bridge.py`, event-tied (L28), claim+falsifier.
 3. 20-episode self-play smoke test via `enter_match_v2`.
 4. PR-B stays ready but does not delay 1-3.
+
+
+## Engineer (pi cs2) 2026-11-28T03:12Z — 20-episode smoke20 result; ask: rule whether any outcome is event-tied
+
+Command (pippi): `cd ~/nf-p/pau86 && source env.sh && cd ~/nf-p/code_pau && setsid nohup ~/nf-p/venv/bin/python tools/smoke20.py --episodes 20 --seconds 18 > ~/nf-p/pau86/logs/smoke20_20261128T021210Z.log 2>&1 < /dev/null &`
+Result file `results/runs/smoke20_20261128T021210Z.jsonl`, summary `..._summary.json` (verbatim):
+```
+{
+ "stamp": "20261128T021210Z",
+ "episodes": 20,
+ "file": "/home/ruggsea/nf-p/pau86/results/runs/smoke20_20261128T021210Z.jsonl",
+ "entered": 19,
+ "entry_returned": 20,
+ "entry_false_positive": 1,
+ "with_round": 0,
+ "p1_wins": 0,
+ "p2_wins": 0,
+ "undecided": 20,
+ "kills_total": 0,
+ "deaths_total": 0,
+ "p2_moved_in": 18,
+ "missing": [
+  "kills/deaths: 0 in every episode (existence-flag source fires 0 times)",
+  "P2 control: P2 did not move even when arrows were pressed in some episodes",
+  "P2 action keys: no proven P2 attack/jump (only arrows Left/Right pressed)",
+  "round counter/outcome: no room_change round observed (score field unmapped)",
+  "who won: undecidable without a verified round/score source",
+  "entry false positive: ensure_entry True but no bindable match"
+ ]
+}
+```
+Per-episode 20/20:
+```
+ep 1 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=272.0 p2_px=68.0 samples=96 round_events=0
+ep 2 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=64.0 p2_px=16.0 samples=90 round_events=0
+ep 3 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=918.8 p2_px=241.5 samples=53 round_events=0
+ep 4 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=1479.6 p2_px=64.0 samples=95 round_events=0
+ep 5 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=148.5 p2_px=1432.2 samples=54 round_events=0
+ep 6 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=192.0 p2_px=1297.0 samples=55 round_events=0
+ep 7 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=1520.0 p2_px=1409.0 samples=91 round_events=0
+ep 8 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=1373.9 p2_px=232.2 samples=90 round_events=0
+ep 9 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=208.0 p2_px=209.0 samples=54 round_events=0
+ep10 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=1178.0 p2_px=1278.0 samples=94 round_events=0
+ep11 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=0.0 p2_px=0.0 samples=170 round_events=0
+ep12 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=317.8 p2_px=67.7 samples=53 round_events=0
+ep13 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=224.0 p2_px=268.0 samples=55 round_events=0
+ep14 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=1189.4 p2_px=213.3 samples=57 round_events=0
+ep15 entry=True entered=False who=None kills=0 deaths=0 rounds=0 p1_px=0.0 p2_px=0.0 samples=0 round_events=0
+ep16 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=183.7 p2_px=12.9 samples=79 round_events=0
+ep17 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=144.0 p2_px=296.9 samples=48 round_events=0
+ep18 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=191.0 p2_px=1657.0 samples=102 round_events=0
+ep19 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=304.0 p2_px=1121.0 samples=52 round_events=0
+ep20 entry=True entered=True who=None kills=0 deaths=0 rounds=0 p1_px=1156.6 p2_px=1190.6 samples=89 round_events=0
+```
+Read: 20/20 episodes launched entry through `entry_health.ensure_entry` -> `enter_match_v2`; 19/20 bound fighters and ran an 18 s episode. ep15 `entered=False` (log `park incomplete yellow=False orange=True; retry park (stay READY)` twice, then `ensure_entry: fighters appeared after enter_match_v2 gave up`; record says fighters bound but spy published no sample). `round_events` is empty in all 20, so the room-change outcome heuristic never fired; `kills`/`deaths` (flag-existence source) fired 0 times; every `who_won` is None.
+
+Ask for ruling: does any outcome in this run count as event-tied? My read: no — no round, kill or death event was observed, so nothing is event-tied and no reward can be computed. Confirm or refuse, and name the outcome source to use next.
+
+Orchestrator reply (one line): 02:12Z smoke20 = 20 episodes, 19/20 entered multiplayer, 0 outcomes read; the ONE named blocker is path step 2 (P2 action keys + event-tied round/outcome fields), owner nid-engineer, next action in `docs/STATE.md` top.

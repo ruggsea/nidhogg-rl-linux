@@ -1,10 +1,34 @@
 # Verified state, and what is not verified
 
+## Path to training (Ruggero 2026-11-27g — keep this list true)
+1. Critic rules on the PR-B diff; then the engineer commits the staged work.
+2. Player-2 keys plus the round and outcome fields (kills and deaths are still always 0, so no reward can be computed).
+3. One short end-to-end training smoke test: about 20 self-play episodes entered through `enter_match_v2`, with outcomes recorded. This is the check that says the setup is finished.
+4. Open PR B to Pau (new branch from Pau `origin/main`; helper + test + short docs only).
+5. Reward designs.
+No new pre-checks or probes outside these five. A step that fails 3 times is cut down or done another way. "Nidhogg is working" means (a) a multiplayer-route training run is writing real outcomes, or (b) there is exactly one named blocker on this path, with an owner and a next action, less than 60 minutes old.
+
 Every line here was measured on the real game. The second half lists the checks that are
 **not** done, because knowing which claims are load-bearing matters more than the claims.
 
-> **2026-11-27 farm integrity (read first):** I1 **RED**. v5q `T134804Z` EXIT **dose_ok=false**. Ruggero B: **stop park-dose patches** (≥3 failed fixes). Next: long-hold `D` measure **without parking** (STATE table: 8→245 / 20s). **REFUSE** until a real I1 path holds. No TRAINING. See state/mail/engineer.md.
+> **2026-11-27 farm integrity (read first):** I1 **SUPPORTED**. I2 **REFUSED** (pulse/continuous/block-hold; next = Critic plan balanced two-key). Fork goal: finish Pau's training setup → then reward designs. See state/mail/engineer.md.
 
+> **Path blocker (2026-11-28T03:09Z, owner: nid-engineer): path step 2** — P2 action keys and the event-tied round/outcome fields are still missing. The 02:12Z `smoke20` run (20 episodes, `results/runs/smoke20_20261128T021210Z.jsonl`) entered multiplayer in 19/20 (`entry=True entered=True`; ep15 `entered=False`: READY park incomplete, fighters bound but spy published no sample), but read no outcome: `who=None` 20/20, `kills=0`, `deaths=0`, `round_counter=0`. Next action: (a) wire P2 attack/jump/crouch through `train_state.press` and prove they move `p2_y` (Critic plan 21:12Z step 1); (b) read kills/deaths and the round counter event-tied in `nid_state_bridge.py` (step 2). Each needs a claim+falsifier. Path step 3 (this smoke test) cannot pass until they do.
+
+## Multiplayer entry (Ruggero 2026-11-27d — write once)
+
+**Canonical train entry** = game **MULTIPLAYER** local versus (policy vs policy / self-play), not TRAINING-vs-CPU.
+
+| | |
+|---|---|
+| Function | `code_pau/nidstate.enter_match_v2(i)` (~58 s; PROVEN.md §1) |
+| Menu path | title → Enter×3 → READY (both on pads) → stage select → Enter → live match |
+| Body | `enter_ready` → park yellow/orange at wall∓0.333·W → stage select → Return → sleep 3s → `in_match` |
+| P1 keys | a/d walk, w/s sword, f attack, g jump |
+| P2 keys | arrow Left/Right (needed for self-play) |
+| Not this | `train_state._try_entry` / SINGLE PLAYER → TRAINING / `run_entry` / partner_downs |
+
+**2026-11-26 13:29Z** `train_win` "no fighters after entry sequence" was the **TRAINING** menu path (`_try_entry` n_lead/S cache), not multiplayer/`enter_match_v2`. Fixing train entry means wiring Pau's multiplayer route into the trainer, not more TRAINING variants.
 
 ## Verified by measurement
 
