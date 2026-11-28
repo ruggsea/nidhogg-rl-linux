@@ -1,0 +1,26 @@
+{
+ "stamp": "20261128T114701Z",
+ "episodes": 4,
+ "file": "/home/ruggsea/nf-p/pau86/results/runs/smoke20_20261128T114701Z.jsonl",
+ "entered": 2,
+ "entry_returned": 2,
+ "entry_false_positive": 0,
+ "with_round": 0,
+ "room_rounds_total": 0,
+ "p1_wins": 0,
+ "p2_wins": 0,
+ "undecided": 4,
+ "kills_total": 0,
+ "deaths_total": 0,
+ "p2_moved_in": 2,
+ "flag_low_p1_total": 0,
+ "flag_low_p2_total": 0,
+ "flag_low_streak_max": 0,
+ "missing": [
+  "kills/deaths: 0 in every episode (event-tied alive-flag source fired 0 times)",
+  "P2 action keys: no proven P2 attack/jump (only arrows Left/Right pressed)",
+  "round counter/outcome: no event-tied round observed (room+alive tracker)",
+  "who won: undecidable without a verified round/score source",
+  "entry: enter_match_v2/ensure_entry returned False at least once"
+ ]
+}

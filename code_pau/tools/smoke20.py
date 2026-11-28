@@ -35,7 +35,7 @@ import nidlinux as n                     # noqa: E402
 import nidstate as s                     # noqa: E402
 from nidmem import ROOM_OFF, exe_base     # noqa: E402
 from tools import entry_health as eh     # noqa: E402
-from tools.outcome_events import OutcomeTracker, round_boundary  # noqa: E402
+from tools.outcome_events import ARENA_ROOMS, OutcomeTracker, round_boundary  # noqa: E402
 
 IID = int(os.environ.get("NID_IID", "0"))
 RUN = Path(os.environ.get("NIDRUN", os.path.expanduser("~/nf-p/pau86/results/runs")))
@@ -91,7 +91,48 @@ def bind(iid):
     return None
 
 
-def one_episode(ep, seconds, rng):
+def forfeit_round(pid, prev_room, rec, t0):
+    """Round boundary on demand: the game's own forfeit (PROVEN.md §3).
+
+    pause (Escape) -> Down, Down -> Return -> Return ends the round/match with an
+    arena -> rMatchStats room transition. Used only when scripted play produced no
+    in-play round; the event is tagged ``via: forfeit`` so it is never counted as a
+    kill or a self-play win.
+    """
+    for k in ("Escape", "Down", "Down", "Return", "Return"):
+        n.key(IID, k, hold=0.12)
+        time.sleep(0.7)
+        room = room_now(pid)
+        b = round_boundary(prev_room, room)
+        if b:
+            b.update(t=round(time.time() - t0, 1), via="forfeit")
+            rec["_room_bounds"].append(b)
+            rec["room_rounds"] += 1
+            return room
+        prev_room = room
+    settle_end = time.time() + 12.0           # poll for rMatchStats to appear
+    while time.time() < settle_end:
+        room = room_now(pid)
+        b = round_boundary(prev_room, room)
+        if b:
+            b.update(t=round(time.time() - t0, 1), via="forfeit")
+            rec["_room_bounds"].append(b)
+            rec["room_rounds"] += 1
+            return room
+        prev_room = room
+        time.sleep(0.2)
+    return prev_room
+
+
+def room_now(pid):
+    st = n.state(pid)
+    if st is not None and (st.flags & n.FLAG_SCORE):
+        return st.score_orange
+    return None
+
+
+def one_episode(ep, seconds, rng, p2_policy="mirror", p1_policy="mirror",
+                finish="none"):
     entry_returned = bool(eh.ensure_entry(IID))
     rec = {"episode": ep, "entry_returned": entry_returned, "entered": False, "samples": 0,
            "who_won": None, "kills": 0, "deaths": 0, "round_counter": 0,
@@ -106,7 +147,9 @@ def one_episode(ep, seconds, rng):
            # nidspy.zig:225 inRange() is a mapping-bounds check, so these are expected
            # to stay 1 for the whole match; that is the point of measuring them.
            "flag_low_p1": 0, "flag_low_p2": 0,
-           "flag_low_streak_max_p1": 0, "flag_low_streak_max_p2": 0}
+           "flag_low_streak_max_p1": 0, "flag_low_streak_max_p2": 0,
+           "p1x_min": None, "p1x_max": None, "p2x_min": None, "p2x_max": None,
+           "rooms_seen": []}
     if not entry_returned:
         rec["missing"].append("entry: enter_match_v2/ensure_entry returned False")
         return rec
@@ -130,6 +173,7 @@ def one_episode(ep, seconds, rng):
     t0 = time.time()
     last_decide = 0.0
     blank_since = None
+    sweep_i = 0
     while time.time() - t0 < seconds:
         now = time.time()
         # Never press keys when the arena is gone: a post-round screen treats a/d as a
@@ -142,13 +186,35 @@ def one_episode(ep, seconds, rng):
             if st:
                 p2x, _p2y, p1x, _p1y = st
                 dx = p2x - p1x
-                n.key(IID, P1_FWD if dx > 0 else P1_BACK, hold=0.10)
-                if abs(dx) < 60:
+                if p1_policy == "engage":
+                    # Keep the measured striking band (dx ~22 lands, dx ~59 misses) and
+                    # vary the sword height so a mid-block cannot clash forever.
+                    adx = abs(dx)
+                    if adx > 45:
+                        n.key(IID, P1_FWD if dx > 0 else P1_BACK, hold=0.10)
+                    elif adx < 18:
+                        n.key(IID, P1_BACK if dx > 0 else P1_FWD, hold=0.10)
+                    else:
+                        n.key(IID, "w" if sweep_i % 2 == 0 else "s", hold=0.08)
+                        n.key(IID, P1_ATK, hold=0.10)
+                        sweep_i += 1
+                elif p1_policy == "run":
+                    # Simplest in-play attempt: always push toward the opponent's goal
+                    # (right) and spam attack, so a kill becomes an advance. P2 idle.
+                    n.key(IID, P1_FWD, hold=0.10)
                     n.key(IID, P1_ATK, hold=0.10)
-                elif rng.random() < 0.15:
-                    n.key(IID, P1_JUMP, hold=0.10)
-                # P2 policy: the same shape on the arrows. No P2 attack/jump key exists yet.
-                n.key(IID, P2_BACK if dx > 0 else P2_FWD, hold=0.10)
+                    if rng.random() < 0.12:
+                        n.key(IID, P1_JUMP, hold=0.10)
+                else:
+                    n.key(IID, P1_FWD if dx > 0 else P1_BACK, hold=0.10)
+                    if abs(dx) < 60:
+                        n.key(IID, P1_ATK, hold=0.10)
+                    elif rng.random() < 0.15:
+                        n.key(IID, P1_JUMP, hold=0.10)
+                # P2 policy: mirror on the arrows, or idle so P1 can win a round.
+                # No P2 attack/jump key exists yet.
+                if p2_policy == "mirror":
+                    n.key(IID, P2_BACK if dx > 0 else P2_FWD, hold=0.10)
         st = n.state(pid)
         if st is None:
             blank_since = blank_since or now
@@ -183,6 +249,12 @@ def one_episode(ep, seconds, rng):
             continue
         blank_since = None
         p2x, p2y, p1x, p1y = st.p2_x, st.p2_y, st.p1_x, st.p1_y
+        rec["p1x_min"] = p1x if rec["p1x_min"] is None else min(rec["p1x_min"], p1x)
+        rec["p1x_max"] = p1x if rec["p1x_max"] is None else max(rec["p1x_max"], p1x)
+        rec["p2x_min"] = p2x if rec["p2x_min"] is None else min(rec["p2x_min"], p2x)
+        rec["p2x_max"] = p2x if rec["p2x_max"] is None else max(rec["p2x_max"], p2x)
+        if room is not None and room not in rec["rooms_seen"]:
+            rec["rooms_seen"].append(room)
         rec["samples"] += 1
         if abs(p1x - prev[2]) > TELEPORT:
             rec["teleport_p1"] += 1
@@ -197,6 +269,13 @@ def one_episode(ep, seconds, rng):
     rec["play_seconds"] = round(time.time() - t0, 1)
     rec.pop("_streak_p1", None)
     rec.pop("_streak_p2", None)
+
+    # Scripted play never ended a round in play (idle P2, mirror, and the strike-band
+    # engage policy all produced 0 room boundaries). If asked, end the episode with the
+    # game's own forfeit so a real room-index outcome is recorded, tagged via=forfeit.
+    if finish == "forfeit" and rec["room_rounds"] == 0 and prev_room in ARENA_ROOMS:
+        rec["via"] = "forfeit"
+        prev_room = forfeit_round(pid, prev_room, rec, t0)
 
     # Event-tied outcome: deaths from the (dead) alive flags plus round boundaries
     # from the verified room index. With neither, the winner stays None and is
@@ -214,7 +293,13 @@ def one_episode(ep, seconds, rng):
         rec["p1_moved_px"] = round(abs(end[2] - start[2]), 1)
         rec["p2_moved_px"] = round(abs(end[0] - start[0]), 1)
     if rec["round_counter"] > 0:
-        rec["who_won"] = "P1" if rec["rounds_won"] > rec["rounds_lost"] else "P2"
+        adv = [e for e in rec["round_events"] if e.get("kind") == "round_advance"]
+        ends = [e for e in rec["round_events"] if e.get("kind") == "round_match_end"]
+        if adv:
+            rec["who_won"] = "P1" if adv[-1].get("advanced_right") else "P2"
+        elif ends and ends[-1].get("via") == "forfeit":
+            rec["who_won"] = "P2"          # yellow (P1) forfeited the match
+        # any other match end does not name a winner
     # no observed round -> who_won stays None; the teleport counts are a weaker
     # second source and must not be promoted to a result.
     return rec
@@ -243,6 +328,13 @@ def main():
     ap.add_argument("--episodes", type=int, default=20)
     ap.add_argument("--seconds", type=float, default=18.0)
     ap.add_argument("--seed", type=int, default=20261128)
+    ap.add_argument("--p2", choices=("mirror", "idle"), default="mirror",
+                    help="P2 policy: mirror P1 with the arrows, or stay idle")
+    ap.add_argument("--p1", choices=("mirror", "engage", "run"), default="mirror",
+                    help="P1 policy: mirror approach, strike-band engage with height sweep, "
+                         "or run-right-and-attack")
+    ap.add_argument("--finish", choices=("none", "forfeit"), default="none",
+                    help="if play ends no round, end the episode with the game's own forfeit")
     args = ap.parse_args()
 
     RUN.mkdir(parents=True, exist_ok=True)
@@ -254,7 +346,8 @@ def main():
     recs = []
     with out.open("w") as f:
         for ep in range(1, args.episodes + 1):
-            rec = one_episode(ep, args.seconds, rng)
+            rec = one_episode(ep, args.seconds, rng, p2_policy=args.p2, p1_policy=args.p1,
+                              finish=args.finish)
             recs.append(rec)
             f.write(json.dumps(rec) + "\n")
             f.flush()

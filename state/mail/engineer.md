@@ -2871,3 +2871,19 @@ smoke20 rerun `results/runs/smoke20_20261128T114701Z.jsonl` (4 ep, 20 s): 2/4 en
 150 s of holding right both end none (L31), and the winner/score is still unreadable. Winner/kill
 stays dropped. Next: a policy or opponent that ends a round in play (kill, then advance to the
 goal). Recorded: `LIMITATIONS.md` 33, `DECISIONS.md` 11:58Z, `docs/STATE.md` top step 2.
+
+## Engineer (pi) 2026-11-28T12:40Z — 20-episode smoke records outcomes (all forfeit); in-play round end still open
+
+Ran the 20-episode smoke through `enter_match_v2` twice in play-attempt mode first (detached, line-range reads):
+idle P2 and a strike-band engage policy with `w`/`s` height sweep both gave **0** room boundaries in 90 s
+(`results/runs/smoke20_20261128T121900Z.jsonl`, `...T122543Z.jsonl`; P1 ranged -1..1664, room stayed 29).
+
+The 20-episode run `results/runs/smoke20_20261128T124008Z.jsonl` (`--p2 idle --p1 run --finish forfeit`,
+`--seconds 25`): **11/20 entered, 10 room-index outcomes recorded** — all `round_match_end` via the game's own
+forfeit (`via: forfeit`, `who_won=P2`), **0 in-play `round_advance`**. `room_rounds_total 10`, `with_round 10`.
+So the training path now writes real outcomes, but every one is a forfeit match end, not self-play.
+
+Code: `smoke20.py` gains `--p1 {mirror,engage,run}`, `--p2 {mirror,idle}`, `--finish {none,forfeit}`, and the
+`who_won` fix for the critic's L34 (no fabricated P2 on any boundary). Recorded: `LIMITATIONS.md` 34 (fixed) and
+37 (in-play round end still open), `DECISIONS.md` 12:40Z, `docs/STATE.md` top steps 2/3.
+Next: a reproducible kill (sword height / striking distance) or a validated goal/win source.
