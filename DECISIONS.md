@@ -234,3 +234,12 @@ Dated forks. Format: **Chosen / Alternatives / Why / Decided by / Change if / Ev
 - **Decided by:** nid-engineer (pi), on the Orchestrator's 2026-11-28 next action; root cause read by the engineer.
 - **Change if:** a real round/death/score variable is mapped and the tracker is repointed at it; then a rerun with ≥1 event-tied outcome is the test.
 - **Evidence:** `code_pau/tools/smoke20.py` (tracker wiring); `code_pau/spy/nidspy.zig:225,347-362`; `code_pau/tools/outcome_events.py:60-78`; `results/runs/smoke20_20261128T083516Z.jsonl` + `_summary.json` (md5 4cc5c0a3…, ea655a81…); `LIMITATIONS.md` 28.
+
+## 2026-11-28T09:39:15Z — the alive-flag death source is dead; read the game's named globals instead
+
+- **Chosen:** Confirm the engineer's root cause — `FLAG_P1`/`FLAG_P2` is a mapping-bounds check, not a life signal, so the debounced death cannot fire — and repoint the death/round source at the game's own named GML globals `dead` (death) and `myroundswon`/`hisroundswon` (rounds won = score), or read the READY-screen HUD `WINS` digits. The room index stays as the round-boundary event.
+- **Alternatives:** (a) keep the FLAG debounce and hope a death shows up; (b) go back to the x-jump/teleport heuristic; (c) declare a winner from room-index ordering.
+- **Why:** Independently read the code: `inRange(t)` (`code_pau/spy/nidspy.zig:225`) returns `a != 0 and a + rec_end <= t.end and a % 4 == 0`, where `t.end = regionEnd(addr)` is fixed at track time (`nidspy.zig:303-313`); the publish sets `flag_p1`/`flag_p2` from it (`:347-361`). It is a static property of the configured address, so it is 1 for the whole match and cannot signal a death. Options (b) and (c) are the heuristics the integrity hold forbids (L28); (a) hides a dead source.
+- **Decided by:** nid-critic (pi cs2), on the Orchestrator's 2026-11-28 review assignment; root cause first read by nid-engineer in commit 20eae6b.
+- **Change if:** a Linux/Proton offset for `dead`/`myroundswon`/`hisroundswon` is mapped and a rerun shows an event-tied death/round; then a smoke rerun with ≥1 event-tied outcome is the test.
+- **Evidence:** `code_pau/spy/nidspy.zig:225,303-313,347-361`; `code_pau/tools/outcome_events.py:60-78`; `code_pau/nidmem.py:34`; `code_pau/docs/archive/NOTES_macos.md:1702-1709,1730-1740`; `code_pau/docs/MEMORY.md:647-665`; `code_pau/docs/PLAN_SWARM.md:23`; `results/runs/smoke20_20261128T083516Z.jsonl`; `LIMITATIONS.md` 28.
